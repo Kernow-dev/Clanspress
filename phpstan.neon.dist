@@ -1,0 +1,19 @@
+parameters:
+	level: 5
+	treatPhpDocTypesAsCertain: false
+	parallel:
+		maximumNumberOfProcesses: 1
+	bootstrapFiles:
+		- phpstan-bootstrap.php
+	paths:
+		- clanspress.php
+		- shortcut-function.php
+		- inc
+	scanFiles:
+		- vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+	# Core query object assigns many boolean flags at runtime; stubs omit them.
+	universalObjectCratesClasses:
+		- WP_Query
+	ignoreErrors:
+		-
+			identifier: requireOnce.fileNotFound

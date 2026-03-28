@@ -1,0 +1,149 @@
+.wp-block-clanspress-team-create-form {
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 1rem;
+}
+
+.clanspress-team-create-form__form {
+	display: grid;
+	gap: 1rem;
+
+	p.description {
+		margin: 0;
+		color: #646970;
+		font-size: 0.875rem;
+	}
+}
+
+.clanspress-team-create-form__media-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	align-items: flex-start;
+}
+
+.clanspress-team-create-form__avatar-cover-preview {
+	position: relative;
+	height: 150px;
+	width: 100%;
+	max-width: 320px;
+	background-color: #f0f0f1;
+	border-radius: 6px;
+	overflow: hidden;
+	border: 1px solid #dcdcde;
+}
+
+.clanspress-team-create-form__cover-preview {
+	width: 100%;
+	height: 50%;
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-color: #e8e8ea;
+}
+
+.clanspress-team-create-form__avatar-preview {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 84px;
+	height: 84px;
+	transform: translate(-50%, -50%);
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-color: #fff;
+	border-radius: 50%;
+	border: 3px solid #fff;
+	box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
+}
+
+.clanspress-team-create-form__media-buttons {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	min-width: 160px;
+}
+
+.clanspress-team-create-form__change-media {
+	appearance: none;
+	margin: 0;
+	padding: 0.5rem 0.75rem;
+	font: inherit;
+	cursor: pointer;
+	text-align: center;
+	border-radius: 4px;
+	border: 1px solid #dcdcde;
+	background: #fff;
+	color: #1d2327;
+
+	&:hover {
+		background: #f6f7f7;
+	}
+
+	&:focus-visible {
+		outline: 2px solid #2271b1;
+		outline-offset: 1px;
+	}
+}
+
+.clanspress-team-create-form__actions {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.clanspress-team-create-form__notice {
+	padding: 0.75rem;
+	border-radius: 4px;
+}
+
+.clanspress-team-create-form__notice.is-success {
+	background: #ecf7ed;
+}
+
+.clanspress-team-create-form__notice.is-error {
+	background: #fdecea;
+}
+
+.clanspress-team-create-form__invite-suggestions {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.clanspress-team-create-form__invite-option {
+	background: transparent;
+	border: 0;
+	padding: 0.35rem 0.5rem;
+	cursor: pointer;
+	text-align: left;
+	width: 100%;
+	border-radius: 4px;
+}
+
+.clanspress-team-create-form__invite-option.is-active,
+.clanspress-team-create-form__invite-option:focus-visible {
+	background: #e8f0fe;
+	outline: 0;
+}
+
+.clanspress-team-create-form__invite-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.clanspress-team-create-form__invite-chip {
+	display: inline-flex;
+	gap: 0.4rem;
+	align-items: center;
+	padding: 0.25rem 0.5rem;
+	background: #f0f0f1;
+	border-radius: 999px;
+}
+
+.clanspress-team-create-form__invite-chip button {
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+}

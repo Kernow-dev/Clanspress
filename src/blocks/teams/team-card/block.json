@@ -1,0 +1,31 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/team-card",
+	"version": "0.1.0",
+	"title": "Team Card",
+	"category": "clanspress-teams",
+	"icon": "groups",
+	"description": "Display a simple team profile card.",
+	"textdomain": "clanspress",
+	"supports": {
+		"html": false
+	},
+	"attributes": {
+		"teamName": {
+			"type": "string",
+			"default": "Unnamed Team"
+		},
+		"gameTitle": {
+			"type": "string",
+			"default": ""
+		},
+		"description": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css"
+}
