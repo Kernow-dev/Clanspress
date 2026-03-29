@@ -1,0 +1,163 @@
+.wp-block-clanspress-player-avatar {
+	position: relative;
+	background-position: center center;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	//overflow: clip;
+	box-sizing: border-box;
+	width: 148px;
+	height: 148px;
+
+	.player-avatar__frame {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		border: 8px solid white;
+		border-radius: 50%;
+		box-sizing: border-box;
+
+		.player-avatar__image-background {
+			display: flex;
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+			object-fit: cover;
+			height: 100%;
+			width: 100%;
+			border-radius: inherit;
+		}
+
+		.player-avatar__controls {
+			display: none;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			height: fit-content;
+			width: fit-content;
+			z-index: 9;
+
+			&.active {
+				display: flex;
+			}
+
+			.player-avatar__controls-container {
+				position: relative;
+
+				.control {
+					width: fit-content;
+					height: fit-content;
+
+					> button {
+						all: unset;
+						display: flex;
+						position: relative;
+						padding: 10px;
+						backdrop-filter: blur(10px);
+						background: hsla(0, 0%, 100%, .1);
+						border: 1px solid hsla(0, 0%, 100%, .2);
+						box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18),
+						inset 0 1px 0 rgba(255, 255, 255, 0.25);
+						border-radius: 12px;
+						width: 20px;
+						height: 20px;
+
+						&:hover {
+							cursor: pointer;
+						}
+
+						&:after {
+							content: '';
+							width: 20px;
+							height: 20px;
+							position: absolute;
+							mask-repeat: no-repeat;
+							mask-position: center;
+							mask-size: contain;
+							background-color: white;
+						}
+
+					}
+
+					&.edit-avatar {
+						> button {
+							&:after {
+								mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='m22.7 14.3l-1 1l-2-2l1-1c.1-.1.2-.2.4-.2c.1 0 .3.1.4.2l1.3 1.3c.1.2.1.5-.1.7M13 19.9V22h2.1l6.1-6.1l-2-2zm-1.79-4.07l-1.96-2.36L6.5 17h6.62l2.54-2.45l-1.7-2.26zM11 19.9v-.85l.05-.05H5V5h14v6.31l2-1.93V5a2 2 0 0 0-2-2H5c-1.1 0-2 .9-2 2v14a2 2 0 0 0 2 2h6z'/></svg>");
+							}
+						}
+					}
+
+					.control-panel {
+						display: none;
+						flex-direction: column;
+						gap: 10px;
+						justify-content: stretch;
+						position: absolute;
+						top: 56px;
+						right: 0;
+						padding: 10px;
+						backdrop-filter: blur(10px);
+						background: hsla(0, 0%, 100%, .1);
+						border: 1px solid hsla(0, 0%, 100%, .2);
+						box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18),
+						inset 0 1px 0 rgba(255, 255, 255, 0.25);
+						color: white;
+						border-radius: 12px;
+						width: fit-content;
+						height: fit-content;
+
+						&.active {
+							display: flex;
+						}
+
+						button {
+							&:hover {
+								cursor: pointer;
+							}
+						}
+
+						.position-box {
+							width: 100px;
+							height: 50px;
+							background-color: rgba(255, 255, 255, 0.4);
+							border: 1px solid rgba(255, 255, 255, 0.6);
+							position: relative;
+							background-position: left top,
+							left top,
+							center;
+
+							background-repeat: repeat,
+							repeat,
+							no-repeat;
+
+							.thumb {
+								width: 16px;
+								height: 16px;
+								background: rgba(255, 255, 255, 0.4);
+								border: 3px solid #ffffff;
+								border-radius: 50%;
+								position: absolute;
+								top: 50%;
+								left: 50%;
+								transform: translate(-50%, -50%);
+								touch-action: none;
+								cursor: grab;
+
+								&.grabbing {
+									cursor: grabbing;
+								}
+							}
+						}
+
+						button {
+							width: 100%;
+						}
+					}
+				}
+			}
+		}
+	}
+}

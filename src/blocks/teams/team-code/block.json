@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/team-code",
+	"version": "0.1.0",
+	"title": "Team code",
+	"category": "clanspress-teams",
+	"icon": "tag",
+	"description": "Displays the short team code.",
+	"textdomain": "clanspress",
+	"postTypes": [ "cp_team" ],
+	"usesContext": [ "postId", "postType" ],
+	"supports": {
+		"html": false,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}

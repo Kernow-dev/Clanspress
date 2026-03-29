@@ -1,0 +1,64 @@
+{
+	"name": "clanspress",
+	"version": "1.0.0",
+	"description": "Community management system for gamers and sports teams plugin for Wordpress.",
+	"keywords": [
+		"gaming",
+		"community",
+		"gamer",
+		"clan",
+		"sports",
+		"team",
+		"management"
+	],
+	"homepage": "https://github.com/Kernow-dev/Clanspress#readme",
+	"bugs": {
+		"url": "https://github.com/Kernow-dev/Clanspress/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Kernow-dev/Clanspress.git"
+	},
+	"license": "ISC",
+	"author": "Kernow.dev",
+	"type": "Wordpress Plugin",
+	"main": "clanspress.php",
+	"files": [
+		"clanspress.php",
+		"shortcut-function.php",
+		"composer.json",
+		"LICENSE",
+		"README.md",
+		"build",
+		"inc",
+		"assets",
+		"templates",
+		"src",
+		"vendor"
+	],
+	"scripts": {
+		"build": "npm run build:blocks",
+		"build:admin": "wp-scripts build --config webpack.config.cjs",
+		"build:blocks:manifests": "wp-scripts build-blocks-manifest --input=build/matches --output=build/matches/blocks-manifest.php && wp-scripts build-blocks-manifest --input=build/players --output=build/players/blocks-manifest.php && wp-scripts build-blocks-manifest --input=build/teams --output=build/teams/blocks-manifest.php",
+		"build:blocks": "wp-scripts build --source-path=src/blocks --output-path=build --webpack-copy-php && node scripts/copy-block-view-modules.mjs && npm run build:blocks:manifests && npm run build:cp-match-editor:integrate",
+		"build:cp-match-editor:integrate": "wp-scripts build index.js --output-path=.cp-match-editor-build --source-path=src/cp-match-editor/src && rm -rf build/cp-match-editor && mkdir -p build/cp-match-editor && cp -R .cp-match-editor-build/. build/cp-match-editor/ && rm -rf .cp-match-editor-build",
+		"build:production": "npm run build:admin && npm run build:blocks",
+		"check-engines": "wp-scripts check-engines",
+		"check-licenses": "wp-scripts check-licenses",
+		"format": "wp-scripts format",
+		"lint:css": "wp-scripts lint-style",
+		"lint:js": "wp-scripts lint-js",
+		"lint:md:docs": "wp-scripts lint-md-docs",
+		"lint:pkg-json": "wp-scripts lint-pkg-json",
+		"packages-update": "wp-scripts packages-update",
+		"plugin-zip": "npm run build:production && wp-scripts plugin-zip",
+		"start": "wp-scripts start",
+		"test:e2e": "wp-scripts test-e2e",
+		"test:unit": "wp-scripts test-unit-js"
+	},
+	"devDependencies": {
+		"@wordpress/interactivity": "^6.37.0",
+		"@wordpress/scripts": "^31.2.0",
+		"clsx": "^2.1.1"
+	}
+}

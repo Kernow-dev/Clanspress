@@ -1,0 +1,28 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/team-motto",
+	"version": "0.1.0",
+	"title": "Team motto",
+	"category": "clanspress-teams",
+	"icon": "format-quote",
+	"description": "Displays the team motto.",
+	"textdomain": "clanspress",
+	"postTypes": [ "cp_team" ],
+	"usesContext": [ "postId", "postType" ],
+	"supports": {
+		"html": false,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		},
+		"typography": {
+			"fontSize": true,
+			"fontStyle": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}

@@ -1,0 +1,33 @@
+.wp-block-clanspress-team-avatar {
+	margin: 0;
+}
+
+.clanspress-team-avatar {
+	display: inline-block;
+	line-height: 0;
+	border-radius: 50%;
+	overflow: hidden;
+	border: 3px solid #fff;
+	box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
+}
+
+.clanspress-team-avatar img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.clanspress-team-avatar--placeholder {
+	border: 1px dashed #c3c4c7;
+	min-width: 80px;
+	min-height: 80px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	color: #646970;
+	font-size: 0.75rem;
+	text-align: center;
+	padding: 0.25rem;
+}

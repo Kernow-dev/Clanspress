@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<ruleset name="Clanspress">
+	<description>
+		PHPCS: PHP 8.2 / WordPress runtime compatibility. Full WPCS style rules are not enforced yet
+		(to avoid large no-op formatting churn); run PHPCBF with WordPress-Core locally if desired.
+	</description>
+
+	<file>clanspress.php</file>
+	<file>shortcut-function.php</file>
+	<file>inc</file>
+
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/build/*</exclude-pattern>
+
+	<config name="minimum_supported_wp_version" value="6.4"/>
+	<config name="testVersion" value="8.2-"/>
+
+	<rule ref="PHPCompatibilityWP"/>
+</ruleset>
