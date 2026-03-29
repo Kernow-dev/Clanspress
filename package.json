@@ -33,7 +33,6 @@
 		"inc",
 		"assets",
 		"templates",
-		"src",
 		"vendor"
 	],
 	"scripts": {
