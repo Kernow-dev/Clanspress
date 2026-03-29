@@ -21,8 +21,13 @@ export default function Edit( { attributes, setAttributes } ) {
 			<RichText
 				tagName="p"
 				value={ description }
-				onChange={ ( value ) => setAttributes( { description: value } ) }
-				placeholder={ __( 'Team description (optional)', 'clanspress' ) }
+				onChange={ ( value ) =>
+					setAttributes( { description: value } )
+				}
+				placeholder={ __(
+					'Team description (optional)',
+					'clanspress'
+				) }
 			/>
 		</div>
 	);

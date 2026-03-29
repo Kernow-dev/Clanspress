@@ -14,7 +14,10 @@ export default function Edit( { attributes, setAttributes } ) {
 				<PanelBody title={ __( 'Match card', 'clanspress' ) }>
 					<TextControl
 						label={ __( 'Match post ID', 'clanspress' ) }
-						help={ __( 'The `cp_match` post ID to display.', 'clanspress' ) }
+						help={ __(
+							'The `cp_match` post ID to display.',
+							'clanspress'
+						) }
 						type="number"
 						value={ matchId || '' }
 						onChange={ ( v ) =>

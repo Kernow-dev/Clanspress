@@ -26,6 +26,7 @@ use Kernowdev\Clanspress\Extensions\Loader as Extension_Loader;
 
 // Use composer autoload.
 require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/inc/clanspress-private-media.php';
 require_once __DIR__ . '/shortcut-function.php';
 
 /**

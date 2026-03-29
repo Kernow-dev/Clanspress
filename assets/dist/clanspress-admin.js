@@ -1,2 +1,777 @@
-(()=>{"use strict";var e={n:s=>{var n=s&&s.__esModule?()=>s.default:()=>s;return e.d(n,{a:n}),n},d:(s,n)=>{for(var t in n)e.o(n,t)&&!e.o(s,t)&&Object.defineProperty(s,t,{enumerable:!0,get:n[t]})},o:(e,s)=>Object.prototype.hasOwnProperty.call(e,s)};const s=window.wp.element,n=window.wp.apiFetch;var t=e.n(n);const i=window.wp.components,a=window.wp.i18n,l=window.ReactJSXRuntime,r="tab";function o(){try{return new URLSearchParams(window.location.search).get(r)||""}catch{return""}}function c(e){try{const s=new URL(window.location.href);e?s.searchParams.set(r,e):s.searchParams.delete(r);const n=s.pathname+s.search+s.hash;n!==window.location.pathname+window.location.search+window.location.hash&&window.history.replaceState(null,"",n)}catch{}}function d(e){if(!e?.length)return"";const s=new Set(e.map(e=>e.id)),n=o();return n&&s.has(n)?n:e[0].id}function u({field:e,value:s,onChange:n}){const t=e.id,a={label:e.label,help:e.description||void 0};switch(e.type){case"checkbox":return(0,l.jsx)(i.ToggleControl,{...a,checked:!!s,onChange:e=>n(t,e)});case"select":return(0,l.jsx)(i.SelectControl,{...a,value:String(null!=s?s:""),options:(e.options||[]).map(e=>({label:e.label,value:e.value})),onChange:e=>n(t,e)});case"textarea":return(0,l.jsx)(i.TextareaControl,{...a,value:String(null!=s?s:""),onChange:e=>n(t,e),rows:4});default:return(0,l.jsx)(i.TextControl,{...a,value:String(null!=s?s:""),onChange:e=>n(t,e)})}}function p({sections:e,optionKey:s,values:n,onFieldChange:t}){const i=n[s]||{};return e?.length?e.map(e=>(0,l.jsxs)("div",{style:{marginBottom:"2rem"},children:[e.title?(0,l.jsx)("h3",{children:e.title}):null,(0,l.jsx)("div",{className:"clanspress-settings-fields",style:{maxWidth:640,marginTop:"1rem"},children:(e.fields||[]).map(e=>(0,l.jsx)("div",{style:{marginBottom:"1rem"},children:(0,l.jsx)(u,{field:e,value:i[e.id],onChange:(e,n)=>t(s,e,n)})},e.id))})]},e.id)):(0,l.jsx)("p",{className:"description",children:(0,a.__)("No configurable fields for this section.","clanspress")})}function h({requires:e,allExtensions:s,installedSlugs:n}){return e?.length?(0,l.jsx)("ul",{className:"clanspress-extension-requires",style:{margin:0,paddingLeft:"1.25rem",maxWidth:280},children:e.map(e=>{const t=s.find(s=>s.slug===e),i=t?.name||e,r=n.includes(e);return(0,l.jsxs)("li",{children:[i,r?null:(0,l.jsxs)("span",{className:"description",style:{marginLeft:4},children:["(",(0,a.__)("not installed","clanspress"),")"]})]},e)})}):(0,l.jsx)("span",{className:"description","aria-label":(0,a.__)("None","clanspress"),children:"—"})}function m(){const[e,n]=(0,s.useState)(null),[r,u]=(0,s.useState)({}),[m,g]=(0,s.useState)([]),[x,f]=(0,s.useState)(null),[y,j]=(0,s.useState)(!1),[v,w]=(0,s.useState)(null),[b,_]=(0,s.useState)(""),[S,C]=(0,s.useState)(0),N=(0,s.useRef)(""),T=(0,s.useCallback)(async()=>{f(null);try{const e=await t()({path:"clanspress/v1/admin/bootstrap"});n(e),u({...e.values});const s=(e.extensions||[]).filter(e=>e.isInstalled).map(e=>e.slug);g(s)}catch(e){f(e?.message||(0,a.__)("Failed to load settings.","clanspress"))}},[]);(0,s.useEffect)(()=>{!function(){const e="undefined"!=typeof wpApiSettings&&wpApiSettings?.root?wpApiSettings.root:(clanspressAdmin?.restUrl||"").replace(/clanspress\/v1\/$/,"")||"/wp-json/",s="undefined"!=typeof wpApiSettings&&wpApiSettings?.nonce?wpApiSettings.nonce:clanspressAdmin?.nonce||"";t().use(t().createNonceMiddleware(s)),t().use(t().createRootURLMiddleware(e))}(),T()},[T]),(0,s.useEffect)(()=>{if(!e?.tabs?.length)return;"undefined"==typeof document||N.current||(N.current=document.title);const s=d(e.tabs);_(s);const n=o();n&&n!==s&&c(s)},[e]),(0,s.useEffect)(()=>{if("undefined"==typeof document||!e?.tabs?.length||!b||!N.current)return;const s=e.tabs.find(e=>e.id===b);s&&(document.title=(0,a.sprintf)(/* translators: 1: original admin screen title, 2: settings tab label */ /* translators: 1: original admin screen title, 2: settings tab label */
-(0,a.__)("%1$s ‹ %2$s","clanspress"),N.current,s.label))},[e,b]),(0,s.useEffect)(()=>()=>{"undefined"!=typeof document&&N.current&&(document.title=N.current)},[]);const B=(0,s.useCallback)(e=>{_(e),c(e)},[]);(0,s.useEffect)(()=>{if(!e?.tabs?.length)return;const s=()=>{const s=d(e.tabs);_(s),C(e=>e+1)};return window.addEventListener("popstate",s),()=>window.removeEventListener("popstate",s)},[e]);const R=(0,s.useCallback)((e,s,n)=>{u(t=>({...t,[e]:{...t[e],[s]:n}}))},[]),E=async e=>{j(!0),w(null);try{const s=await t()({path:`clanspress/v1/admin/settings/${e}`,method:"PUT",data:r[e]||{}});u(n=>({...n,[e]:s.values})),w((0,l.jsx)(i.Notice,{status:"success",isDismissible:!0,onRemove:()=>w(null),children:(0,a.__)("Settings saved.","clanspress")}))}catch(e){w((0,l.jsx)(i.Notice,{status:"error",isDismissible:!0,onRemove:()=>w(null),children:e?.message||(0,a.__)("Save failed.","clanspress")}))}finally{j(!1)}},k=async()=>{j(!0),w(null);try{await t()({path:"clanspress/v1/admin/extensions",method:"PUT",data:{installed:m}}),w((0,l.jsx)(i.Notice,{status:"success",isDismissible:!0,onRemove:()=>w(null),children:(0,a.__)("Extensions updated. Reloading…","clanspress")})),setTimeout(()=>window.location.reload(),800)}catch(e){w((0,l.jsx)(i.Notice,{status:"error",isDismissible:!0,onRemove:()=>w(null),children:e?.message||(0,a.__)("Could not update extensions.","clanspress")}))}finally{j(!1)}};if(x)return(0,l.jsx)(i.Notice,{status:"error",isDismissible:!1,children:x});if(!e?.tabs)return(0,l.jsx)(i.Spinner,{});const q=e.generalOptionKey,A=e.optionSchemas?.[q]||[],L=e.tabs.map(e=>({name:e.id,title:e.label})),P=d(e.tabs);return(0,l.jsxs)("div",{className:"clanspress-admin-app",style:{marginTop:"1rem"},children:[v?(0,l.jsx)("div",{className:"clanspress-admin-global-notice",style:{marginBottom:"1rem"},role:"status",children:v}):null,(0,l.jsx)(i.TabPanel,{className:"clanspress-admin-tabs",activeClass:"is-active",tabs:L,initialTabName:P,onSelect:B,children:s=>{const n=e.tabs.find(e=>e.id===s.name);return n?"general"===n.type?(0,l.jsxs)("div",{style:{paddingTop:"1rem"},children:[(0,l.jsx)(p,{sections:A,optionKey:q,values:r,onFieldChange:R}),(0,l.jsx)(i.Button,{variant:"primary",onClick:()=>E(q),isBusy:y,children:(0,a.__)("Save settings","clanspress")})]}):"extensions"===n.type?(0,l.jsxs)("div",{style:{paddingTop:"1rem"},children:[(0,l.jsx)("p",{className:"description",children:(0,a.__)("Enable or disable extensions. You can turn on dependencies and dependents in any order; save once when ready. Saving reloads this screen.","clanspress")}),(0,l.jsxs)("table",{className:"widefat striped",style:{maxWidth:960,marginTop:"1rem"},children:[(0,l.jsx)("thead",{children:(0,l.jsxs)("tr",{children:[(0,l.jsx)("th",{children:(0,a.__)("Name","clanspress")}),(0,l.jsx)("th",{children:(0,a.__)("Description","clanspress")}),(0,l.jsx)("th",{children:(0,a.__)("Requires","clanspress")}),(0,l.jsx)("th",{children:(0,a.__)("Active","clanspress")})]})}),(0,l.jsx)("tbody",{children:e.extensions.map(s=>{const n=m.includes(s.slug),t=function(e,s){return e.requires?.length?e.requires.every(e=>s.includes(e)):e.canInstall}(s,m),r=!n&&!t;return(0,l.jsxs)("tr",{children:[(0,l.jsx)("td",{children:(0,l.jsxs)("span",{style:{marginLeft:s.parentSlug?16:0},children:[s.parentSlug?"— ":"",(0,l.jsx)("strong",{children:s.name}),s.isOfficial?(0,l.jsx)("span",{style:{marginLeft:8},children:(0,a.__)("Official","clanspress")}):null]})}),(0,l.jsx)("td",{children:s.description}),(0,l.jsx)("td",{children:(0,l.jsx)(h,{requires:s.requires||[],allExtensions:e.extensions,installedSlugs:m})}),(0,l.jsxs)("td",{children:[(0,l.jsx)(i.ToggleControl,{label:(0,a.__)("Installed","clanspress"),checked:n,disabled:r,onChange:e=>{g(n=>e?[...new Set([...n,s.slug])]:n.filter(e=>e!==s.slug))}}),r?(0,l.jsx)("p",{className:"description",children:s.requires?.length?(0,a.__)("Turn on all required extensions first (you can save everything in one step).","clanspress"):(0,a.__)("This extension cannot be enabled.","clanspress")}):null]})]},s.slug)})})]}),(0,l.jsx)(i.Button,{variant:"primary",style:{marginTop:"1rem"},onClick:k,isBusy:y,children:(0,a.__)("Save extensions","clanspress")})]}):"extension"===n.type?(0,l.jsx)("div",{style:{paddingTop:"1rem"},children:(n.sectionGroups||[]).map(e=>(0,l.jsxs)("div",{style:{marginBottom:"2rem",paddingBottom:"2rem",borderBottom:"1px solid #c3c4c7"},children:["child"===e.kind?(0,l.jsx)("h3",{children:e.name}):null,(0,l.jsx)(p,{sections:e.sections,optionKey:e.optionKey,values:r,onFieldChange:R}),(0,l.jsx)(i.Button,{variant:"primary",onClick:()=>E(e.optionKey),isBusy:y,style:{marginTop:"0.5rem"},children:(0,a.__)("Save","clanspress")})]},`${e.kind}-${e.slug}`))}):null:null}},`clanspress-admin-tabpanel-${S}`)]})}const g=document.getElementById("clanspress-admin-root");g&&(0,s.render)((0,l.jsx)(m,{}),g)})();
+( () => {
+	'use strict';
+	var e = {
+		n: ( s ) => {
+			const n = s && s.__esModule ? () => s.default : () => s;
+			return e.d( n, { a: n } ), n;
+		},
+		d: ( s, n ) => {
+			for ( const t in n ) {
+				e.o( n, t ) &&
+					! e.o( s, t ) &&
+					Object.defineProperty( s, t, {
+						enumerable: ! 0,
+						get: n[ t ],
+					} );
+			}
+		},
+		o: ( e, s ) => Object.prototype.hasOwnProperty.call( e, s ),
+	};
+	const s = window.wp.element,
+		n = window.wp.apiFetch;
+	const t = e.n( n );
+	const i = window.wp.components,
+		a = window.wp.i18n,
+		l = window.ReactJSXRuntime,
+		r = 'tab';
+	function o() {
+		try {
+			return new URLSearchParams( window.location.search ).get( r ) || '';
+		} catch {
+			return '';
+		}
+	}
+	function c( e ) {
+		try {
+			const s = new URL( window.location.href );
+			e ? s.searchParams.set( r, e ) : s.searchParams.delete( r );
+			const n = s.pathname + s.search + s.hash;
+			n !==
+				window.location.pathname +
+					window.location.search +
+					window.location.hash &&
+				window.history.replaceState( null, '', n );
+		} catch {}
+	}
+	function d( e ) {
+		if ( ! e?.length ) {
+			return '';
+		}
+		const s = new Set( e.map( ( e ) => e.id ) ),
+			n = o();
+		return n && s.has( n ) ? n : e[ 0 ].id;
+	}
+	function u( { field: e, value: s, onChange: n } ) {
+		const t = e.id,
+			a = { label: e.label, help: e.description || void 0 };
+		switch ( e.type ) {
+			case 'checkbox':
+				return ( 0, l.jsx )( i.ToggleControl, {
+					...a,
+					checked: !! s,
+					onChange: ( e ) => n( t, e ),
+				} );
+			case 'select':
+				return ( 0, l.jsx )( i.SelectControl, {
+					...a,
+					value: String( null != s ? s : '' ),
+					options: ( e.options || [] ).map( ( e ) => ( {
+						label: e.label,
+						value: e.value,
+					} ) ),
+					onChange: ( e ) => n( t, e ),
+				} );
+			case 'textarea':
+				return ( 0, l.jsx )( i.TextareaControl, {
+					...a,
+					value: String( null != s ? s : '' ),
+					onChange: ( e ) => n( t, e ),
+					rows: 4,
+				} );
+			default:
+				return ( 0, l.jsx )( i.TextControl, {
+					...a,
+					value: String( null != s ? s : '' ),
+					onChange: ( e ) => n( t, e ),
+				} );
+		}
+	}
+	function p( { sections: e, optionKey: s, values: n, onFieldChange: t } ) {
+		const i = n[ s ] || {};
+		return e?.length
+			? e.map( ( e ) =>
+					( 0, l.jsxs )(
+						'div',
+						{
+							style: { marginBottom: '2rem' },
+							children: [
+								e.title
+									? ( 0, l.jsx )( 'h3', {
+											children: e.title,
+									  } )
+									: null,
+								( 0, l.jsx )( 'div', {
+									className: 'clanspress-settings-fields',
+									style: { maxWidth: 640, marginTop: '1rem' },
+									children: ( e.fields || [] ).map( ( e ) =>
+										( 0, l.jsx )(
+											'div',
+											{
+												style: { marginBottom: '1rem' },
+												children: ( 0, l.jsx )( u, {
+													field: e,
+													value: i[ e.id ],
+													onChange: ( e, n ) =>
+														t( s, e, n ),
+												} ),
+											},
+											e.id
+										)
+									),
+								} ),
+							],
+						},
+						e.id
+					)
+			  )
+			: ( 0, l.jsx )( 'p', {
+					className: 'description',
+					children: ( 0, a.__ )(
+						'No configurable fields for this section.',
+						'clanspress'
+					),
+			  } );
+	}
+	function h( { requires: e, allExtensions: s, installedSlugs: n } ) {
+		return e?.length
+			? ( 0, l.jsx )( 'ul', {
+					className: 'clanspress-extension-requires',
+					style: { margin: 0, paddingLeft: '1.25rem', maxWidth: 280 },
+					children: e.map( ( e ) => {
+						const t = s.find( ( s ) => s.slug === e ),
+							i = t?.name || e,
+							r = n.includes( e );
+						return ( 0, l.jsxs )(
+							'li',
+							{
+								children: [
+									i,
+									r
+										? null
+										: ( 0, l.jsxs )( 'span', {
+												className: 'description',
+												style: { marginLeft: 4 },
+												children: [
+													'(',
+													( 0, a.__ )(
+														'not installed',
+														'clanspress'
+													),
+													')',
+												],
+										  } ),
+								],
+							},
+							e
+						);
+					} ),
+			  } )
+			: ( 0, l.jsx )( 'span', {
+					className: 'description',
+					'aria-label': ( 0, a.__ )( 'None', 'clanspress' ),
+					children: '—',
+			  } );
+	}
+	function m() {
+		const [ e, n ] = ( 0, s.useState )( null ),
+			[ r, u ] = ( 0, s.useState )( {} ),
+			[ m, g ] = ( 0, s.useState )( [] ),
+			[ x, f ] = ( 0, s.useState )( null ),
+			[ y, j ] = ( 0, s.useState )( ! 1 ),
+			[ v, w ] = ( 0, s.useState )( null ),
+			[ b, _ ] = ( 0, s.useState )( '' ),
+			[ S, C ] = ( 0, s.useState )( 0 ),
+			N = ( 0, s.useRef )( '' ),
+			T = ( 0, s.useCallback )( async () => {
+				f( null );
+				try {
+					const e = await t()( {
+						path: 'clanspress/v1/admin/bootstrap',
+					} );
+					n( e ), u( { ...e.values } );
+					const s = ( e.extensions || [] )
+						.filter( ( e ) => e.isInstalled )
+						.map( ( e ) => e.slug );
+					g( s );
+				} catch ( e ) {
+					f(
+						e?.message ||
+							( 0, a.__ )(
+								'Failed to load settings.',
+								'clanspress'
+							)
+					);
+				}
+			}, [] );
+		( 0, s.useEffect )( () => {
+			! ( function () {
+				const e =
+						'undefined' !== typeof wpApiSettings &&
+						wpApiSettings?.root
+							? wpApiSettings.root
+							: ( clanspressAdmin?.restUrl || '' ).replace(
+									/clanspress\/v1\/$/,
+									''
+							  ) || '/wp-json/',
+					s =
+						'undefined' !== typeof wpApiSettings &&
+						wpApiSettings?.nonce
+							? wpApiSettings.nonce
+							: clanspressAdmin?.nonce || '';
+				t().use( t().createNonceMiddleware( s ) ),
+					t().use( t().createRootURLMiddleware( e ) );
+			} )(),
+				T();
+		}, [ T ] ),
+			( 0, s.useEffect )( () => {
+				if ( ! e?.tabs?.length ) {
+					return;
+				}
+				'undefined' === typeof document ||
+					N.current ||
+					( N.current = document.title );
+				const s = d( e.tabs );
+				_( s );
+				const n = o();
+				n && n !== s && c( s );
+			}, [ e ] ),
+			( 0, s.useEffect )( () => {
+				if (
+					'undefined' === typeof document ||
+					! e?.tabs?.length ||
+					! b ||
+					! N.current
+				) {
+					return;
+				}
+				const s = e.tabs.find( ( e ) => e.id === b );
+				s &&
+					( document.title = ( 0, a.sprintf )(
+						/* translators: 1: original admin screen title, 2: settings tab label */ /* translators: 1: original admin screen title, 2: settings tab label */
+						( 0, a.__ )( '%1$s ‹ %2$s', 'clanspress' ),
+						N.current,
+						s.label
+					) );
+			}, [ e, b ] ),
+			( 0, s.useEffect )(
+				() => () => {
+					'undefined' !== typeof document &&
+						N.current &&
+						( document.title = N.current );
+				},
+				[]
+			);
+		const B = ( 0, s.useCallback )( ( e ) => {
+			_( e ), c( e );
+		}, [] );
+		( 0, s.useEffect )( () => {
+			if ( ! e?.tabs?.length ) {
+				return;
+			}
+			const s = () => {
+				const s = d( e.tabs );
+				_( s ), C( ( e ) => e + 1 );
+			};
+			return (
+				window.addEventListener( 'popstate', s ),
+				() => window.removeEventListener( 'popstate', s )
+			);
+		}, [ e ] );
+		const R = ( 0, s.useCallback )( ( e, s, n ) => {
+				u( ( t ) => ( { ...t, [ e ]: { ...t[ e ], [ s ]: n } } ) );
+			}, [] ),
+			E = async ( e ) => {
+				j( ! 0 ), w( null );
+				try {
+					const s = await t()( {
+						path: `clanspress/v1/admin/settings/${ e }`,
+						method: 'PUT',
+						data: r[ e ] || {},
+					} );
+					u( ( n ) => ( { ...n, [ e ]: s.values } ) ),
+						w(
+							( 0, l.jsx )( i.Notice, {
+								status: 'success',
+								isDismissible: ! 0,
+								onRemove: () => w( null ),
+								children: ( 0, a.__ )(
+									'Settings saved.',
+									'clanspress'
+								),
+							} )
+						);
+				} catch ( e ) {
+					w(
+						( 0, l.jsx )( i.Notice, {
+							status: 'error',
+							isDismissible: ! 0,
+							onRemove: () => w( null ),
+							children:
+								e?.message ||
+								( 0, a.__ )( 'Save failed.', 'clanspress' ),
+						} )
+					);
+				} finally {
+					j( ! 1 );
+				}
+			},
+			k = async () => {
+				j( ! 0 ), w( null );
+				try {
+					await t()( {
+						path: 'clanspress/v1/admin/extensions',
+						method: 'PUT',
+						data: { installed: m },
+					} ),
+						w(
+							( 0, l.jsx )( i.Notice, {
+								status: 'success',
+								isDismissible: ! 0,
+								onRemove: () => w( null ),
+								children: ( 0, a.__ )(
+									'Extensions updated. Reloading…',
+									'clanspress'
+								),
+							} )
+						),
+						setTimeout( () => window.location.reload(), 800 );
+				} catch ( e ) {
+					w(
+						( 0, l.jsx )( i.Notice, {
+							status: 'error',
+							isDismissible: ! 0,
+							onRemove: () => w( null ),
+							children:
+								e?.message ||
+								( 0, a.__ )(
+									'Could not update extensions.',
+									'clanspress'
+								),
+						} )
+					);
+				} finally {
+					j( ! 1 );
+				}
+			};
+		if ( x ) {
+			return ( 0, l.jsx )( i.Notice, {
+				status: 'error',
+				isDismissible: ! 1,
+				children: x,
+			} );
+		}
+		if ( ! e?.tabs ) {
+			return ( 0, l.jsx )( i.Spinner, {} );
+		}
+		const q = e.generalOptionKey,
+			A = e.optionSchemas?.[ q ] || [],
+			L = e.tabs.map( ( e ) => ( { name: e.id, title: e.label } ) ),
+			P = d( e.tabs );
+		return ( 0, l.jsxs )( 'div', {
+			className: 'clanspress-admin-app',
+			style: { marginTop: '1rem' },
+			children: [
+				v
+					? ( 0, l.jsx )( 'div', {
+							className: 'clanspress-admin-global-notice',
+							style: { marginBottom: '1rem' },
+							role: 'status',
+							children: v,
+					  } )
+					: null,
+				( 0, l.jsx )(
+					i.TabPanel,
+					{
+						className: 'clanspress-admin-tabs',
+						activeClass: 'is-active',
+						tabs: L,
+						initialTabName: P,
+						onSelect: B,
+						children: ( s ) => {
+							const n = e.tabs.find( ( e ) => e.id === s.name );
+							return n
+								? 'general' === n.type
+									? ( 0, l.jsxs )( 'div', {
+											style: { paddingTop: '1rem' },
+											children: [
+												( 0, l.jsx )( p, {
+													sections: A,
+													optionKey: q,
+													values: r,
+													onFieldChange: R,
+												} ),
+												( 0, l.jsx )( i.Button, {
+													variant: 'primary',
+													onClick: () => E( q ),
+													isBusy: y,
+													children: ( 0, a.__ )(
+														'Save settings',
+														'clanspress'
+													),
+												} ),
+											],
+									  } )
+									: 'extensions' === n.type
+									? ( 0, l.jsxs )( 'div', {
+											style: { paddingTop: '1rem' },
+											children: [
+												( 0, l.jsx )( 'p', {
+													className: 'description',
+													children: ( 0, a.__ )(
+														'Enable or disable extensions. You can turn on dependencies and dependents in any order; save once when ready. Saving reloads this screen.',
+														'clanspress'
+													),
+												} ),
+												( 0, l.jsxs )( 'table', {
+													className:
+														'widefat striped',
+													style: {
+														maxWidth: 960,
+														marginTop: '1rem',
+													},
+													children: [
+														( 0, l.jsx )( 'thead', {
+															children: ( 0,
+															l.jsxs )( 'tr', {
+																children: [
+																	( 0,
+																	l.jsx )(
+																		'th',
+																		{
+																			children:
+																				( 0,
+																				a.__ )(
+																					'Name',
+																					'clanspress'
+																				),
+																		}
+																	),
+																	( 0,
+																	l.jsx )(
+																		'th',
+																		{
+																			children:
+																				( 0,
+																				a.__ )(
+																					'Description',
+																					'clanspress'
+																				),
+																		}
+																	),
+																	( 0,
+																	l.jsx )(
+																		'th',
+																		{
+																			children:
+																				( 0,
+																				a.__ )(
+																					'Requires',
+																					'clanspress'
+																				),
+																		}
+																	),
+																	( 0,
+																	l.jsx )(
+																		'th',
+																		{
+																			children:
+																				( 0,
+																				a.__ )(
+																					'Active',
+																					'clanspress'
+																				),
+																		}
+																	),
+																],
+															} ),
+														} ),
+														( 0, l.jsx )( 'tbody', {
+															children:
+																e.extensions.map(
+																	( s ) => {
+																		const n =
+																				m.includes(
+																					s.slug
+																				),
+																			t =
+																				( function (
+																					e,
+																					s
+																				) {
+																					return e
+																						.requires
+																						?.length
+																						? e.requires.every(
+																								(
+																									e
+																								) =>
+																									s.includes(
+																										e
+																									)
+																						  )
+																						: e.canInstall;
+																				} )(
+																					s,
+																					m
+																				),
+																			r =
+																				! n &&
+																				! t;
+																		return ( 0,
+																		l.jsxs )(
+																			'tr',
+																			{
+																				children:
+																					[
+																						( 0,
+																						l.jsx )(
+																							'td',
+																							{
+																								children:
+																									( 0,
+																									l.jsxs )(
+																										'span',
+																										{
+																											style: {
+																												marginLeft:
+																													s.parentSlug
+																														? 16
+																														: 0,
+																											},
+																											children:
+																												[
+																													s.parentSlug
+																														? '— '
+																														: '',
+																													( 0,
+																													l.jsx )(
+																														'strong',
+																														{
+																															children:
+																																s.name,
+																														}
+																													),
+																													s.isOfficial
+																														? ( 0,
+																														  l.jsx )(
+																																'span',
+																																{
+																																	style: {
+																																		marginLeft: 8,
+																																	},
+																																	children:
+																																		( 0,
+																																		a.__ )(
+																																			'Official',
+																																			'clanspress'
+																																		),
+																																}
+																														  )
+																														: null,
+																												],
+																										}
+																									),
+																							}
+																						),
+																						( 0,
+																						l.jsx )(
+																							'td',
+																							{
+																								children:
+																									s.description,
+																							}
+																						),
+																						( 0,
+																						l.jsx )(
+																							'td',
+																							{
+																								children:
+																									( 0,
+																									l.jsx )(
+																										h,
+																										{
+																											requires:
+																												s.requires ||
+																												[],
+																											allExtensions:
+																												e.extensions,
+																											installedSlugs:
+																												m,
+																										}
+																									),
+																							}
+																						),
+																						( 0,
+																						l.jsxs )(
+																							'td',
+																							{
+																								children:
+																									[
+																										( 0,
+																										l.jsx )(
+																											i.ToggleControl,
+																											{
+																												label: ( 0,
+																												a.__ )(
+																													'Installed',
+																													'clanspress'
+																												),
+																												checked:
+																													n,
+																												disabled:
+																													r,
+																												onChange:
+																													(
+																														e
+																													) => {
+																														g(
+																															(
+																																n
+																															) =>
+																																e
+																																	? [
+																																			...new Set(
+																																				[
+																																					...n,
+																																					s.slug,
+																																				]
+																																			),
+																																	  ]
+																																	: n.filter(
+																																			(
+																																				e
+																																			) =>
+																																				e !==
+																																				s.slug
+																																	  )
+																														);
+																													},
+																											}
+																										),
+																										r
+																											? ( 0,
+																											  l.jsx )(
+																													'p',
+																													{
+																														className:
+																															'description',
+																														children:
+																															s
+																																.requires
+																																?.length
+																																? ( 0,
+																																  a.__ )(
+																																		'Turn on all required extensions first (you can save everything in one step).',
+																																		'clanspress'
+																																  )
+																																: ( 0,
+																																  a.__ )(
+																																		'This extension cannot be enabled.',
+																																		'clanspress'
+																																  ),
+																													}
+																											  )
+																											: null,
+																									],
+																							}
+																						),
+																					],
+																			},
+																			s.slug
+																		);
+																	}
+																),
+														} ),
+													],
+												} ),
+												( 0, l.jsx )( i.Button, {
+													variant: 'primary',
+													style: {
+														marginTop: '1rem',
+													},
+													onClick: k,
+													isBusy: y,
+													children: ( 0, a.__ )(
+														'Save extensions',
+														'clanspress'
+													),
+												} ),
+											],
+									  } )
+									: 'extension' === n.type
+									? ( 0, l.jsx )( 'div', {
+											style: { paddingTop: '1rem' },
+											children: (
+												n.sectionGroups || []
+											).map( ( e ) =>
+												( 0, l.jsxs )(
+													'div',
+													{
+														style: {
+															marginBottom:
+																'2rem',
+															paddingBottom:
+																'2rem',
+															borderBottom:
+																'1px solid #c3c4c7',
+														},
+														children: [
+															'child' === e.kind
+																? ( 0, l.jsx )(
+																		'h3',
+																		{
+																			children:
+																				e.name,
+																		}
+																  )
+																: null,
+															( 0, l.jsx )( p, {
+																sections:
+																	e.sections,
+																optionKey:
+																	e.optionKey,
+																values: r,
+																onFieldChange:
+																	R,
+															} ),
+															( 0, l.jsx )(
+																i.Button,
+																{
+																	variant:
+																		'primary',
+																	onClick:
+																		() =>
+																			E(
+																				e.optionKey
+																			),
+																	isBusy: y,
+																	style: {
+																		marginTop:
+																			'0.5rem',
+																	},
+																	children:
+																		( 0,
+																		a.__ )(
+																			'Save',
+																			'clanspress'
+																		),
+																}
+															),
+														],
+													},
+													`${ e.kind }-${ e.slug }`
+												)
+											),
+									  } )
+									: null
+								: null;
+						},
+					},
+					`clanspress-admin-tabpanel-${ S }`
+				),
+			],
+		} );
+	}
+	const g = document.getElementById( 'clanspress-admin-root' );
+	g && ( 0, s.render )( ( 0, l.jsx )( m, {} ), g );
+} )();

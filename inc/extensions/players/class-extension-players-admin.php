@@ -27,6 +27,8 @@ class Admin extends Abstract_Settings {
 				'enable_profiles' => true,
 				'enable_avatars'  => true,
 				'enable_covers'   => true,
+				'default_avatar'  => '',
+				'default_cover'   => '',
 			)
 		);
 	}
@@ -35,7 +37,7 @@ class Admin extends Abstract_Settings {
 		return apply_filters(
 			'clanspress_players_sections',
 			array(
-				'general' => array(
+				'general'  => array(
 					'title'  => __( 'General', 'clanspress' ),
 					'fields' => array(
 						'enable_profiles' => array(
@@ -58,6 +60,25 @@ class Admin extends Abstract_Settings {
 							'description' => __( 'Enable player custom cover images.', 'clanspress' ),
 							'default'     => true,
 							'sanitize'    => 'rest_sanitize_boolean',
+						),
+					),
+				),
+				'branding' => array(
+					'title'  => __( 'Branding defaults', 'clanspress' ),
+					'fields' => array(
+						'default_avatar' => array(
+							'label'       => __( 'Default player avatar image URL', 'clanspress' ),
+							'type'        => 'text',
+							'description' => __( 'Used when a player has no custom avatar. Leave empty to use the plugin bundled image.', 'clanspress' ),
+							'default'     => '',
+							'sanitize'    => 'esc_url_raw',
+						),
+						'default_cover'  => array(
+							'label'       => __( 'Default player cover image URL', 'clanspress' ),
+							'type'        => 'text',
+							'description' => __( 'Used when a player has no custom cover. Leave empty to use the plugin bundled image.', 'clanspress' ),
+							'default'     => '',
+							'sanitize'    => 'esc_url_raw',
 						),
 					),
 				),

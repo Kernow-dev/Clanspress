@@ -1,0 +1,85 @@
+.wp-block-clanspress-team-cover {
+	position: relative;
+	background-position: center center;
+	display: flex;
+	justify-content: center;
+	align-items: flex-end;
+	overflow: hidden;
+	overflow: clip;
+	box-sizing: border-box;
+	width: 100%;
+
+	// Position: Top
+	&.is-position-top-left {
+		align-items: flex-start;
+		justify-content: flex-start;
+	}
+	&.is-position-top-center {
+		align-items: flex-start;
+		justify-content: center;
+	}
+	&.is-position-top-right {
+		align-items: flex-start;
+		justify-content: flex-end;
+	}
+	// Position: Center
+	&.is-position-center-left {
+		align-items: center;
+		justify-content: flex-start;
+	}
+	&.is-position-center-center {
+		align-items: center;
+		justify-content: center;
+	}
+	&.is-position-center-right {
+		align-items: center;
+		justify-content: flex-end;
+	}
+	// Position: Bottom
+	&.is-position-bottom-left {
+		align-items: flex-end;
+		justify-content: flex-start;
+	}
+	&.is-position-bottom-center {
+		align-items: flex-end;
+		justify-content: center;
+	}
+	&.is-position-bottom-right {
+		align-items: flex-end;
+		justify-content: flex-end;
+	}
+
+	.clanspress-team-cover__background {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background-size: cover;
+		background-position: center center;
+		background-repeat: no-repeat;
+		z-index: 0;
+	}
+
+	.team-cover__content-container {
+		position: relative;
+		z-index: 1;
+		width: 100%;
+		padding: 16px;
+		margin-block-start: 0;
+		box-sizing: border-box;
+	}
+}
+
+.clanspress-team-cover {
+	border-radius: 6px;
+}
+
+.clanspress-team-cover--placeholder {
+	border: 1px dashed #c3c4c7;
+	min-height: 120px;
+}
+
+.clanspress-team-cover__background--placeholder {
+	background: #f0f0f1;
+}

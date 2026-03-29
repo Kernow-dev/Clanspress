@@ -37,6 +37,11 @@ class Team_Data_Store_CPT extends WP_Post_Meta_Data_Store implements Team_Data_S
 			'cp_team_avatar_id',
 			'cp_team_cover_id',
 			'cp_team_member_roles',
+			'cp_team_accept_challenges',
+			'cp_team_country',
+			'cp_team_wins',
+			'cp_team_losses',
+			'cp_team_draws',
 		);
 		$this->must_exist_meta_keys = array( 'cp_team_member_roles' );
 	}
@@ -76,6 +81,18 @@ class Team_Data_Store_CPT extends WP_Post_Meta_Data_Store implements Team_Data_S
 
 		$roles = get_post_meta( $id, 'cp_team_member_roles', true );
 		$team->set_member_roles( is_array( $roles ) ? $roles : array() );
+
+		$accept_raw = get_post_meta( $id, 'cp_team_accept_challenges', true );
+		if ( '' === $accept_raw ) {
+			$team->set_accept_challenges( true );
+		} else {
+			$team->set_accept_challenges( rest_sanitize_boolean( $accept_raw ) );
+		}
+
+		$team->set_country( (string) get_post_meta( $id, 'cp_team_country', true ) );
+		$team->set_wins( max( 0, (int) get_post_meta( $id, 'cp_team_wins', true ) ) );
+		$team->set_losses( max( 0, (int) get_post_meta( $id, 'cp_team_losses', true ) ) );
+		$team->set_draws( max( 0, (int) get_post_meta( $id, 'cp_team_draws', true ) ) );
 
 		return $team;
 	}
@@ -165,5 +182,10 @@ class Team_Data_Store_CPT extends WP_Post_Meta_Data_Store implements Team_Data_S
 		$this->update_or_delete_post_meta( $id, 'cp_team_avatar_id', $team->get_avatar_id() );
 		$this->update_or_delete_post_meta( $id, 'cp_team_cover_id', $team->get_cover_id() );
 		$this->update_or_delete_post_meta( $id, 'cp_team_member_roles', $team->get_member_roles() );
+		$this->update_or_delete_post_meta( $id, 'cp_team_accept_challenges', $team->get_accept_challenges() );
+		$this->update_or_delete_post_meta( $id, 'cp_team_country', $team->get_country() );
+		$this->update_or_delete_post_meta( $id, 'cp_team_wins', $team->get_wins() );
+		$this->update_or_delete_post_meta( $id, 'cp_team_losses', $team->get_losses() );
+		$this->update_or_delete_post_meta( $id, 'cp_team_draws', $team->get_draws() );
 	}
 }

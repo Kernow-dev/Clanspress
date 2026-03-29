@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/team-avatar",
+	"version": "0.1.0",
+	"title": "Team avatar",
+	"category": "clanspress-teams",
+	"icon": "admin-users",
+	"description": "Displays the team avatar image on single team templates.",
+	"textdomain": "clanspress",
+	"postTypes": [ "cp_team" ],
+	"usesContext": [ "postId", "postType" ],
+	"attributes": {
+		"width": {
+			"type": "number",
+			"default": 120
+		}
+	},
+	"supports": {
+		"html": false,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}

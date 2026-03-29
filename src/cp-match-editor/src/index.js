@@ -6,11 +6,7 @@ import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import { useSelect } from '@wordpress/data';
 import { store as editorStore } from '@wordpress/editor';
 import { useEntityProp } from '@wordpress/core-data';
-import {
-	PanelRow,
-	TextControl,
-	SelectControl,
-} from '@wordpress/components';
+import { PanelRow, TextControl, SelectControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 const STATUS_OPTIONS = [
@@ -21,11 +17,7 @@ const STATUS_OPTIONS = [
 ];
 
 function MatchMetaFields() {
-	const [ meta, setMeta ] = useEntityProp(
-		'postType',
-		'cp_match',
-		'meta'
-	);
+	const [ meta, setMeta ] = useEntityProp( 'postType', 'cp_match', 'meta' );
 
 	const patch = ( key, value ) => {
 		setMeta( { ...meta, [ key ]: value } );

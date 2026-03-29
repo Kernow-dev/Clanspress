@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "clanspress/team-description",
+  "version": "0.1.0",
+  "title": "Team description",
+  "category": "clanspress-teams",
+  "icon": "text-page",
+  "description": "Displays the team description (post content).",
+  "textdomain": "clanspress",
+  "postTypes": [
+    "cp_team"
+  ],
+  "usesContext": [
+    "postId",
+    "postType"
+  ],
+  "supports": {
+    "html": false,
+    "align": [
+      "wide",
+      "full"
+    ],
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css",
+  "render": "file:./render.php"
+}

@@ -48,14 +48,22 @@ export default function Edit( { attributes, setAttributes } ) {
 						label={ __( 'Status filter', 'clanspress' ) }
 						value={ statusFilter }
 						options={ STATUS_OPTIONS }
-						onChange={ ( v ) => setAttributes( { statusFilter: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { statusFilter: v } )
+						}
 					/>
 					<SelectControl
 						label={ __( 'Sort by scheduled time', 'clanspress' ) }
 						value={ order }
 						options={ [
-							{ label: __( 'Ascending', 'clanspress' ), value: 'asc' },
-							{ label: __( 'Descending', 'clanspress' ), value: 'desc' },
+							{
+								label: __( 'Ascending', 'clanspress' ),
+								value: 'asc',
+							},
+							{
+								label: __( 'Descending', 'clanspress' ),
+								value: 'desc',
+							},
 						] }
 						onChange={ ( v ) => setAttributes( { order: v } ) }
 					/>

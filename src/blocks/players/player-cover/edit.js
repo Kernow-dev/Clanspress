@@ -1,13 +1,24 @@
 /**
  * WordPress dependencies
  */
-import { useBlockProps, useInnerBlocksProps, store as blockEditorStore, BlockControls, __experimentalBlockAlignmentMatrixControl as BlockAlignmentMatrixControl, __experimentalBlockFullHeightAligmentControl as FullHeightAlignmentControl } from '@wordpress/block-editor';
+import {
+	useBlockProps,
+	useInnerBlocksProps,
+	store as blockEditorStore,
+	BlockControls,
+	__experimentalBlockAlignmentMatrixControl as BlockAlignmentMatrixControl,
+	__experimentalBlockFullHeightAligmentControl as FullHeightAlignmentControl,
+} from '@wordpress/block-editor';
 import { useRef, useMemo, useState } from '@wordpress/element';
 import { Placeholder } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import clsx from "clsx";
-import { getPositionClassName, isContentPositionCenter, cleanEmptyObject } from '../utils';
+import clsx from 'clsx';
+import {
+	getPositionClassName,
+	isContentPositionCenter,
+	cleanEmptyObject,
+} from '../utils';
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -17,16 +28,29 @@ import { getPositionClassName, isContentPositionCenter, cleanEmptyObject } from 
  */
 import './editor.scss';
 
-
 /**
  * The edit function describes the structure of your block in the context of the
  * editor. This represents what the editor will render when the block is used.
  *
+ * @param  root0
+ * @param  root0.attributes
+ * @param  root0.clientId
+ * @param  root0.context
+ * @param  root0.context.postId
+ * @param  root0.context.postType
+ * @param  root0.setAttributes
+ * @param  root0.toggleSelection
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-edit-save/#edit
  *
  * @return {Element} Element to render.
  */
-export default function Edit({ attributes, clientId, context: { postId, postType }, setAttributes, toggleSelection }) {
+export default function Edit( {
+	attributes,
+	clientId,
+	context: { postId, postType },
+	setAttributes,
+	toggleSelection,
+} ) {
 	const {
 		contentPosition,
 		id,
@@ -133,13 +157,16 @@ export default function Edit({ attributes, clientId, context: { postId, postType
 					isDisabled={ ! hasInnerBlocks }
 				/>
 			</BlockControls>
-		<div { ...blockProps } className={ clsx( classes, blockProps.className ) }>
-			<Placeholder
-				className="player-cover__image-background--placeholder-image"
-				withIllustration
-			/>
-			<div { ...innerBlocksProps } />
-		</div>
+			<div
+				{ ...blockProps }
+				className={ clsx( classes, blockProps.className ) }
+			>
+				<Placeholder
+					className="player-cover__image-background--placeholder-image"
+					withIllustration
+				/>
+				<div { ...innerBlocksProps } />
+			</div>
 		</>
 	);
 }

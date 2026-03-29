@@ -5,7 +5,9 @@ export default function Edit() {
 	return (
 		<div { ...useBlockProps() }>
 			<p>{ __( 'Team create form block', 'clanspress' ) }</p>
-			<p>{ __( 'Rendered dynamically on the front end.', 'clanspress' ) }</p>
+			<p>
+				{ __( 'Rendered dynamically on the front end.', 'clanspress' ) }
+			</p>
 		</div>
 	);
 }

@@ -4,7 +4,12 @@ const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 module.exports = {
 	...defaultConfig,
 	entry: {
-		'clanspress-admin': path.resolve( __dirname, 'src', 'admin', 'index.js' ),
+		'clanspress-admin': path.resolve(
+			__dirname,
+			'src',
+			'admin',
+			'index.js'
+		),
 	},
 	output: {
 		...defaultConfig.output,

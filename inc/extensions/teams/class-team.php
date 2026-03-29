@@ -55,6 +55,21 @@ class Team {
 	/** @var bool Whether banning members is allowed. */
 	protected bool $allow_ban_players = true;
 
+	/** @var bool Whether other teams may challenge this team (Matches). */
+	protected bool $accept_challenges = true;
+
+	/** @var string ISO country code for display (optional). */
+	protected string $country = '';
+
+	/** @var int Win count (record). */
+	protected int $wins = 0;
+
+	/** @var int Loss count (record). */
+	protected int $losses = 0;
+
+	/** @var int Draw count (record). */
+	protected int $draws = 0;
+
 	/** @var int Featured image attachment ID. */
 	protected int $avatar_id = 0;
 
@@ -289,6 +304,85 @@ class Team {
 	 */
 	public function set_allow_ban_players( bool $allow_ban_players ): void {
 		$this->allow_ban_players = $allow_ban_players;
+	}
+
+	/**
+	 * Whether this team accepts match challenges from other teams.
+	 *
+	 * @return bool
+	 */
+	public function get_accept_challenges(): bool {
+		return $this->accept_challenges;
+	}
+
+	/**
+	 * @param bool $accept_challenges Whether challenges are allowed.
+	 * @return void
+	 */
+	public function set_accept_challenges( bool $accept_challenges ): void {
+		$this->accept_challenges = $accept_challenges;
+	}
+
+	/**
+	 * ISO country code (optional).
+	 *
+	 * @return string
+	 */
+	public function get_country(): string {
+		return $this->country;
+	}
+
+	/**
+	 * @param string $country ISO 3166-1 alpha-2 code or empty.
+	 * @return void
+	 */
+	public function set_country( string $country ): void {
+		$this->country = sanitize_text_field( $country );
+	}
+
+	/**
+	 * @return int
+	 */
+	public function get_wins(): int {
+		return $this->wins;
+	}
+
+	/**
+	 * @param int $wins Wins.
+	 * @return void
+	 */
+	public function set_wins( int $wins ): void {
+		$this->wins = max( 0, $wins );
+	}
+
+	/**
+	 * @return int
+	 */
+	public function get_losses(): int {
+		return $this->losses;
+	}
+
+	/**
+	 * @param int $losses Losses.
+	 * @return void
+	 */
+	public function set_losses( int $losses ): void {
+		$this->losses = max( 0, $losses );
+	}
+
+	/**
+	 * @return int
+	 */
+	public function get_draws(): int {
+		return $this->draws;
+	}
+
+	/**
+	 * @param int $draws Draws.
+	 * @return void
+	 */
+	public function set_draws( int $draws ): void {
+		$this->draws = max( 0, $draws );
 	}
 
 	/**

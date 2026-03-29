@@ -353,6 +353,8 @@ class Skeleton {
 	 * Register all block types under a compiled subdirectory using WordPress metadata collection (6.8+).
 	 *
 	 * Expects `blocks-manifest.php` beside each block folder (from `wp-scripts build-blocks-manifest`).
+	 * The path must be the **parent directory** of each block folder (manifest keys = subfolder names), e.g.
+	 * `build/matches` for `match-list/` and `match-card/`, not `build/matches/match-list`.
 	 * Falls back to per-folder `register_block_type_from_metadata` on older WordPress versions.
 	 *
 	 * @param string $relative_path Path relative to the plugin root, e.g. `build/matches`.
@@ -450,8 +452,10 @@ class Skeleton {
 		 * Template array shape:
 		 * - key: template slug (without namespace), e.g. "player-settings"
 		 * - value: [
-		 *     'title' => 'Template Title',
-		 *     'path'  => '/absolute/path/to/template.php',
+		 *     'title'       => 'Template Title',
+		 *     'path'        => '/absolute/path/to/template.php',
+		 *     'description' => 'Optional. Shown in the Site Editor.',
+		 *     'post_types'  => array( 'post' ), // Optional. WP 6.7+ plugin templates only.
 		 *   ]
 		 *
 		 * @param array<string, array<string, string>> $templates Template definitions.
@@ -484,13 +488,25 @@ class Skeleton {
 				continue;
 			}
 
-			register_block_template(
-				"clanspress//{$template_slug}",
-				array(
-					'title'   => $title,
-					'content' => $template_content,
-				)
+			$template_args = array(
+				'title'   => $title,
+				'content' => $template_content,
 			);
+
+			if ( ! empty( $template['description'] ) ) {
+				$template_args['description'] = (string) $template['description'];
+			}
+
+			if ( ! empty( $template['post_types'] ) && is_array( $template['post_types'] ) ) {
+				$template_args['post_types'] = array_values( array_map( 'sanitize_key', $template['post_types'] ) );
+			}
+
+			if ( function_exists( 'register_block_template' ) ) {
+				register_block_template(
+					"clanspress//{$template_slug}",
+					$template_args
+				);
+			}
 		}
 	}
 

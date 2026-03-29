@@ -145,6 +145,27 @@ class Matches extends Skeleton {
 		add_action( 'manage_cp_match_posts_custom_column', array( $this, 'render_match_admin_column' ), 10, 2 );
 		add_action( 'save_post_cp_match', array( $this, 'validate_match_on_save' ), 10, 2 );
 		add_filter( 'single_template', array( $this, 'maybe_single_match_template' ) );
+		add_filter( 'clanspress_team_create_form_steps', array( $this, 'register_team_create_matches_step' ), 25 );
+	}
+
+	/**
+	 * Append the Matches step to the front-end team registration wizard when this extension is active.
+	 *
+	 * @param array<string, array<string, string>> $steps Step map.
+	 * @return array<string, array<string, string>>
+	 */
+	public function register_team_create_matches_step( $steps ): array {
+		if ( ! is_array( $steps ) ) {
+			return array();
+		}
+
+		$steps['matches'] = array(
+			'label'       => __( 'Matches', 'clanspress' ),
+			'title'       => __( 'Matches', 'clanspress' ),
+			'description' => __( 'Control whether other teams can challenge yours.', 'clanspress' ),
+		);
+
+		return $steps;
 	}
 
 	/**

@@ -736,36 +736,29 @@ class Players extends Skeleton {
 	public function save_player_profile_settings( $filtered_data, $data, $files, $user_id ) {
 		$errors = array();
 
-		// Handle avatar and cover image first
+		// Handle avatar and cover image first (isolated under uploads/clanspress/players/{id}/).
 		if ( isset( $files['profile_avatar'] ) ) {
 			$_FILES['profile_avatar'] = $files['profile_avatar'];
 
-			$old_avatar = get_user_meta( $user_id, 'cp_player_avatar_id', true );
+			$old_avatar = absint( get_user_meta( $user_id, 'cp_player_avatar_id', true ) );
+			if ( $old_avatar ) {
+				wp_delete_attachment( $old_avatar, true );
+			}
 
-			add_filter(
-				'upload_dir',
-				function ( $dirs ) use ( $user_id ) {
-					$sub            = "/clanspress/player/{$user_id}";
-					$dirs['subdir'] = $sub;
-					$dirs['path']   = $dirs['basedir'] . $sub;
-					$dirs['url']    = $dirs['baseurl'] . $sub;
-					return $dirs;
-				}
-			);
-
-			require_once ABSPATH . 'wp-admin/includes/media.php';
-
-			$attachment_id = media_handle_upload( 'profile_avatar', 0 );
-
-			remove_all_filters( 'upload_dir' );
+			if ( function_exists( 'clanspress_handle_isolated_image_upload' ) ) {
+				$attachment_id = clanspress_handle_isolated_image_upload(
+					'profile_avatar',
+					0,
+					'clanspress/players/' . $user_id,
+					'avatar'
+				);
+			} else {
+				$attachment_id = new \WP_Error( 'clanspress_upload_missing', __( 'Upload handler unavailable.', 'clanspress' ) );
+			}
 
 			if ( ! is_wp_error( $attachment_id ) ) {
-				if ( $old_avatar ) {
-					wp_delete_attachment( $old_avatar, true );
-				}
-
 				update_user_meta( $user_id, 'cp_player_avatar_id', $attachment_id );
-				update_user_meta( $user_id, 'cp_player_avatar', wp_get_attachment_url( $attachment_id ) );
+				update_user_meta( $user_id, 'cp_player_avatar', wp_get_attachment_url( (int) $attachment_id ) );
 			} else {
 				$errors['profile_avatar'] = $attachment_id->get_error_message();
 			}
@@ -774,32 +767,25 @@ class Players extends Skeleton {
 		if ( isset( $files['profile_cover'] ) ) {
 			$_FILES['profile_cover'] = $files['profile_cover'];
 
-			$old_cover = get_user_meta( $user_id, 'cp_player_cover_id', true );
+			$old_cover = absint( get_user_meta( $user_id, 'cp_player_cover_id', true ) );
+			if ( $old_cover ) {
+				wp_delete_attachment( $old_cover, true );
+			}
 
-			add_filter(
-				'upload_dir',
-				function ( $dirs ) use ( $user_id ) {
-					$sub            = "/clanspress/player/{$user_id}";
-					$dirs['subdir'] = $sub;
-					$dirs['path']   = $dirs['basedir'] . $sub;
-					$dirs['url']    = $dirs['baseurl'] . $sub;
-					return $dirs;
-				}
-			);
-
-			require_once ABSPATH . 'wp-admin/includes/media.php';
-
-			$attachment_id = media_handle_upload( 'profile_cover', 0 );
-
-			remove_all_filters( 'upload_dir' );
+			if ( function_exists( 'clanspress_handle_isolated_image_upload' ) ) {
+				$attachment_id = clanspress_handle_isolated_image_upload(
+					'profile_cover',
+					0,
+					'clanspress/players/' . $user_id,
+					'cover'
+				);
+			} else {
+				$attachment_id = new \WP_Error( 'clanspress_upload_missing', __( 'Upload handler unavailable.', 'clanspress' ) );
+			}
 
 			if ( ! is_wp_error( $attachment_id ) ) {
-				if ( $old_cover ) {
-					wp_delete_attachment( $old_cover, true );
-				}
-
 				update_user_meta( $user_id, 'cp_player_cover_id', $attachment_id );
-				update_user_meta( $user_id, 'cp_player_cover', wp_get_attachment_image_url( $attachment_id, 'clanspress-cover' ) );
+				update_user_meta( $user_id, 'cp_player_cover', wp_get_attachment_image_url( (int) $attachment_id, 'clanspress-cover' ) );
 			} else {
 				$errors['profile_cover'] = $attachment_id->get_error_message();
 			}

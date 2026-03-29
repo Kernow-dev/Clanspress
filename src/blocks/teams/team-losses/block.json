@@ -1,0 +1,34 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/team-losses",
+	"version": "0.1.0",
+	"title": "Team losses",
+	"category": "clanspress-teams",
+	"icon": "dismiss",
+	"description": "Displays the team’s loss count with optional prefix and postfix text.",
+	"textdomain": "clanspress",
+	"postTypes": [ "cp_team" ],
+	"usesContext": [ "postId", "postType" ],
+	"attributes": {
+		"prefix": {
+			"type": "string",
+			"default": ""
+		},
+		"postfix": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"supports": {
+		"html": false,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}

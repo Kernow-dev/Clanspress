@@ -26,6 +26,8 @@ class Admin extends Abstract_Settings {
 			array(
 				'team_mode'              => 'single_team',
 				'player_team_membership' => 'multiple',
+				'default_team_avatar'    => '',
+				'default_team_cover'     => '',
 			)
 		);
 	}
@@ -34,7 +36,7 @@ class Admin extends Abstract_Settings {
 		return apply_filters(
 			'clanspress_teams_sections',
 			array(
-				'general' => array(
+				'general'  => array(
 					'title'  => __( 'General', 'clanspress' ),
 					'fields' => array(
 						'team_mode'              => array(
@@ -52,6 +54,25 @@ class Admin extends Abstract_Settings {
 							'default'     => 'multiple',
 							'options'     => $this->get_player_team_membership_options(),
 							'sanitize'    => array( $this, 'sanitize_player_team_membership' ),
+						),
+					),
+				),
+				'branding' => array(
+					'title'  => __( 'Branding defaults', 'clanspress' ),
+					'fields' => array(
+						'default_team_avatar' => array(
+							'label'       => __( 'Default team avatar image URL', 'clanspress' ),
+							'type'        => 'text',
+							'description' => __( 'Used when a team has no avatar set. Leave empty to use the plugin bundled image.', 'clanspress' ),
+							'default'     => '',
+							'sanitize'    => 'esc_url_raw',
+						),
+						'default_team_cover'  => array(
+							'label'       => __( 'Default team cover image URL', 'clanspress' ),
+							'type'        => 'text',
+							'description' => __( 'Used when a team has no cover image set. Leave empty to use the plugin bundled image.', 'clanspress' ),
+							'default'     => '',
+							'sanitize'    => 'esc_url_raw',
 						),
 					),
 				),
