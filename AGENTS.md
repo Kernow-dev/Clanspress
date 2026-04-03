@@ -28,7 +28,7 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 - **`npm run build`** may **regenerate** `build/**/index.asset.php` (and similar). If checks regress after a build, restore this shape, adjust the build pipeline, or exclude generated assets per project policy—do not assume a one-time manual edit sticks.
 
 ### Plugin header: `Domain Path`
-- **`Domain Path`** in the main plugin header must point at a **real** directory under the plugin root (e.g. `languages` with a `languages/` folder). Keep a minimal `languages/index.php` (with the `ABSPATH` guard) so the path is valid even before `.mo` files exist.
+- **`Domain Path`** must use a **leading slash** per WordPress / Plugin Check (e.g. `/languages`) and match a **real** folder under the plugin root (`languages/`). Keep a minimal `languages/index.php` with a direct-access guard so the directory is valid even before `.mo` files exist.
 
 ### Shipped assets: file names
 - Under **`assets/`** (and anywhere in the distributable zip), use **no spaces** and **no odd characters** in file and folder names (Plugin Check `badly_named_files`). Prefer lowercase `a-z0-9._-`.

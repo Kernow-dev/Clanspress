@@ -2,6 +2,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Block render: core-injected $attributes, $content, and $block in this scope.
 /**
  * Server render: Event list block (Interactivity: time filter, pagination).
  *

@@ -301,32 +301,7 @@ class Players extends Skeleton {
 	 * @return string
 	 */
 	protected function get_canonical_request_path(): string {
-		if ( empty( $_SERVER['REQUEST_URI'] ) ) {
-			return '';
-		}
-
-		$uri  = wp_unslash( $_SERVER['REQUEST_URI'] );
-		$path = wp_parse_url( $uri, PHP_URL_PATH );
-		if ( ! is_string( $path ) ) {
-			return '';
-		}
-
-		$path = rawurldecode( $path );
-
-		$home_path = wp_parse_url( home_url( '/' ), PHP_URL_PATH );
-		$home_path = is_string( $home_path ) ? $home_path : '';
-
-		if ( '' !== $home_path && '/' !== $home_path ) {
-			$home_trim = untrailingslashit( $home_path );
-			if ( str_starts_with( $path, $home_trim ) ) {
-				$path = substr( $path, strlen( $home_trim ) );
-			}
-		}
-
-		$path = ltrim( $path, '/' );
-		$path = preg_replace( '#^index\.php/?#i', '', $path );
-
-		return trim( (string) $path, '/' );
+		return clanspress_get_canonical_request_path();
 	}
 
 	/**
@@ -955,29 +930,23 @@ class Players extends Skeleton {
 			return;
 		}
 
+		// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Core global `$_wp_current_template_id` for block theme / Site Editor resolution.
 		global $_wp_current_template_id;
 
 		if ( (int) get_query_var( 'cp_players_directory' ) ) {
 			$_wp_current_template_id = 'clanspress//players-directory';
-			return;
-		}
-
-		if ( get_query_var( 'players_settings' ) ) {
+		} elseif ( get_query_var( 'players_settings' ) ) {
 			$_wp_current_template_id = 'clanspress//player-settings';
-			return;
+		} else {
+			$sub = sanitize_key( (string) get_query_var( 'cp_player_subpage' ) );
+			if ( '' !== $sub && is_author() && $this->player_subpage_has_dedicated_template( $sub ) ) {
+				$_wp_current_template_id = 'clanspress//player-' . $sub;
+			} elseif ( $this->should_use_player_profile_template() ) {
+				$_wp_current_template_id = 'clanspress//players-player-profile';
+			}
 		}
 
-		$sub = sanitize_key( (string) get_query_var( 'cp_player_subpage' ) );
-		if ( '' !== $sub && is_author() && $this->player_subpage_has_dedicated_template( $sub ) ) {
-			$_wp_current_template_id = 'clanspress//player-' . $sub;
-			return;
-		}
-
-		if ( ! $this->should_use_player_profile_template() ) {
-			return;
-		}
-
-		$_wp_current_template_id = 'clanspress//players-player-profile';
+		// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals
 	}
 
 	/**

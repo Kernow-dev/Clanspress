@@ -21,10 +21,17 @@ if ( ! fs.existsSync( srcDir ) ) {
 fs.mkdirSync( destDir, { recursive: true } );
 
 const files = fs.readdirSync( srcDir ).filter( ( f ) => f.endsWith( '.svg' ) );
+// Remove any previously copied badly named files (e.g. "mco .svg" from Flagpack sources).
+for ( const name of fs.readdirSync( destDir ) ) {
+	if ( name.endsWith( '.svg' ) && /\s/.test( name ) ) {
+		fs.unlinkSync( path.join( destDir, name ) );
+	}
+}
 let n = 0;
 for ( const f of files ) {
 	const base = f.replace( /\.svg$/i, '' );
-	const destName = `${ base.toLowerCase() }.svg`;
+	// Flagpack ships some codes with spaces (e.g. "MCO .svg"); normalize for Plugin Check.
+	const destName = `${ base.replace( /\s+/g, '' ).toLowerCase() }.svg`;
 	fs.copyFileSync( path.join( srcDir, f ), path.join( destDir, destName ) );
 	n++;
 }

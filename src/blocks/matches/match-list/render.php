@@ -13,6 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Block render: core-injected $attributes, $content, and $block in this scope.
 $extension = function_exists( 'clanspress_matches' ) ? clanspress_matches() : null;
 
 if ( ! $extension instanceof \Kernowdev\Clanspress\Extensions\Matches ) {

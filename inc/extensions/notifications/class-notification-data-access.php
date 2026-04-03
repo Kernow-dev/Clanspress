@@ -9,6 +9,7 @@ namespace Kernowdev\Clanspress\Extensions\Notification;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery -- Table names from `Notification_Schema::table_name()`; values use `$wpdb->prepare()`.
 
 /**
  * CRUD and query operations for notifications.
@@ -585,3 +586,5 @@ final class Notification_Data_Access {
 		return (object) apply_filters( 'clanspress_notification_hydrate', $row );
 	}
 }
+
+// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery

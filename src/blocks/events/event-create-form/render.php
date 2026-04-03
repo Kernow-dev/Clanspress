@@ -2,6 +2,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Block render: core-injected $attributes, $content, and $block in this scope.
 /**
  * Server render: Create or edit event form (team/group managers).
  *

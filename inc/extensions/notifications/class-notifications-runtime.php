@@ -132,7 +132,7 @@ final class Notifications_Runtime {
 			return;
 		}
 
-		$req_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( (string) $_SERVER['REQUEST_URI'] ) : '';
+		$req_uri = clanspress_sanitize_request_uri( '' );
 		$path    = wp_parse_url( $req_uri, PHP_URL_PATH );
 		$path    = is_string( $path ) ? $path : '';
 		$redirect_to = '' !== $path ? home_url( $path ) : home_url( '/' );

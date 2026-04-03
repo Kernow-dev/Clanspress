@@ -1,12 +1,13 @@
 <?php
-
-defined( 'ABSPATH' ) || exit;
-
 /**
  * Render callback for the Team Create Form block.
  *
  * @package clanspress
  */
+
+defined( 'ABSPATH' ) || exit;
+
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Block render: core-injected $attributes, $content, and $block in this scope.
 
 if ( 'team_directories' !== clanspress_teams_get_team_mode() ) {
 	$wrapper_attributes = get_block_wrapper_attributes(
@@ -26,8 +27,10 @@ if ( ! is_user_logged_in() ) {
 }
 
 $wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'clanspress-team-create-form' ) );
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Display-only query args after create redirect; values are `sanitize_key()`-ed.
 $status      = sanitize_key( (string) ( $_GET['clanspress_team_status'] ?? '' ) );
 $status_code = sanitize_key( (string) ( $_GET['clanspress_team_code'] ?? '' ) );
+// phpcs:enable WordPress.Security.NonceVerification.Recommended
 $steps = array(
 	'basic_details' => array(
 		'label'       => __( 'Step 1: Team Details', 'clanspress' ),

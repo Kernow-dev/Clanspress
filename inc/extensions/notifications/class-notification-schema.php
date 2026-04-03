@@ -9,6 +9,7 @@ namespace Kernowdev\Clanspress\Extensions\Notification;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.SchemaChange -- `dbDelta()` DDL uses trusted `$wpdb->prefix` and static table definition.
 
 /**
  * Handles database table creation and upgrades for notifications.
@@ -116,3 +117,5 @@ final class Notification_Schema {
 		delete_option( self::OPTION_DB_VERSION );
 	}
 }
+
+// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.SchemaChange

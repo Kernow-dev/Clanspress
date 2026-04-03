@@ -70,6 +70,7 @@ class Settings {
 	 * Old bookmark to `clanspress-extensions` lands on the unified screen.
 	 */
 	public function redirect_legacy_extension_submenu(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only legacy `?page=` redirect; value is compared to a constant after `sanitize_key()`.
 		if ( ! is_admin() || ! isset( $_GET['page'] ) ) {
 			return;
 		}
@@ -79,6 +80,7 @@ class Settings {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		wp_safe_redirect( admin_url( 'admin.php?page=clanspress' ) );
 		exit;
 	}

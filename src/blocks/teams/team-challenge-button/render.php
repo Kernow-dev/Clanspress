@@ -13,6 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Block render: core-injected $attributes, $content, and $block in this scope.
 $team_id = clanspress_team_single_block_team_id( $block );
 if ( $team_id < 1 ) {
 	return;

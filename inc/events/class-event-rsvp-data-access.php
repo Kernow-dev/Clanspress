@@ -9,6 +9,7 @@ namespace Kernowdev\Clanspress\Events;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery -- Table name from `Event_Rsvp_Schema::table_name()`; values use `$wpdb->prepare()`.
 
 /**
  * Low-level CRUD for the event RSVP table.
@@ -291,4 +292,6 @@ final class Event_Rsvp_Data_Access {
 		return $out;
 	}
 }
+
+// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery
 

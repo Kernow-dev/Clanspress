@@ -2,6 +2,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Block render: core-injected $attributes, $content, and $block in this scope.
 /**
  * Render callback: “Manage team” link (only when the viewer may manage the team).
  *

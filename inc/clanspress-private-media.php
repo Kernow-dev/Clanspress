@@ -154,71 +154,76 @@ function clanspress_handle_isolated_image_upload( string $files_key, int $post_p
 	require_once ABSPATH . 'wp-admin/includes/media.php';
 	require_once ABSPATH . 'wp-admin/includes/image.php';
 
-	if ( empty( $_FILES[ $files_key ] ) ) {
-		return new \WP_Error( 'clanspress_no_file', __( 'No file was uploaded.', 'clanspress' ) );
-	}
-
-	$file = $_FILES[ $files_key ];
-	if ( ! empty( $file['error'] ) && UPLOAD_ERR_OK !== (int) $file['error'] ) {
-		return new \WP_Error( 'clanspress_upload_err', __( 'File upload failed.', 'clanspress' ) );
-	}
-
-	$subdir = trim( str_replace( '\\', '/', $subdir ), '/' );
-	if ( '' === $subdir ) {
-		return new \WP_Error( 'clanspress_bad_subdir', __( 'Invalid upload path.', 'clanspress' ) );
-	}
-
-	$filename_base = sanitize_file_name( $filename_base );
-	if ( '' === $filename_base ) {
-		return new \WP_Error( 'clanspress_bad_name', __( 'Invalid filename.', 'clanspress' ) );
-	}
-
-	$orig_name = isset( $file['name'] ) ? (string) $file['name'] : '';
-	$ext       = strtolower( (string) pathinfo( $orig_name, PATHINFO_EXTENSION ) );
-	if ( '' === $orig_name ) {
-		return new \WP_Error( 'clanspress_no_name', __( 'Invalid upload.', 'clanspress' ) );
-	}
-	if ( '' === $ext ) {
-		$chk = wp_check_filetype( $orig_name );
-		if ( ! empty( $chk['ext'] ) ) {
-			$ext = strtolower( (string) $chk['ext'] );
+	// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.NonceVerification.Missing -- `$_FILES` / `media_handle_upload()`; callers verify auth and nonces.
+	try {
+		if ( empty( $_FILES[ $files_key ] ) ) {
+			return new \WP_Error( 'clanspress_no_file', __( 'No file was uploaded.', 'clanspress' ) );
 		}
-	}
 
-	if ( '' === $ext ) {
-		return new \WP_Error( 'clanspress_no_ext', __( 'Could not determine file type.', 'clanspress' ) );
-	}
+		$file = $_FILES[ $files_key ];
+		if ( ! empty( $file['error'] ) && UPLOAD_ERR_OK !== (int) $file['error'] ) {
+			return new \WP_Error( 'clanspress_upload_err', __( 'File upload failed.', 'clanspress' ) );
+		}
 
-	$final_name = $filename_base . '.' . $ext;
+		$subdir = trim( str_replace( '\\', '/', $subdir ), '/' );
+		if ( '' === $subdir ) {
+			return new \WP_Error( 'clanspress_bad_subdir', __( 'Invalid upload path.', 'clanspress' ) );
+		}
 
-	$upload_dir_cb = static function ( array $dirs ) use ( $subdir ): array {
-		$dirs['subdir'] = '/' . $subdir;
-		$dirs['path']   = $dirs['basedir'] . $dirs['subdir'];
-		$dirs['url']    = $dirs['baseurl'] . $dirs['subdir'];
-		return $dirs;
-	};
+		$filename_base = sanitize_file_name( $filename_base );
+		if ( '' === $filename_base ) {
+			return new \WP_Error( 'clanspress_bad_name', __( 'Invalid filename.', 'clanspress' ) );
+		}
 
-	$prefilter_cb = static function ( array $file ) use ( $final_name ): array {
-		$file['name'] = $final_name;
-		return $file;
-	};
+		$orig_name = isset( $file['name'] ) ? (string) $file['name'] : '';
+		$ext       = strtolower( (string) pathinfo( $orig_name, PATHINFO_EXTENSION ) );
+		if ( '' === $orig_name ) {
+			return new \WP_Error( 'clanspress_no_name', __( 'Invalid upload.', 'clanspress' ) );
+		}
+		if ( '' === $ext ) {
+			$chk = wp_check_filetype( $orig_name );
+			if ( ! empty( $chk['ext'] ) ) {
+				$ext = strtolower( (string) $chk['ext'] );
+			}
+		}
 
-	add_filter( 'upload_dir', $upload_dir_cb );
-	add_filter( 'wp_handle_upload_prefilter', $prefilter_cb );
+		if ( '' === $ext ) {
+			return new \WP_Error( 'clanspress_no_ext', __( 'Could not determine file type.', 'clanspress' ) );
+		}
 
-	$attachment_id = media_handle_upload( $files_key, $post_parent );
+		$final_name = $filename_base . '.' . $ext;
 
-	remove_filter( 'upload_dir', $upload_dir_cb );
-	remove_filter( 'wp_handle_upload_prefilter', $prefilter_cb );
+		$upload_dir_cb = static function ( array $dirs ) use ( $subdir ): array {
+			$dirs['subdir'] = '/' . $subdir;
+			$dirs['path']   = $dirs['basedir'] . $dirs['subdir'];
+			$dirs['url']    = $dirs['baseurl'] . $dirs['subdir'];
+			return $dirs;
+		};
 
-	if ( is_wp_error( $attachment_id ) ) {
+		$prefilter_cb = static function ( array $file ) use ( $final_name ): array {
+			$file['name'] = $final_name;
+			return $file;
+		};
+
+		add_filter( 'upload_dir', $upload_dir_cb );
+		add_filter( 'wp_handle_upload_prefilter', $prefilter_cb );
+
+		$attachment_id = media_handle_upload( $files_key, $post_parent );
+
+		remove_filter( 'upload_dir', $upload_dir_cb );
+		remove_filter( 'wp_handle_upload_prefilter', $prefilter_cb );
+
+		if ( is_wp_error( $attachment_id ) ) {
+			return $attachment_id;
+		}
+
+		$attachment_id = (int) $attachment_id;
+		update_post_meta( $attachment_id, CLANSPRESS_ATTACHMENT_HIDE_FROM_LIBRARY, '1' );
+
 		return $attachment_id;
+	} finally {
+		// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.NonceVerification.Missing
 	}
-
-	$attachment_id = (int) $attachment_id;
-	update_post_meta( $attachment_id, CLANSPRESS_ATTACHMENT_HIDE_FROM_LIBRARY, '1' );
-
-	return $attachment_id;
 }
 
 add_action( 'plugins_loaded', 'clanspress_private_media_bootstrap', 2 );
