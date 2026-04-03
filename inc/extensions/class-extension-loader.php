@@ -340,12 +340,10 @@ class Loader {
 			if ( isset( $official_extensions[ $slug ] ) ) {
 				_doing_it_wrong(
 					__METHOD__,
-					esc_html(
-						sprintf(
-							/* translators: %s: Extension slug. */
-							__( 'Clanspress: Extension "%s" attempted to use a prohibited slug.', 'clanspress' ),
-							$slug
-						)
+					sprintf(
+						/* translators: %s: Extension slug. */
+						__( 'Clanspress: Extension "%s" attempted to use a prohibited slug.', 'clanspress' ),
+						$slug
 					),
 					'1.0.0'
 				);
@@ -357,13 +355,11 @@ class Loader {
 			if ( ! is_object( $extension ) ) {
 				_doing_it_wrong(
 					__METHOD__,
-					esc_html(
-						sprintf(
-							/* translators: 1: Extension slug, 2: PHP type of the registered value. */
-							__( 'Clanspress: Extension "%1$s" must register an extension object, got "%2$s".', 'clanspress' ),
-							$slug,
-							gettype( $extension )
-						)
+					sprintf(
+						/* translators: 1: Extension slug, 2: PHP type of the registered value. */
+						__( 'Clanspress: Extension "%1$s" must register an extension object, got "%2$s".', 'clanspress' ),
+						$slug,
+						gettype( $extension )
 					),
 					'1.0.0'
 				);
@@ -376,14 +372,12 @@ class Loader {
 			if ( ! $extension instanceof Skeleton ) {
 				_doing_it_wrong(
 					__METHOD__,
-					esc_html(
-						sprintf(
-							/* translators: 1: Extension slug, 2: Registered class name, 3: Required base class name. */
-							__( 'Clanspress: Extension "%1$s" class "%2$s" must extend %3$s.', 'clanspress' ),
-							$slug,
-							get_class( $extension ),
-							Skeleton::class
-						)
+					sprintf(
+						/* translators: 1: Extension slug, 2: Registered class name, 3: Required base class name. */
+						__( 'Clanspress: Extension "%1$s" class "%2$s" must extend %3$s.', 'clanspress' ),
+						$slug,
+						get_class( $extension ),
+						Skeleton::class
 					),
 					'1.0.0'
 				);
@@ -396,13 +390,11 @@ class Loader {
 			if ( $extension->slug !== $slug ) {
 				_doing_it_wrong(
 					__METHOD__,
-					esc_html(
-						sprintf(
-							/* translators: 1: Registry array key (slug), 2: Slug declared on the extension object. */
-							__( 'Clanspress: Extension registry key "%1$s" does not match extension slug "%2$s".', 'clanspress' ),
-							$slug,
-							$extension->slug
-						)
+					sprintf(
+						/* translators: 1: Registry array key (slug), 2: Slug declared on the extension object. */
+						__( 'Clanspress: Extension registry key "%1$s" does not match extension slug "%2$s".', 'clanspress' ),
+						$slug,
+						$extension->slug
 					),
 					'1.0.0'
 				);
@@ -460,14 +452,12 @@ class Loader {
 			if ( $registered_class !== $expected_class ) {
 				_doing_it_wrong(
 					__METHOD__,
-					esc_html(
-						sprintf(
-							/* translators: 1: Extension slug, 2: Expected PHP class name, 3: Registered class name. */
-							__( 'Clanspress: Official extension "%1$s" registered an unexpected class. Expected "%2$s", got "%3$s".', 'clanspress' ),
-							$slug,
-							$expected_class,
-							$registered_class
-						)
+					sprintf(
+						/* translators: 1: Extension slug, 2: Expected PHP class name, 3: Registered class name. */
+						__( 'Clanspress: Official extension "%1$s" registered an unexpected class. Expected "%2$s", got "%3$s".', 'clanspress' ),
+						$slug,
+						$expected_class,
+						$registered_class
 					),
 					'1.0.0'
 				);
@@ -479,13 +469,11 @@ class Loader {
 			if ( ! class_exists( $registered_class ) ) {
 				_doing_it_wrong(
 					__METHOD__,
-					esc_html(
-						sprintf(
-							/* translators: 1: Extension slug, 2: PHP class name. */
-							__( 'Clanspress: Official extension "%1$s" attempted to register class "%2$s", but the class does not exist.', 'clanspress' ),
-							$slug,
-							$registered_class
-						)
+					sprintf(
+						/* translators: 1: Extension slug, 2: PHP class name. */
+						__( 'Clanspress: Official extension "%1$s" attempted to register class "%2$s", but the class does not exist.', 'clanspress' ),
+						$slug,
+						$registered_class
 					),
 					'1.0.0'
 				);
