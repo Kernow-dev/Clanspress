@@ -1,9 +1,18 @@
-<!-- wp:template-part {"slug":"header","area":"header","tagName":"header"} /-->
+<?php
+/**
+ * Front template: player settings (classic / hybrid themes).
+ *
+ * Block markup: `player-settings.html` (also registered for FSE as `clanspress//player-settings`).
+ *
+ * @package clanspress
+ */
 
-<!-- wp:group {"tagName":"main","layout":{"type":"constrained"}} -->
-<main class="wp-block-group"><!-- wp:heading -->
-    <h2 class="wp-block-heading">Player Settings</h2>
-    <!-- /wp:heading --><!-- wp:clanspress/player-settings /--></main>
-<!-- /wp:group -->
+defined( 'ABSPATH' ) || exit;
 
-<!-- wp:template-part {"slug":"footer","area":"footer","tagName":"footer"} /-->
+get_header();
+
+if ( function_exists( 'clanspress_render_block_markup_file' ) ) {
+	clanspress_render_block_markup_file( __DIR__ . '/player-settings.html' );
+}
+
+get_footer();

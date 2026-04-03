@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "clanspress/event-detail",
+  "version": "0.1.0",
+  "title": "Event detail",
+  "category": "clanspress",
+  "icon": "info",
+  "description": "Show a single scheduled event (title, schedule, venue or link, RSVP).",
+  "textdomain": "clanspress",
+  "attributes": {
+    "eventId": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "supports": {
+    "html": false,
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
+  },
+  "editorScript": "file:./index.js",
+  "style": "file:./style-index.css",
+  "render": "file:./render.php"
+}

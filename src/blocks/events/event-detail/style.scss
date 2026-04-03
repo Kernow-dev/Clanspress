@@ -1,0 +1,64 @@
+.clanspress-event-detail {
+	&__title {
+		margin-top: 0;
+	}
+
+	&__meta {
+		opacity: 0.9;
+		margin-bottom: 1rem;
+	}
+
+	&__section-title {
+		margin: 1rem 0 0.35rem;
+		font-size: 1rem;
+	}
+
+	&__address {
+		white-space: pre-wrap;
+	}
+
+	&--placeholder,
+	&--forbidden {
+		padding: 0.75rem;
+		border-radius: 4px;
+		background: color-mix(in srgb, currentColor 6%, transparent);
+	}
+
+	&__manage {
+		margin-top: 1.5rem;
+		padding-top: 1rem;
+		border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+	}
+
+	&__edit-panel {
+		margin-top: 1.5rem;
+		padding-top: 1rem;
+		border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+	}
+
+	&__edit-summary {
+		cursor: pointer;
+		font-weight: 600;
+		list-style-position: outside;
+	}
+
+	&__edit-panel-inner {
+		margin-top: 0.75rem;
+
+		.wp-block-clanspress-event-create-form {
+			border: none;
+			padding-left: 0;
+			padding-right: 0;
+		}
+	}
+
+	&__delete-form {
+		margin: 0;
+	}
+
+	&__delete-button.button {
+		color: #b32d2e;
+		border-color: color-mix(in srgb, #b32d2e 35%, transparent);
+		background: transparent;
+	}
+}

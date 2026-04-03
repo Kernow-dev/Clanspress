@@ -22,15 +22,22 @@ registerBlockType( metadata.name, {
 				<InspectorControls>
 					<PanelBody title={ __( 'Settings', 'clanspress' ) }>
 						<ToggleControl
-							label={ __( 'Show dropdown on click', 'clanspress' ) }
+							label={ __(
+								'Show dropdown on click',
+								'clanspress'
+							) }
 							checked={ showDropdown }
 							onChange={ ( value ) =>
 								setAttributes( { showDropdown: value } )
 							}
+							__nextHasNoMarginBottom
 						/>
 						{ showDropdown && (
 							<RangeControl
-								label={ __( 'Notifications in dropdown', 'clanspress' ) }
+								label={ __(
+									'Notifications in dropdown',
+									'clanspress'
+								) }
 								value={ dropdownCount }
 								onChange={ ( value ) =>
 									setAttributes( { dropdownCount: value } )
@@ -60,9 +67,6 @@ registerBlockType( metadata.name, {
 							3
 						</span>
 					</button>
-					<p className="description" style={ { marginTop: '0.5rem' } }>
-						{ __( 'Notification bell (preview)', 'clanspress' ) }
-					</p>
 				</div>
 			</>
 		);

@@ -8,6 +8,23 @@
   "icon": "smiley",
   "description": "Example block scaffolded with Create Block tool.",
   "example": {},
+  "usesContext": [
+    "clanspress/playerId"
+  ],
+  "attributes": {
+    "isLink": {
+      "type": "boolean",
+      "default": false
+    },
+    "linkTarget": {
+      "type": "string",
+      "default": "_self"
+    },
+    "rel": {
+      "type": "string",
+      "default": ""
+    }
+  },
   "supports": {
     "html": false,
     "interactivity": true

@@ -1,14 +1,19 @@
 <?php
 /**
  * Maintenance class for handling database updates and other maintenance tasks.
+ *
+ * @package clanspress
  */
+
 namespace Kernowdev\Clanspress;
 
 /**
- * Class Maintenance
- * Handles database updates and other maintenance tasks.
+ * Runs one-shot maintenance steps keyed by {@see Main::MAINTENANCE_VERSION}.
+ *
+ * For the 1.0.0 WordPress.org release, all prior incremental rewrite flushes are folded into a single step.
  */
 class Maintenance {
+
 	/**
 	 * Run maintenance tasks for a specific version.
 	 *
@@ -23,29 +28,11 @@ class Maintenance {
 	}
 
 	/**
-	 * Maintenance tasks for version 1.
+	 * Initial public release: flush rewrite rules so virtual routes and CPT rules resolve.
 	 *
 	 * @return void
 	 */
 	private static function run_1(): void {
-		// Initial setup, no tasks needed
-	}
-
-	/**
-	 * Flush rewrite rules after Teams front routes (/teams/create, /teams/manage).
-	 *
-	 * @return void
-	 */
-	private static function run_2(): void {
-		flush_rewrite_rules( false );
-	}
-
-	/**
-	 * Flush rewrites after team action URLs moved to teams/{slug}/manage/.
-	 *
-	 * @return void
-	 */
-	private static function run_3(): void {
 		flush_rewrite_rules( false );
 	}
 }

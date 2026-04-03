@@ -1,0 +1,397 @@
+.clanspress-event-calendar-wrap {
+	--cal-border: #dcdcde;
+	--cal-muted: #787c82;
+	--cal-accent: #2271b1;
+	--cal-today: rgba(34, 113, 177, 0.12);
+
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	border: 1px solid var(--cal-border);
+	border-radius: 8px;
+	padding: 1rem;
+	background: #fff;
+}
+
+.clanspress-event-calendar__toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem 1rem;
+	margin-bottom: 1rem;
+}
+
+.clanspress-event-calendar__views {
+	display: flex;
+	gap: 0.35rem;
+}
+
+.clanspress-event-calendar__view-btn {
+	padding: 0.35rem 0.75rem;
+	font-size: 0.875rem;
+	border: 1px solid var(--cal-border);
+	border-radius: 4px;
+	background: #f6f7f7;
+	cursor: pointer;
+
+	&.is-active {
+		background: var(--cal-accent);
+		border-color: var(--cal-accent);
+		color: #fff;
+	}
+}
+
+.clanspress-event-calendar__nav {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+}
+
+.clanspress-event-calendar__nav-btn,
+.clanspress-event-calendar__today {
+	padding: 0.35rem 0.65rem;
+	font-size: 0.875rem;
+	border: 1px solid var(--cal-border);
+	border-radius: 4px;
+	background: #fff;
+	cursor: pointer;
+}
+
+.clanspress-event-calendar__toolbar > .wp-block-button:last-child {
+	margin-left: auto;
+}
+
+.clanspress-event-calendar__add {
+	font-size: 0.875rem;
+	font-weight: 500;
+}
+
+.clanspress-event-calendar__heading {
+	margin: 0 0 0.75rem;
+	font-size: 1.25rem;
+	font-weight: 600;
+}
+
+.clanspress-event-calendar__sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.clanspress-event-calendar__error {
+	margin: 0 0 0.5rem;
+	font-size: 0.875rem;
+}
+
+.clanspress-event-calendar__error {
+	color: #b32d2e;
+}
+
+.clanspress-event-calendar__dow {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 1px;
+	margin-bottom: 0.25rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--cal-muted);
+	text-align: center;
+}
+
+.clanspress-event-calendar__grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 1px;
+	background: var(--cal-border);
+	border: 1px solid var(--cal-border);
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.clanspress-event-calendar__cell {
+	min-height: 5.5rem;
+	padding: 0.25rem;
+	background: #fff;
+	font-size: 0.75rem;
+
+	&.is-muted {
+		background: #f6f7f7;
+		color: var(--cal-muted);
+	}
+
+	&.is-today {
+		background: var(--cal-today);
+	}
+}
+
+.clanspress-event-calendar__cell-num {
+	font-weight: 600;
+	margin-bottom: 0.15rem;
+}
+
+.clanspress-event-calendar__cell-events {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+
+	li {
+		margin: 0 0 0.15rem;
+		line-height: 1.25;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	a {
+		color: var(--cal-accent);
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
+.clanspress-event-calendar__ev-seg--span {
+	padding: 0;
+	margin: 0 0 0.1rem;
+}
+
+.clanspress-event-calendar__ev-bar {
+	display: block;
+	height: 0.35rem;
+	border-radius: 2px;
+	background: color-mix(in srgb, var(--cal-accent) 55%, transparent);
+}
+
+.clanspress-event-calendar__list-view {
+	margin-top: 0.25rem;
+}
+
+.clanspress-event-calendar__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.clanspress-event-calendar__list-item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.35rem 0.75rem;
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--cal-border);
+	font-size: 0.875rem;
+
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+
+.clanspress-event-calendar__list-when {
+	flex: 0 0 auto;
+	min-width: 10rem;
+	color: var(--cal-muted);
+	font-size: 0.8125rem;
+}
+
+.clanspress-event-calendar__list-title {
+	flex: 1 1 12rem;
+	font-weight: 500;
+	color: var(--cal-accent);
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+span.clanspress-event-calendar__list-title {
+	color: #1d2327;
+}
+
+@keyframes clanspress-cal-skel {
+	0% {
+		opacity: 0.45;
+	}
+
+	50% {
+		opacity: 0.9;
+	}
+
+	100% {
+		opacity: 0.45;
+	}
+}
+
+.clanspress-event-calendar__skeleton {
+	animation: clanspress-cal-skel 1.1s ease-in-out infinite;
+}
+
+.clanspress-event-calendar__skel-dow-row,
+.clanspress-event-calendar__skel-grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 1px;
+}
+
+.clanspress-event-calendar__skel-dow-row {
+	margin-bottom: 0.25rem;
+}
+
+.clanspress-event-calendar__skel-grid {
+	background: var(--cal-border);
+	border: 1px solid var(--cal-border);
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.clanspress-event-calendar__skel-dow,
+.clanspress-event-calendar__skel-cell {
+	min-height: 1rem;
+	background: #fff;
+	padding: 0.35rem;
+}
+
+.clanspress-event-calendar__skel-cell {
+	min-height: 5.5rem;
+}
+
+.clanspress-event-calendar__skel-num {
+	display: block;
+	width: 1.25rem;
+	height: 0.65rem;
+	border-radius: 2px;
+	background: #e8e8e8;
+	margin-bottom: 0.35rem;
+}
+
+.clanspress-event-calendar__skel-line {
+	display: block;
+	height: 0.45rem;
+	border-radius: 2px;
+	background: #ededed;
+	margin-bottom: 0.25rem;
+
+	&.clanspress-event-calendar__skel-line--short {
+		width: 60%;
+	}
+}
+
+.clanspress-event-calendar__skeleton--week {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	gap: 0.5rem;
+}
+
+.clanspress-event-calendar__skeleton-week-col {
+	border: 1px solid var(--cal-border);
+	border-radius: 4px;
+	padding: 0.5rem;
+	background: #fff;
+}
+
+.clanspress-event-calendar__skeleton--day {
+	padding: 0.5rem 0;
+	background: #fff;
+}
+
+.clanspress-event-calendar__skeleton--list .clanspress-event-calendar__skel-list-row {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.65rem 0;
+	border-bottom: 1px solid var(--cal-border);
+}
+
+.clanspress-event-calendar__skel-pill {
+	flex: 0 0 7rem;
+	height: 0.65rem;
+	border-radius: 4px;
+	background: #e8e8e8;
+}
+
+.clanspress-event-calendar__skeleton--list .clanspress-event-calendar__skel-line {
+	flex: 1;
+	margin: 0;
+}
+
+.clanspress-event-calendar__ev-time {
+	font-weight: 500;
+	margin-right: 0.15rem;
+}
+
+.clanspress-event-calendar__more {
+	color: var(--cal-muted);
+	font-style: italic;
+}
+
+.clanspress-event-calendar__week {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	gap: 0.5rem;
+}
+
+@media (max-width: 600px) {
+	.clanspress-event-calendar__week {
+		grid-template-columns: 1fr;
+	}
+}
+
+.clanspress-event-calendar__week-day {
+	border: 1px solid var(--cal-border);
+	border-radius: 4px;
+	padding: 0.5rem;
+	font-size: 0.875rem;
+}
+
+.clanspress-event-calendar__week-day-head {
+	font-weight: 600;
+	margin-bottom: 0.35rem;
+}
+
+.clanspress-event-calendar__week-day ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+
+	li {
+		margin: 0 0 0.25rem;
+	}
+
+	a {
+		color: var(--cal-accent);
+	}
+}
+
+.clanspress-event-calendar__day ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	font-size: 0.9375rem;
+
+	li {
+		margin: 0 0 0.5rem;
+	}
+
+	a {
+		color: var(--cal-accent);
+	}
+}
+
+.clanspress-event-calendar__empty {
+	color: var(--cal-muted);
+	font-style: italic;
+}
+
+.clanspress-event-calendar-editor {
+	padding: 1rem;
+	border: 1px dashed #c3c4c7;
+	border-radius: 4px;
+}

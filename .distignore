@@ -1,0 +1,19 @@
+# Paths excluded from WordPress.org SVN / automated deploy zips when the deploy tool honors this file.
+/.git/
+/.github/
+/node_modules/
+/src/
+/scripts/
+/tests/
+*.zip
+package.json
+package-lock.json
+webpack.config.cjs
+.eslintrc*
+.prettier*
+phpcs.xml
+phpcs.xml.dist
+phpstan.neon
+phpstan.neon.dist
+.editorconfig
+AGENTS.md

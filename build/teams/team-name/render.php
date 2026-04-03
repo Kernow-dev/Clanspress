@@ -12,7 +12,7 @@ if ( $team_id < 1 ) {
 			'class' => 'clanspress-team-name clanspress-team-name--placeholder',
 		)
 	);
-	echo '<div ' . $wrapper . '><span>' . esc_html__( 'Team name', 'clanspress' ) . '</span></div>';
+	echo '<div ' . $wrapper . '><span>' . esc_html__( 'Team name', 'clanspress' ) . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
 }
 
@@ -31,13 +31,29 @@ if ( $align && in_array( $align, array( 'left', 'center', 'right', 'justify' ), 
 	$class[] = 'has-text-align-' . $align;
 }
 
-$wrapper_attributes = get_block_wrapper_attributes();
+$inner = esc_html( $title );
 
-echo sprintf(
-	'<div %s><%s class="%s">%s</%s></div>',
-	$wrapper_attributes,
+if ( ! empty( $attributes['isLink'] ) && function_exists( 'clanspress_block_entity_link_url' ) ) {
+	$href = clanspress_block_entity_link_url(
+		(string) get_permalink( $team_id ),
+		'clanspress/team-name',
+		$team_id,
+		$block
+	);
+	if ( '' !== $href ) {
+		$target = ( isset( $attributes['linkTarget'] ) && '_blank' === $attributes['linkTarget'] ) ? ' target="_blank"' : '';
+		$rel    = function_exists( 'clanspress_block_entity_link_rel' ) ? clanspress_block_entity_link_rel( $attributes ) : '';
+		$rel_at = '' !== $rel ? ' rel="' . esc_attr( $rel ) . '"' : '';
+		$inner  = '<a class="clanspress-team-name__link" href="' . esc_url( $href ) . '"' . $target . $rel_at . '>' . $inner . '</a>';
+	}
+}
+
+$wrapper_attributes = get_block_wrapper_attributes( array(), $block );
+
+printf(
+	'<div %1$s><%2$s class="%3$s">%4$s</%2$s></div>',
+	$wrapper_attributes, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	esc_attr( $tag ),
 	esc_attr( implode( ' ', $class ) ),
-	esc_html( $title ),
-	esc_attr( $tag )
+	$inner // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $inner built with esc_html/esc_url.
 );

@@ -410,6 +410,74 @@ function clanspress_get_player_subpage( string $slug ): ?array {
 }
 
 /**
+ * User ID for player profile header/nav (author archive or `/players/settings/`).
+ *
+ * @return int
+ */
+function clanspress_player_profile_context_user_id(): int {
+	if ( (int) get_query_var( 'players_settings' ) ) {
+		$uid = get_current_user_id();
+
+		return $uid > 0 ? $uid : 0;
+	}
+
+	if ( get_queried_object() instanceof \WP_User ) {
+		return (int) get_queried_object()->ID;
+	}
+
+	return 0;
+}
+
+/**
+ * Resolves the subject user ID for Clanspress player blocks on the front end.
+ *
+ * Uses {@see clanspress_player_profile_context_user_id()} first (author archive, player settings),
+ * then the block `postId` context author, then the logged-in user.
+ *
+ * @param \WP_Block|null $block Optional block instance for post context.
+ * @return int User ID or 0 if none resolved.
+ */
+function clanspress_player_blocks_resolve_subject_user_id( $block = null ): int {
+	if ( $block instanceof \WP_Block && ! empty( $block->context['clanspress/playerId'] ) ) {
+		$loop_uid = (int) $block->context['clanspress/playerId'];
+		if ( $loop_uid > 0 ) {
+			return $loop_uid;
+		}
+	}
+
+	$uid = (int) clanspress_player_profile_context_user_id();
+	if ( $uid > 0 ) {
+		return $uid;
+	}
+
+	if ( $block instanceof \WP_Block && ! empty( $block->context['postId'] ) ) {
+		$author_id = (int) get_post_field( 'post_author', (int) $block->context['postId'] );
+		if ( $author_id > 0 ) {
+			return $author_id;
+		}
+	}
+
+	if ( is_user_logged_in() ) {
+		return (int) get_current_user_id();
+	}
+
+	return 0;
+}
+
+/**
+ * Active player profile sub-route (`settings` or `cp_player_subpage`).
+ *
+ * @return string
+ */
+function clanspress_player_profile_route_current_slug(): string {
+	if ( (int) get_query_var( 'players_settings' ) ) {
+		return 'settings';
+	}
+
+	return sanitize_key( (string) get_query_var( 'cp_player_subpage' ) );
+}
+
+/**
  * Returns the players display avatar.
  *
  * @param int          $player_id The Player/User unique identifier.

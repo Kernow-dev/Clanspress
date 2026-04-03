@@ -12,7 +12,7 @@ if ( $team_id < 1 ) {
 			'class' => 'clanspress-team-code clanspress-team-code--placeholder',
 		)
 	);
-	echo '<div ' . $wrapper . '><span>' . esc_html__( 'Team code', 'clanspress' ) . '</span></div>';
+	echo '<div ' . $wrapper . '><span>' . esc_html__( 'Team code', 'clanspress' ) . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
 }
 
@@ -26,4 +26,4 @@ $wrapper_attributes = get_block_wrapper_attributes(
 
 $display = '' === $code ? __( '—', 'clanspress' ) : $code;
 
-echo '<div ' . $wrapper_attributes . '><span class="clanspress-team-code__value">' . esc_html( $display ) . '</span></div>';
+echo '<div ' . $wrapper_attributes . '><span class="clanspress-team-code__value">' . esc_html( $display ) . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.

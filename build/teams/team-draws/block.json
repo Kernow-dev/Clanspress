@@ -27,9 +27,21 @@
   },
   "supports": {
     "html": false,
+    "layout": {
+      "allowSwitching": false,
+      "allowInheriting": false,
+      "default": {
+        "type": "flex",
+        "flexWrap": "wrap"
+      }
+    },
     "spacing": {
       "margin": true,
-      "padding": true
+      "padding": true,
+      "blockGap": true,
+      "__experimentalDefaultControls": {
+        "blockGap": true
+      }
     }
   },
   "editorScript": "file:./index.js",

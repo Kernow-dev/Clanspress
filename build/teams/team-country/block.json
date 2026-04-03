@@ -19,6 +19,14 @@
     "showCode": {
       "type": "boolean",
       "default": false
+    },
+    "countryDisplay": {
+      "type": "string",
+      "default": "both"
+    },
+    "flagFirst": {
+      "type": "boolean",
+      "default": true
     }
   },
   "supports": {

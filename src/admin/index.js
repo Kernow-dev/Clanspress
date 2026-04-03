@@ -19,6 +19,7 @@ import {
 	SelectControl,
 	TextControl,
 	TextareaControl,
+	VisuallyHidden,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 
@@ -112,84 +113,71 @@ function FieldControl( { field, value, onChange } ) {
 	};
 
 	switch ( field.type ) {
-		case 'image':
-			{
-				const previewUrl =
-					value ||
-					field.fallbackUrl ||
-					field.fallback_url ||
-					'';
+		case 'image': {
+			const previewUrl =
+				value || field.fallbackUrl || field.fallback_url || '';
 
-				const openMediaFrame = () => {
-					if ( ! window.wp || ! window.wp.media ) {
-						return;
-					}
+			const openMediaFrame = () => {
+				if ( ! window.wp || ! window.wp.media ) {
+					return;
+				}
 
-					const frame = window.wp.media( {
-						title:
-							field.mediaTitle ||
-							__( 'Select image', 'clanspress' ),
-						button: {
-							text:
-								field.mediaButtonText ||
-								__( 'Use image', 'clanspress' ),
-						},
-						library: { type: 'image' },
-						multiple: false,
-					} );
+				const frame = window.wp.media( {
+					title:
+						field.mediaTitle || __( 'Select image', 'clanspress' ),
+					button: {
+						text:
+							field.mediaButtonText ||
+							__( 'Use image', 'clanspress' ),
+					},
+					library: { type: 'image' },
+					multiple: false,
+				} );
 
-					frame.on( 'select', () => {
-						const attachment = frame
-							.state()
-							.get( 'selection' )
-							.first()
-							?.toJSON();
-						onChange( id, attachment?.url || '' );
-					} );
+				frame.on( 'select', () => {
+					const attachment = frame
+						.state()
+						.get( 'selection' )
+						.first()
+						?.toJSON();
+					onChange( id, attachment?.url || '' );
+				} );
 
-					frame.open();
-				};
+				frame.open();
+			};
 
-				return (
-					<div className="clanspress-field-image">
-						{ previewUrl ? (
-							<div className="clanspress-field-image-preview">
-								<img src={ previewUrl } alt="" />
-							</div>
-						) : null }
-						<div className="clanspress-field-image-actions">
-							<Button
-								variant="secondary"
-								onClick={ openMediaFrame }
-							>
-								{ __(
-									'Upload / choose image',
-									'clanspress'
-								) }
-							</Button>
-							<Button
-								variant="tertiary"
-								isDestructive
-								onClick={ () => onChange( id, '' ) }
-							>
-								{ __(
-									'Use plugin default',
-									'clanspress'
-								) }
-							</Button>
+			return (
+				<div className="clanspress-field-image">
+					{ previewUrl ? (
+						<div className="clanspress-field-image-preview">
+							<img src={ previewUrl } alt="" />
 						</div>
-						{ common.help ? (
-							<p className="description">{ common.help }</p>
-						) : null }
+					) : null }
+					<div className="clanspress-field-image-actions">
+						<Button variant="secondary" onClick={ openMediaFrame }>
+							{ __( 'Upload / choose image', 'clanspress' ) }
+						</Button>
+						<Button
+							variant="tertiary"
+							isDestructive
+							onClick={ () => onChange( id, '' ) }
+						>
+							{ __( 'Use plugin default', 'clanspress' ) }
+						</Button>
 					</div>
-				);
-			}
+					{ common.help ? (
+						<p className="description">{ common.help }</p>
+					) : null }
+				</div>
+			);
+		}
 		case 'checkbox':
 			return (
 				<ToggleControl
 					{ ...common }
 					checked={ !! value }
 					onChange={ ( v ) => onChange( id, v ) }
+					__nextHasNoMarginBottom
 				/>
 			);
 		case 'select':
@@ -219,6 +207,8 @@ function FieldControl( { field, value, onChange } ) {
 					{ ...common }
 					value={ String( value ?? '' ) }
 					onChange={ ( v ) => onChange( id, v ) }
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
 				/>
 			);
 	}
@@ -273,10 +263,7 @@ function SettingsSections( { sections, optionKey, values, onFieldChange } ) {
 		}
 
 		return (
-			<div
-				key={ section.id }
-				className="clanspress-settings-section"
-			>
+			<div key={ section.id } className="clanspress-settings-section">
 				{ section.title ? <h3>{ section.title }</h3> : null }
 				<div className="clanspress-settings-fields">
 					{ visibleFields.map( ( field ) => (
@@ -391,8 +378,7 @@ function App() {
 
 			if ( data?.plugin ) {
 				const v = String( data.plugin.version || '' );
-				const isBeta =
-					v && Number.parseFloat( v ) < 1 ? true : false;
+				const isBeta = v && Number.parseFloat( v ) < 1 ? true : false;
 				setPluginMeta( {
 					version: v,
 					isBeta,
@@ -599,9 +585,7 @@ function App() {
 					<div className="clanspress-admin-header-brand">
 						<span className="clanspress-admin-logo-wrap">
 							<img
-								src={
-									window.clanspressAdmin?.logoUrl || ''
-								}
+								src={ window.clanspressAdmin?.logoUrl || '' }
 								alt=""
 								className="clanspress-admin-logo"
 							/>
@@ -649,238 +633,343 @@ function App() {
 						{ saveNotice }
 					</div>
 				) : null }
-			<TabPanel
-				key={ `clanspress-admin-tabpanel-${ tabPanelEpoch }` }
-				className="clanspress-admin-tabs"
-				activeClass="is-active"
-				tabs={ tabs }
-				initialTabName={ initialTabName }
-				onSelect={ onTabSelect }
-			>
-				{ ( tab ) => {
-					const meta = bootstrap.tabs.find(
-						( x ) => x.id === tab.name
-					);
-					if ( ! meta ) {
-						return null;
-					}
-					if ( meta.type === 'general' ) {
-						return (
-							<div className="clanspress-admin-section-inner">
-								<SettingsSections
-									sections={ generalSections }
-									optionKey={ generalKey }
-									values={ values }
-									onFieldChange={ onFieldChange }
-								/>
-								<Button
-									variant="primary"
-									onClick={ () => saveOption( generalKey ) }
-									isBusy={ saving }
-								>
-									{ __( 'Save settings', 'clanspress' ) }
-								</Button>
-							</div>
+				<TabPanel
+					key={ `clanspress-admin-tabpanel-${ tabPanelEpoch }` }
+					className="clanspress-admin-tabs"
+					activeClass="is-active"
+					tabs={ tabs }
+					initialTabName={ initialTabName }
+					onSelect={ onTabSelect }
+				>
+					{ ( tab ) => {
+						const meta = bootstrap.tabs.find(
+							( x ) => x.id === tab.name
 						);
-					}
-					if ( meta.type === 'extensions' ) {
-						return (
-							<div className="clanspress-admin-section-inner">
-								<p className="description">
-									{ __(
-										'Enable or disable extensions. You can turn on dependencies and dependents in any order; save once when ready. Saving reloads this screen.',
-										'clanspress'
-									) }
-								</p>
-								<table className="widefat striped clanspress-extensions-table">
-									<thead>
-										<tr>
-											<th>
-												{ __( 'Name', 'clanspress' ) }
-											</th>
-											<th>
-												{ __(
-													'Description',
-													'clanspress'
-												) }
-											</th>
-											<th>
-												{ __(
-													'Requires',
-													'clanspress'
-												) }
-											</th>
-											<th>
-												{ __( 'Active', 'clanspress' ) }
-											</th>
-										</tr>
-									</thead>
-									<tbody>
-										{ bootstrap.extensions.map( ( ext ) => {
-											const isOn = installed.includes(
-												ext.slug
-											);
-											const canTurnOn =
-												extensionCanBeTurnedOn(
-													ext,
-													installed
-												);
-											const toggleDisabled =
-												! isOn && ! canTurnOn;
-											return (
-												<tr key={ ext.slug }>
-													<td>
-														<span
-															className={
-																'clanspress-extension-name' +
-																( ext.parentSlug
-																	? ' clanspress-extension-name--child'
-																	: '' )
-															}
-														>
-															{ ext.parentSlug
-																? '— '
-																: '' }
-															<strong>
-																{ ext.name }
-															</strong>
-															{ ext.isOfficial ? (
-																<span
-																	className="clanspress-extension-badge"
-																>
-																	{ __(
-																		'Official',
-																		'clanspress'
-																	) }
-																</span>
-															) : null }
-														</span>
-													</td>
-													<td>{ ext.description }</td>
-													<td>
-														<ExtensionRequiresCell
-															requires={
-																ext.requires ||
-																[]
-															}
-															allExtensions={
-																bootstrap.extensions
-															}
-															installedSlugs={
-																installed
-															}
-														/>
-													</td>
-													<td>
-														<ToggleControl
-															label={ __(
-																'Installed',
+						if ( ! meta ) {
+							return null;
+						}
+						if ( meta.type === 'general' ) {
+							return (
+								<div className="clanspress-admin-section-inner">
+									<SettingsSections
+										sections={ generalSections }
+										optionKey={ generalKey }
+										values={ values }
+										onFieldChange={ onFieldChange }
+									/>
+									<Button
+										variant="primary"
+										onClick={ () =>
+											saveOption( generalKey )
+										}
+										isBusy={ saving }
+									>
+										{ __( 'Save settings', 'clanspress' ) }
+									</Button>
+								</div>
+							);
+						}
+						if ( meta.type === 'extensions' ) {
+							return (
+								<div className="clanspress-admin-section-inner">
+									<p className="description">
+										{ __(
+											'Enable or disable extensions. You can turn on dependencies and dependents in any order; save once when ready. Saving reloads this screen.',
+											'clanspress'
+										) }
+									</p>
+									<div className="clanspress-extensions-table-wrap">
+										<table className="widefat striped clanspress-extensions-table">
+											<thead>
+												<tr>
+													<th>
+														{ __(
+															'Name',
+															'clanspress'
+														) }
+													</th>
+													<th
+														scope="col"
+														className="clanspress-extensions-table__badges-col"
+													>
+														<VisuallyHidden as="span">
+															{ __(
+																'Official and core labels',
 																'clanspress'
 															) }
-															checked={ isOn }
-															disabled={
-																toggleDisabled
-															}
-															onChange={ (
-																on
-															) => {
-																setInstalled(
-																	(
-																		prev
-																	) => {
-																		if (
-																			on
-																		) {
-																			return [
-																				...new Set(
-																					[
-																						...prev,
-																						ext.slug,
-																					]
-																				),
-																			];
-																		}
-																		return prev.filter(
-																			(
-																				s
-																			) =>
-																				s !==
-																				ext.slug
-																		);
-																	}
-																);
-															} }
-														/>
-														{ toggleDisabled ? (
-															<p className="description">
-																{ ext.requires
-																	?.length
-																	? __(
-																			'Turn on all required extensions first (you can save everything in one step).',
-																			'clanspress'
-																	  )
-																	: __(
-																			'This extension cannot be enabled.',
-																			'clanspress'
-																	  ) }
-															</p>
-														) : null }
-													</td>
+														</VisuallyHidden>
+													</th>
+													<th>
+														{ __(
+															'Description',
+															'clanspress'
+														) }
+													</th>
+													<th>
+														{ __(
+															'Requires',
+															'clanspress'
+														) }
+													</th>
+													<th>
+														{ __(
+															'Active',
+															'clanspress'
+														) }
+													</th>
 												</tr>
-											);
-										} ) }
-									</tbody>
-								</table>
-								<Button
-									variant="primary"
-									className="clanspress-extensions-save"
-									onClick={ saveExtensions }
-									isBusy={ saving }
-								>
-									{ __( 'Save extensions', 'clanspress' ) }
-								</Button>
-							</div>
-						);
-					}
-					if ( meta.type === 'extension' ) {
-						return (
-							<div className="clanspress-admin-section-inner">
-								{ ( meta.sectionGroups || [] ).map(
-									( group ) => (
-										<div
-											key={ `${ group.kind }-${ group.slug }` }
-											className="clanspress-settings-section"
-										>
-											{ group.kind === 'child' ? (
-												<h3>{ group.name }</h3>
-											) : null }
-											<SettingsSections
-												sections={ group.sections }
-												optionKey={ group.optionKey }
-												values={ values }
-												onFieldChange={ onFieldChange }
-											/>
-											<Button
-												variant="primary"
-												onClick={ () =>
-													saveOption(
-														group.optionKey
-													)
-												}
-												isBusy={ saving }
-												className="clanspress-extension-save"
+											</thead>
+											<tbody>
+												{ bootstrap.extensions.map(
+													( ext ) => {
+														const isOn =
+															installed.includes(
+																ext.slug
+															);
+														const canTurnOn =
+															extensionCanBeTurnedOn(
+																ext,
+																installed
+															);
+														const isRequired =
+															ext.isRequired ===
+															true;
+														const toggleDisabled =
+															isRequired ||
+															( ! isOn &&
+																! canTurnOn );
+														return (
+															<tr
+																key={ ext.slug }
+															>
+																<td>
+																	<span
+																		className={
+																			'clanspress-extension-name' +
+																			( ext.parentSlug
+																				? ' clanspress-extension-name--child'
+																				: '' )
+																		}
+																	>
+																		{ ext.parentSlug
+																			? '— '
+																			: '' }
+																		<strong>
+																			{
+																				ext.name
+																			}
+																		</strong>
+																	</span>
+																</td>
+																<td className="clanspress-extensions-table__badges-col">
+																	<div
+																		className="clanspress-extension-badges"
+																		role="group"
+																		aria-label={ sprintf(
+																			/* translators: %s: extension display name. */
+																			__(
+																				'Distribution labels for %s',
+																				'clanspress'
+																			),
+																			ext.name
+																		) }
+																	>
+																		{ ext.isOfficial ||
+																		ext.isCoreBundled ? (
+																			<>
+																				{ ext.isOfficial ? (
+																					<span className="clanspress-extension-badge">
+																						{ __(
+																							'Official',
+																							'clanspress'
+																						) }
+																					</span>
+																				) : null }
+																				{ ext.isCoreBundled ? (
+																					<span className="clanspress-extension-badge clanspress-extension-badge--core">
+																						{ __(
+																							'Core',
+																							'clanspress'
+																						) }
+																					</span>
+																				) : null }
+																			</>
+																		) : (
+																			<>
+																				<span
+																					className="clanspress-extension-badge-placeholder"
+																					aria-hidden="true"
+																				>
+																					—
+																				</span>
+																				<VisuallyHidden
+																					as="span"
+																				>
+																					{ __(
+																						'No official or core label',
+																						'clanspress'
+																					) }
+																				</VisuallyHidden>
+																			</>
+																		) }
+																	</div>
+																</td>
+																<td>
+																	{
+																		ext.description
+																	}
+																</td>
+																<td>
+																	<ExtensionRequiresCell
+																		requires={
+																			ext.requires ||
+																			[]
+																		}
+																		allExtensions={
+																			bootstrap.extensions
+																		}
+																		installedSlugs={
+																			installed
+																		}
+																	/>
+																</td>
+																<td>
+																	<ToggleControl
+																		label={ __(
+																			'Installed',
+																			'clanspress'
+																		) }
+																		checked={
+																			isOn
+																		}
+																		disabled={
+																			toggleDisabled
+																		}
+																		onChange={ (
+																			on
+																		) => {
+																			if (
+																				isRequired &&
+																				! on
+																			) {
+																				return;
+																			}
+																			setInstalled(
+																				(
+																					prev
+																				) => {
+																					if (
+																						on
+																					) {
+																						return [
+																							...new Set(
+																								[
+																									...prev,
+																									ext.slug,
+																								]
+																							),
+																						];
+																					}
+																					return prev.filter(
+																						(
+																							s
+																						) =>
+																							s !==
+																							ext.slug
+																					);
+																				}
+																			);
+																		} }
+																		__nextHasNoMarginBottom
+																	/>
+																	{ toggleDisabled ? (
+																		<p className="description">
+																			{ isRequired
+																				? __(
+																						'This extension is required and cannot be disabled.',
+																						'clanspress'
+																				  )
+																				: ext
+																						.requires
+																						?.length
+																				? __(
+																						'Turn on all required extensions first (you can save everything in one step).',
+																						'clanspress'
+																				  )
+																				: __(
+																						'This extension cannot be enabled.',
+																						'clanspress'
+																				  ) }
+																		</p>
+																	) : null }
+																</td>
+															</tr>
+														);
+													}
+												) }
+											</tbody>
+										</table>
+									</div>
+									<Button
+										variant="primary"
+										className="clanspress-extensions-save"
+										onClick={ saveExtensions }
+										isBusy={ saving }
+									>
+										{ __(
+											'Save extensions',
+											'clanspress'
+										) }
+									</Button>
+								</div>
+							);
+						}
+						if ( meta.type === 'extension' ) {
+							return (
+								<div className="clanspress-admin-section-inner">
+									{ ( meta.sectionGroups || [] ).map(
+										( group ) => (
+											<div
+												key={ `${ group.kind }-${ group.slug }` }
+												className="clanspress-settings-section"
 											>
-												{ __( 'Save', 'clanspress' ) }
-											</Button>
-										</div>
-									)
-								) }
-							</div>
-						);
-					}
-					return null;
-				} }
-			</TabPanel>
+												{ group.kind === 'child' ? (
+													<h3>{ group.name }</h3>
+												) : null }
+												<SettingsSections
+													sections={ group.sections }
+													optionKey={
+														group.optionKey
+													}
+													values={ values }
+													onFieldChange={
+														onFieldChange
+													}
+												/>
+												<Button
+													variant="primary"
+													onClick={ () =>
+														saveOption(
+															group.optionKey
+														)
+													}
+													isBusy={ saving }
+													className="clanspress-extension-save"
+												>
+													{ __(
+														'Save',
+														'clanspress'
+													) }
+												</Button>
+											</div>
+										)
+									) }
+								</div>
+							);
+						}
+						return null;
+					} }
+				</TabPanel>
 			</div>
 		</div>
 	);

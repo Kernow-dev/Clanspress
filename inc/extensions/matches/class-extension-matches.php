@@ -30,6 +30,14 @@ class Matches extends Skeleton {
 	public const STATUS_CANCELLED = 'cancelled';
 
 	/**
+	 * Visibility levels for matches (and match-backed schedule events).
+	 */
+	public const VISIBILITY_PUBLIC       = 'public';
+	public const VISIBILITY_MEMBERS      = 'members';
+	public const VISIBILITY_TEAM_MEMBERS = 'team_members';
+	public const VISIBILITY_TEAM_ADMINS  = 'team_admins';
+
+	/**
 	 * Option-backed settings surfaced in the unified Clanspress React admin.
 	 *
 	 * @var Matches_Settings_Admin
@@ -140,12 +148,45 @@ class Matches extends Skeleton {
 		add_action( 'init', array( $this, 'register_match_meta' ), 11 );
 		add_action( 'init', array( $this, 'register_match_block_libraries' ), 11 );
 		add_action( 'rest_api_init', array( $this->matches_rest, 'register_routes' ) );
+		add_filter( 'clanspress_event_can_view_attendees', array( $this, 'events_can_view_match_attendees' ), 10, 4 );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_match_editor' ) );
 		add_filter( 'manage_cp_match_posts_columns', array( $this, 'match_admin_columns' ) );
 		add_action( 'manage_cp_match_posts_custom_column', array( $this, 'render_match_admin_column' ), 10, 2 );
 		add_action( 'save_post_cp_match', array( $this, 'validate_match_on_save' ), 10, 2 );
 		add_filter( 'single_template', array( $this, 'maybe_single_match_template' ) );
 		add_filter( 'clanspress_team_create_form_steps', array( $this, 'register_team_create_matches_step' ), 25 );
+	}
+
+	/**
+	 * Allow team members/admins to view match attendee lists when hidden.
+	 *
+	 * @param bool   $can_view_attendees Whether attendees are visible per settings.
+	 * @param string $event_type         Event type.
+	 * @param int    $event_id           Event ID.
+	 * @param int    $viewer_id          Viewer user ID (0 for anon).
+	 * @return bool
+	 */
+	public function events_can_view_match_attendees( bool $can_view_attendees, string $event_type, int $event_id, int $viewer_id ): bool {
+		if ( 'match' !== $event_type ) {
+			return $can_view_attendees;
+		}
+		if ( $can_view_attendees ) {
+			return true;
+		}
+		if ( $viewer_id <= 0 ) {
+			return false;
+		}
+
+		$post = get_post( $event_id );
+		if ( ! ( $post instanceof \WP_Post ) || self::POST_TYPE !== $post->post_type ) {
+			return false;
+		}
+
+		if ( $this->viewer_is_team_admin( $post, $viewer_id ) ) {
+			return true;
+		}
+
+		return $this->viewer_is_team_member( $post, $viewer_id );
 	}
 
 	/**
@@ -187,6 +228,24 @@ class Matches extends Skeleton {
 		$home_id = (int) get_post_meta( $post->ID, 'cp_match_home_team_id', true );
 		$away_id = (int) get_post_meta( $post->ID, 'cp_match_away_team_id', true );
 		$fmt     = $this->admin->get( 'datetime_format', 'M j, Y g:i a' );
+		$visibility = (string) get_post_meta( $post->ID, 'cp_match_visibility', true );
+
+		$away_title = function_exists( 'clanspress_matches_resolve_away_team_title' )
+			? clanspress_matches_resolve_away_team_title( $post->ID )
+			: clanspress_matches_team_title( $away_id );
+
+		$away_ext = array(
+			'label'       => (string) get_post_meta( $post->ID, 'cp_match_away_external_label', true ),
+			'logoUrl'     => (string) get_post_meta( $post->ID, 'cp_match_away_external_logo_url', true ),
+			'profileUrl'  => (string) get_post_meta( $post->ID, 'cp_match_away_external_profile_url', true ),
+		);
+		if ( $away_id > 0 ) {
+			$away_ext = array(
+				'label'      => '',
+				'logoUrl'    => '',
+				'profileUrl' => '',
+			);
+		}
 
 		return array(
 			'id'             => $post->ID,
@@ -202,12 +261,63 @@ class Matches extends Skeleton {
 			'homeTeamId'     => $home_id,
 			'awayTeamId'     => $away_id,
 			'homeTeamTitle'  => clanspress_matches_team_title( $home_id ),
-			'awayTeamTitle'  => clanspress_matches_team_title( $away_id ),
+			'awayTeamTitle'  => $away_title,
+			'awayExternal'   => $away_ext,
 			'homeScore'      => (int) get_post_meta( $post->ID, 'cp_match_home_score', true ),
 			'awayScore'      => (int) get_post_meta( $post->ID, 'cp_match_away_score', true ),
 			'venue'          => (string) get_post_meta( $post->ID, 'cp_match_venue', true ),
+			'visibility'     => $this->sanitize_match_visibility( $visibility ),
 			'postStatus'     => $post->post_status,
 		);
+	}
+
+	/**
+	 * Whether the current viewer may see a match.
+	 *
+	 * @param WP_Post $post Match post.
+	 * @param int     $viewer_id Viewer user ID (0 for guests).
+	 * @return bool
+	 */
+	public function viewer_can_see_match( WP_Post $post, int $viewer_id = 0 ): bool {
+		// Draft/pending/private matches are admin-only unless the viewer can read the post.
+		if ( 'publish' !== $post->post_status ) {
+			return $viewer_id > 0 && current_user_can( 'read_post', (int) $post->ID );
+		}
+
+		$vis = $this->sanitize_match_visibility( (string) get_post_meta( $post->ID, 'cp_match_visibility', true ) );
+
+		if ( self::VISIBILITY_PUBLIC === $vis ) {
+			return true;
+		}
+
+		if ( self::VISIBILITY_MEMBERS === $vis ) {
+			return $viewer_id > 0;
+		}
+
+		$home_id = (int) get_post_meta( $post->ID, 'cp_match_home_team_id', true );
+		$away_id = (int) get_post_meta( $post->ID, 'cp_match_away_team_id', true );
+
+		if ( self::VISIBILITY_TEAM_ADMINS === $vis ) {
+			if ( $viewer_id <= 0 || ! function_exists( 'clanspress_teams_user_can_manage' ) ) {
+				return false;
+			}
+			return ( $home_id > 0 && clanspress_teams_user_can_manage( $home_id, $viewer_id ) )
+				|| ( $away_id > 0 && clanspress_teams_user_can_manage( $away_id, $viewer_id ) )
+				|| current_user_can( 'manage_options' );
+		}
+
+		// team_members
+		if ( $viewer_id <= 0 ) {
+			return false;
+		}
+
+		if ( function_exists( 'clanspress_teams_get_member_role' ) ) {
+			return ( $home_id > 0 && null !== clanspress_teams_get_member_role( $home_id, $viewer_id ) )
+				|| ( $away_id > 0 && null !== clanspress_teams_get_member_role( $away_id, $viewer_id ) );
+		}
+
+		// Conservative fallback when membership helper isn't available.
+		return false;
 	}
 
 	/**
@@ -282,6 +392,16 @@ class Matches extends Skeleton {
 			),
 		);
 
+		$visibility_schema = array(
+			'type' => 'string',
+			'enum' => array(
+				self::VISIBILITY_PUBLIC,
+				self::VISIBILITY_MEMBERS,
+				self::VISIBILITY_TEAM_MEMBERS,
+				self::VISIBILITY_TEAM_ADMINS,
+			),
+		);
+
 		register_post_meta(
 			'cp_match',
 			'cp_match_home_team_id',
@@ -303,6 +423,45 @@ class Matches extends Skeleton {
 				'single'            => true,
 				'default'           => 0,
 				'sanitize_callback' => 'absint',
+				'show_in_rest'      => true,
+				'auth_callback'     => array( $this, 'meta_auth_edit_post' ),
+			)
+		);
+
+		register_post_meta(
+			'cp_match',
+			'cp_match_away_external_label',
+			array(
+				'type'              => 'string',
+				'single'            => true,
+				'default'           => '',
+				'sanitize_callback' => 'sanitize_text_field',
+				'show_in_rest'      => true,
+				'auth_callback'     => array( $this, 'meta_auth_edit_post' ),
+			)
+		);
+
+		register_post_meta(
+			'cp_match',
+			'cp_match_away_external_logo_url',
+			array(
+				'type'              => 'string',
+				'single'            => true,
+				'default'           => '',
+				'sanitize_callback' => 'esc_url_raw',
+				'show_in_rest'      => true,
+				'auth_callback'     => array( $this, 'meta_auth_edit_post' ),
+			)
+		);
+
+		register_post_meta(
+			'cp_match',
+			'cp_match_away_external_profile_url',
+			array(
+				'type'              => 'string',
+				'single'            => true,
+				'default'           => '',
+				'sanitize_callback' => 'esc_url_raw',
 				'show_in_rest'      => true,
 				'auth_callback'     => array( $this, 'meta_auth_edit_post' ),
 			)
@@ -374,6 +533,41 @@ class Matches extends Skeleton {
 				'auth_callback'     => array( $this, 'meta_auth_edit_post' ),
 			)
 		);
+
+		register_post_meta(
+			'cp_match',
+			'cp_match_visibility',
+			array(
+				'type'              => 'string',
+				'single'            => true,
+				'default'           => self::VISIBILITY_PUBLIC,
+				'sanitize_callback' => array( $this, 'sanitize_match_visibility' ),
+				'show_in_rest'      => array(
+					'schema' => $visibility_schema,
+				),
+				'auth_callback'     => array( $this, 'meta_auth_edit_post' ),
+			)
+		);
+
+		$attendees_visibility_schema = array(
+			'type' => 'string',
+			'enum' => array( 'public', 'hidden' ),
+		);
+
+		register_post_meta(
+			'cp_match',
+			'cp_match_attendees_visibility',
+			array(
+				'type'              => 'string',
+				'single'            => true,
+				'default'           => 'hidden',
+				'sanitize_callback' => array( $this, 'sanitize_match_attendees_visibility' ),
+				'show_in_rest'      => array(
+					'schema' => $attendees_visibility_schema,
+				),
+				'auth_callback'     => array( $this, 'meta_auth_edit_post' ),
+			)
+		);
 	}
 
 	/**
@@ -425,6 +619,37 @@ class Matches extends Skeleton {
 	}
 
 	/**
+	 * Restrict visibility meta to known slugs.
+	 *
+	 * @param mixed $value Raw visibility value.
+	 * @return string One of the {@see VISIBILITY_*} constants.
+	 */
+	public function sanitize_match_visibility( $value ): string {
+		$value = sanitize_key( (string) $value );
+		$allowed = array(
+			self::VISIBILITY_PUBLIC,
+			self::VISIBILITY_MEMBERS,
+			self::VISIBILITY_TEAM_MEMBERS,
+			self::VISIBILITY_TEAM_ADMINS,
+		);
+
+		return in_array( $value, $allowed, true ) ? $value : self::VISIBILITY_PUBLIC;
+	}
+
+	/**
+	 * Restrict attendees visibility meta to known slugs.
+	 *
+	 * @param mixed $value Raw visibility value.
+	 * @return string `public` or `hidden`.
+	 */
+	public function sanitize_match_attendees_visibility( $value ): string {
+		$value   = sanitize_key( (string) $value );
+		$allowed = array( 'public', 'hidden' );
+
+		return in_array( $value, $allowed, true ) ? $value : 'hidden';
+	}
+
+	/**
 	 * Insert custom columns after the title on the match list screen.
 	 *
 	 * @param array<string, string> $columns Default columns.
@@ -456,7 +681,12 @@ class Matches extends Skeleton {
 		if ( 'cp_match_teams' === $column ) {
 			$h = (int) get_post_meta( $post_id, 'cp_match_home_team_id', true );
 			$a = (int) get_post_meta( $post_id, 'cp_match_away_team_id', true );
-			echo esc_html( clanspress_matches_team_title( $h ) . ' vs ' . clanspress_matches_team_title( $a ) );
+			$away_label = $a > 0
+				? clanspress_matches_team_title( $a )
+				: ( function_exists( 'clanspress_matches_resolve_away_team_title' )
+					? clanspress_matches_resolve_away_team_title( $post_id )
+					: clanspress_matches_team_title( $a ) );
+			echo esc_html( clanspress_matches_team_title( $h ) . ' vs ' . $away_label );
 			return;
 		}
 		if ( 'cp_match_when' === $column ) {
@@ -507,6 +737,13 @@ class Matches extends Skeleton {
 			$a_post = get_post( $away );
 			if ( ! $a_post || 'cp_team' !== $a_post->post_type ) {
 				delete_post_meta( $post_id, 'cp_match_away_team_id' );
+				delete_post_meta( $post_id, 'cp_match_away_external_label' );
+				delete_post_meta( $post_id, 'cp_match_away_external_logo_url' );
+				delete_post_meta( $post_id, 'cp_match_away_external_profile_url' );
+			} else {
+				delete_post_meta( $post_id, 'cp_match_away_external_label' );
+				delete_post_meta( $post_id, 'cp_match_away_external_logo_url' );
+				delete_post_meta( $post_id, 'cp_match_away_external_profile_url' );
 			}
 		}
 
@@ -514,6 +751,18 @@ class Matches extends Skeleton {
 		if ( '' === $sched ) {
 			update_post_meta( $post_id, 'cp_match_scheduled_at', gmdate( 'Y-m-d H:i:s' ) );
 		}
+
+		/**
+		 * Fires after Clanspress validates a match post on save.
+		 *
+		 * Use to trigger side-effects (e.g. optional activity-feed integrations) when a match is
+		 * scheduled/updated and its visibility may affect who should see it.
+		 *
+		 * @param int     $post_id Match post ID.
+		 * @param WP_Post $post    Match post object.
+		 * @param Matches $extension Matches extension instance.
+		 */
+		do_action( 'clanspress_match_saved', $post_id, $post, $this );
 	}
 
 	/**
@@ -653,13 +902,15 @@ class Matches extends Skeleton {
 		$fmt         = (string) $this->admin->get( 'datetime_format', 'M j, Y g:i a' );
 
 		$args = array(
-			'post_type'      => 'cp_match',
-			'post_status'    => 'publish',
-			'posts_per_page' => $limit,
-			'orderby'        => 'meta_value',
-			'meta_key'       => 'cp_match_scheduled_at',
-			'meta_type'      => 'DATETIME',
-			'order'          => $order,
+			'post_type'              => 'cp_match',
+			'post_status'            => 'publish',
+			'posts_per_page'         => $limit,
+			'orderby'                => 'meta_value',
+			'meta_key'               => 'cp_match_scheduled_at',
+			'meta_type'              => 'DATETIME',
+			'order'                  => $order,
+			'no_found_rows'          => true,
+			'update_post_term_cache' => false,
 		);
 
 		$meta_query = $this->build_block_meta_query( $team_id, $status );
@@ -668,6 +919,7 @@ class Matches extends Skeleton {
 		}
 
 		$q = new \WP_Query( $args );
+		$viewer_id = is_user_logged_in() ? (int) get_current_user_id() : 0;
 
 		ob_start();
 		if ( ! $q->have_posts() ) {
@@ -679,8 +931,15 @@ class Matches extends Skeleton {
 		while ( $q->have_posts() ) {
 			$q->the_post();
 			$pid = (int) get_the_ID();
+			$post = get_post( $pid );
+			if ( $post instanceof \WP_Post && ! $this->viewer_can_see_match( $post, $viewer_id ) ) {
+				continue;
+			}
 			$h   = (int) get_post_meta( $pid, 'cp_match_home_team_id', true );
 			$a   = (int) get_post_meta( $pid, 'cp_match_away_team_id', true );
+			$away_title = function_exists( 'clanspress_matches_resolve_away_team_title' )
+				? clanspress_matches_resolve_away_team_title( $pid )
+				: clanspress_matches_team_title( $a );
 			$st  = (string) get_post_meta( $pid, 'cp_match_status', true );
 			$raw = (string) get_post_meta( $pid, 'cp_match_scheduled_at', true );
 			$hs  = (int) get_post_meta( $pid, 'cp_match_home_score', true );
@@ -692,7 +951,7 @@ class Matches extends Skeleton {
 			echo '<li class="clanspress-match-list__item">';
 			echo '<a class="clanspress-match-list__link" href="' . esc_url( get_permalink() ) . '">';
 			echo '<span class="clanspress-match-list__teams">';
-			echo esc_html( clanspress_matches_team_title( $h ) . ' vs ' . clanspress_matches_team_title( $a ) );
+			echo esc_html( clanspress_matches_team_title( $h ) . ' vs ' . $away_title );
 			echo '</span>';
 			echo '<span class="clanspress-match-list__meta">';
 			echo esc_html( clanspress_matches_format_datetime_local( $raw, $fmt ) );
@@ -709,7 +968,16 @@ class Matches extends Skeleton {
 		echo '</ul>';
 		wp_reset_postdata();
 
-		return (string) ob_get_clean();
+		// If everything was filtered, show the empty state.
+		$out = (string) ob_get_clean();
+		if ( false !== strpos( $out, '<ul class="clanspress-match-list">' )
+			&& false !== strpos( $out, '</ul>' )
+			&& false === strpos( $out, 'clanspress-match-list__item' )
+		) {
+			return '<div class="clanspress-match-list clanspress-match-list--empty"><p>' . esc_html__( 'No matches to show.', 'clanspress' ) . '</p></div>';
+		}
+
+		return $out;
 	}
 
 	/**
@@ -729,6 +997,11 @@ class Matches extends Skeleton {
 			return '<div class="clanspress-match-card clanspress-match-card--missing"><p>' . esc_html__( 'Match not found.', 'clanspress' ) . '</p></div>';
 		}
 
+		$viewer_id = is_user_logged_in() ? (int) get_current_user_id() : 0;
+		if ( ! $this->viewer_can_see_match( $post, $viewer_id ) ) {
+			return '<div class="clanspress-match-card clanspress-match-card--forbidden"><p>' . esc_html__( 'This match is not available.', 'clanspress' ) . '</p></div>';
+		}
+
 		$data        = $this->match_to_rest_array( $post );
 		$show_scores = (bool) $this->admin->get( 'show_scores', true );
 		$choices     = $this->get_status_choices();
@@ -743,7 +1016,23 @@ class Matches extends Skeleton {
 			<p class="clanspress-match-card__teams">
 				<span class="clanspress-match-card__home"><?php echo esc_html( $data['homeTeamTitle'] ); ?></span>
 				<span class="clanspress-match-card__vs"> <?php esc_html_e( 'vs', 'clanspress' ); ?> </span>
-				<span class="clanspress-match-card__away"><?php echo esc_html( $data['awayTeamTitle'] ); ?></span>
+				<span class="clanspress-match-card__away">
+					<?php
+					$ext = isset( $data['awayExternal'] ) && is_array( $data['awayExternal'] ) ? $data['awayExternal'] : array();
+					$logo = isset( $ext['logoUrl'] ) ? esc_url( (string) $ext['logoUrl'] ) : '';
+					if ( '' !== $logo ) :
+						?>
+					<img src="<?php echo esc_url( $logo ); ?>" alt="" class="clanspress-match-card__away-logo" width="32" height="32" loading="lazy" decoding="async" />
+					<?php endif; ?>
+					<?php
+					$away_link = isset( $ext['profileUrl'] ) ? esc_url( (string) $ext['profileUrl'] ) : '';
+					if ( '' !== $away_link ) :
+						?>
+					<a href="<?php echo esc_url( $away_link ); ?>"><?php echo esc_html( $data['awayTeamTitle'] ); ?></a>
+					<?php else : ?>
+						<?php echo esc_html( $data['awayTeamTitle'] ); ?>
+					<?php endif; ?>
+				</span>
 			</p>
 			<p class="clanspress-match-card__when"><?php echo esc_html( $data['scheduledLabel'] ); ?></p>
 			<p class="clanspress-match-card__status"><?php echo esc_html( $st_lbl ); ?></p>

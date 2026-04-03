@@ -365,3 +365,81 @@
 		color: var(--notification-danger);
 	}
 }
+
+// Accessible confirm dialog (notification action confirmations).
+.clanspress-notification-bell__confirm-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100001;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	background: rgba(0, 0, 0, 0.45);
+}
+
+.clanspress-notification-bell__confirm {
+	max-width: 420px;
+	width: 100%;
+	padding: 20px 24px;
+	background: var(--notification-bg);
+	color: var(--notification-text);
+	border-radius: 8px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.clanspress-notification-bell__confirm-title {
+	margin: 0 0 12px;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+.clanspress-notification-bell__confirm-message {
+	margin: 0 0 20px;
+	font-size: 14px;
+	line-height: 1.5;
+	color: var(--notification-text);
+}
+
+.clanspress-notification-bell__confirm-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 10px;
+}
+
+.clanspress-notification-bell__confirm-btn {
+	padding: 8px 16px;
+	font-size: 13px;
+	font-weight: 500;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.15s ease, border-color 0.15s ease;
+
+	&:focus-visible {
+		outline: 2px solid var(--notification-accent);
+		outline-offset: 2px;
+	}
+}
+
+.clanspress-notification-bell__confirm-btn--cancel {
+	color: var(--notification-text);
+	background: transparent;
+	border: 1px solid var(--notification-border);
+
+	&:hover {
+		background: var(--notification-hover);
+	}
+}
+
+.clanspress-notification-bell__confirm-btn--ok {
+	color: #fff;
+	background: var(--notification-accent);
+	border: 1px solid var(--notification-accent);
+
+	&:hover {
+		background: color-mix(in srgb, var(--notification-accent) 85%, #000);
+		border-color: color-mix(in srgb, var(--notification-accent) 85%, #000);
+	}
+}

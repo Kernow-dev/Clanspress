@@ -4,7 +4,7 @@
   "name": "clanspress/team-create-form",
   "version": "0.1.0",
   "title": "Team Create Form",
-  "category": "clanspress",
+  "category": "clanspress-teams",
   "icon": "welcome-write-blog",
   "description": "Render a block-based team creation form.",
   "textdomain": "clanspress",

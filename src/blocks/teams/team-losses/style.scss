@@ -3,15 +3,15 @@
 }
 
 .clanspress-team-stat {
-	display: inline-flex;
-	flex-wrap: wrap;
-	align-items: baseline;
-	gap: 0 0.25rem;
 	font-size: 0.95rem;
 }
 
+.clanspress-team-stat.is-layout-flex {
+	align-items: baseline;
+}
+
 .clanspress-team-stat__prefix {
-	color: #646970;
+	color: inherit;
 	font-size: 0.85em;
 }
 
@@ -20,14 +20,13 @@
 }
 
 .clanspress-team-stat__postfix {
-	color: #646970;
+	color: inherit;
 	font-size: 0.85em;
 }
 
 .clanspress-team-stat--placeholder {
-	border: 1px dashed #c3c4c7;
-	padding: 0.75rem;
+	border: 1px dashed color-mix(in srgb, currentColor 42%, transparent);
 	border-radius: 4px;
-	color: #646970;
+	color: inherit;
 	font-size: 0.875rem;
 }

@@ -276,6 +276,9 @@ abstract class Abstract_Settings {
 	protected function get_flat_fields(): array {
 		$flat = array();
 		foreach ( $this->get_sections() as $section ) {
+			if ( empty( $section['fields'] ) || ! is_array( $section['fields'] ) ) {
+				continue;
+			}
 			foreach ( $section['fields'] as $id => $field ) {
 				$flat[ $id ] = $field;
 			}

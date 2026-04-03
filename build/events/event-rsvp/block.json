@@ -1,0 +1,41 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "clanspress/event-rsvp",
+  "version": "0.1.0",
+  "title": "Event RSVP",
+  "category": "clanspress",
+  "icon": "yes",
+  "description": "Let members respond to an event (match, group event, etc.) and optionally show who is attending.",
+  "textdomain": "clanspress",
+  "attributes": {
+    "eventType": {
+      "type": "string",
+      "default": "match"
+    },
+    "eventId": {
+      "type": "number",
+      "default": 0
+    },
+    "showAttendees": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "usesContext": [
+    "postId",
+    "postType"
+  ],
+  "supports": {
+    "html": false,
+    "interactivity": true,
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
+  },
+  "editorScript": "file:./index.js",
+  "viewScriptModule": "file:./view.js",
+  "style": "file:./style-index.css",
+  "render": "file:./render.php"
+}

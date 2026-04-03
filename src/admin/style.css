@@ -107,7 +107,6 @@
 .clanspress-extension-requires {
 	margin: 0;
 	padding-left: 1.25rem;
-	max-width: 280px;
 	color: #ffffff !important;
 }
 
@@ -124,9 +123,18 @@
 	padding-top: 1rem;
 }
 
-.clanspress-extensions-table {
-	max-width: 960px;
+.clanspress-extensions-table-wrap {
+	width: 100%;
+	max-width: 100%;
 	margin-top: 1rem;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.clanspress-extensions-table {
+	width: 100%;
+	max-width: none;
+	table-layout: auto;
 	background-color: transparent !important;
 	border-collapse: collapse;
 	color: #ffffff;
@@ -155,6 +163,44 @@
 .clanspress-extensions-table td {
 	color: #ffffff;
 	border: none !important;
+	vertical-align: top;
+	padding: 12px 14px;
+	line-height: 1.45;
+}
+
+.clanspress-extensions-table th.clanspress-extensions-table__badges-col,
+.clanspress-extensions-table td.clanspress-extensions-table__badges-col {
+	width: 8.5rem;
+	min-width: 8.5rem;
+	max-width: 11rem;
+	text-align: left;
+	vertical-align: middle;
+}
+
+.clanspress-extension-badges {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	justify-content: flex-start;
+	align-items: center;
+	min-height: 1.5rem;
+}
+
+.clanspress-extensions-table td:nth-child(1) {
+	min-width: 10rem;
+	white-space: normal;
+}
+
+.clanspress-extensions-table td:nth-child(3) {
+	min-width: 14rem;
+}
+
+.clanspress-extensions-table td:nth-child(4) {
+	min-width: 10rem;
+}
+
+.clanspress-extensions-table td:nth-child(5) {
+	min-width: 13rem;
 }
 
 .clanspress-extensions-table.widefat {
@@ -175,7 +221,6 @@
 }
 
 .clanspress-extension-badge {
-	margin-left: 8px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -187,6 +232,19 @@
 	text-transform: uppercase;
 	letter-spacing: 0.08em;
 	border: 1px solid rgba(117, 182, 220, 0.5);
+}
+
+.clanspress-extension-badge--core {
+	background-color: rgba(196, 165, 116, 0.18);
+	color: #d4b896;
+	border-color: rgba(212, 184, 150, 0.55);
+}
+
+.clanspress-extension-badge-placeholder {
+	display: inline-block;
+	color: rgba(255, 255, 255, 0.28);
+	font-size: 12px;
+	line-height: 1;
 }
 
 .clanspress-extensions-save {

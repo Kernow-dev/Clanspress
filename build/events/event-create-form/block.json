@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "clanspress/event-create-form",
+  "version": "0.1.0",
+  "title": "Create event",
+  "category": "clanspress",
+  "icon": "plus-alt2",
+  "description": "Create a team or group event (in-person or virtual) via the REST API.",
+  "textdomain": "clanspress",
+  "attributes": {
+    "scopeType": {
+      "type": "string",
+      "default": "team"
+    },
+    "teamId": {
+      "type": "number",
+      "default": 0
+    },
+    "groupId": {
+      "type": "number",
+      "default": 0
+    },
+    "eventId": {
+      "type": "number",
+      "default": 0,
+      "description": "When set, the form updates that event (front-end edit) instead of creating a new one."
+    }
+  },
+  "supports": {
+    "html": false,
+    "interactivity": true
+  },
+  "editorScript": "file:./index.js",
+  "viewScriptModule": "file:./view.js",
+  "style": "file:./style-index.css",
+  "render": "file:./render.php"
+}

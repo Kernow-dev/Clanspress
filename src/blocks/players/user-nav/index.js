@@ -41,6 +41,7 @@ registerBlockType( metadata.name, {
 							onChange={ ( value ) =>
 								setAttributes( { showUsername: value } )
 							}
+							__nextHasNoMarginBottom
 						/>
 					</PanelBody>
 				</InspectorControls>

@@ -13,19 +13,17 @@ if ( $team_id < 1 ) {
 		),
 		$block
 	);
-	echo '<div ' . $wrapper . '><span>' . esc_html__( 'Wins', 'clanspress' ) . '</span></div>';
+	echo '<div ' . $wrapper . '><span>' . esc_html__( 'Wins', 'clanspress' ) . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
 }
 
 $val = (int) get_post_meta( $team_id, 'cp_team_wins', true );
 $val = max( 0, $val );
 
-$prefix = isset( $attributes['prefix'] ) ? trim( (string) $attributes['prefix'] ) : '';
-if ( '' === $prefix ) {
-	$prefix = __( 'Wins', 'clanspress' );
-}
-
-$postfix = isset( $attributes['postfix'] ) ? (string) $attributes['postfix'] : '';
+$prefix_raw    = isset( $attributes['prefix'] ) ? (string) $attributes['prefix'] : '';
+$prefix_plain  = trim( wp_strip_all_tags( $prefix_raw ) );
+$postfix_raw   = isset( $attributes['postfix'] ) ? (string) $attributes['postfix'] : '';
+$postfix_plain = trim( wp_strip_all_tags( $postfix_raw ) );
 
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
@@ -34,14 +32,13 @@ $wrapper_attributes = get_block_wrapper_attributes(
 	$block
 );
 
-echo '<div ' . $wrapper_attributes . '>';
-echo '<span class="clanspress-team-stat__prefix">' . esc_html( $prefix ) . '</span>';
-if ( '' !== $prefix ) {
-	echo ' ';
+$parts = array();
+if ( '' !== $prefix_plain ) {
+	$parts[] = '<span class="clanspress-team-stat__prefix">' . wp_kses_post( $prefix_raw ) . '</span>';
 }
-echo '<span class="clanspress-team-stat__value">' . esc_html( (string) $val ) . '</span>';
-if ( '' !== trim( $postfix ) ) {
-	echo ' ';
-	echo '<span class="clanspress-team-stat__postfix">' . esc_html( $postfix ) . '</span>';
+$parts[] = '<span class="clanspress-team-stat__value">' . esc_html( (string) $val ) . '</span>';
+if ( '' !== $postfix_plain ) {
+	$parts[] = '<span class="clanspress-team-stat__postfix">' . wp_kses_post( $postfix_raw ) . '</span>';
 }
-echo '</div>';
+
+echo '<div ' . $wrapper_attributes . '>' . implode( '', $parts ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.

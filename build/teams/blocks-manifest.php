@@ -2,18 +2,22 @@
 // This file is generated. Do not modify it manually.
 return array(
 	'profile-nav' => array(
-		'apiVersion' => 2,
+		'$schema' => 'https://schemas.wp.org/trunk/block.json',
+		'apiVersion' => 3,
 		'name' => 'clanspress/team-profile-nav',
 		'title' => 'Team Profile Navigation',
-		'category' => 'widgets',
+		'category' => 'clanspress-teams',
 		'icon' => 'groups',
 		'description' => 'Displays the team profile subpage navigation.',
 		'supports' => array(
-			'html' => false
+			'html' => false,
+			'spacing' => array(
+				'blockGap' => true
+			)
 		),
 		'textdomain' => 'clanspress',
 		'editorScript' => 'file:./index.js',
-		'style' => 'file:./style.scss',
+		'style' => 'file:./style-index.css',
 		'render' => 'file:./render.php'
 	),
 	'team-avatar' => array(
@@ -37,6 +41,18 @@ return array(
 			'width' => array(
 				'type' => 'number',
 				'default' => 120
+			),
+			'isLink' => array(
+				'type' => 'boolean',
+				'default' => false
+			),
+			'linkTarget' => array(
+				'type' => 'string',
+				'default' => '_self'
+			),
+			'rel' => array(
+				'type' => 'string',
+				'default' => ''
 			)
 		),
 		'supports' => array(
@@ -81,6 +97,36 @@ return array(
 		'editorScript' => 'file:./index.js',
 		'editorStyle' => 'file:./index.css',
 		'style' => 'file:./style-index.css'
+	),
+	'team-challenge-button' => array(
+		'$schema' => 'https://schemas.wp.org/trunk/block.json',
+		'apiVersion' => 3,
+		'name' => 'clanspress/team-challenge-button',
+		'version' => '0.1.0',
+		'title' => 'Team challenge button',
+		'category' => 'clanspress-teams',
+		'icon' => 'flag',
+		'description' => 'Lets guests and team managers challenge this team when challenges are enabled.',
+		'textdomain' => 'clanspress',
+		'postTypes' => array(
+			'cp_team'
+		),
+		'usesContext' => array(
+			'postId',
+			'postType'
+		),
+		'supports' => array(
+			'html' => false,
+			'spacing' => array(
+				'margin' => true,
+				'padding' => true
+			)
+		),
+		'editorScript' => 'file:./index.js',
+		'editorStyle' => 'file:./index.css',
+		'style' => 'file:./style-index.css',
+		'render' => 'file:./render.php',
+		'viewScriptModule' => 'file:./view.js'
 	),
 	'team-code' => array(
 		'$schema' => 'https://schemas.wp.org/trunk/block.json',
@@ -132,6 +178,14 @@ return array(
 			'showCode' => array(
 				'type' => 'boolean',
 				'default' => false
+			),
+			'countryDisplay' => array(
+				'type' => 'string',
+				'default' => 'both'
+			),
+			'flagFirst' => array(
+				'type' => 'boolean',
+				'default' => true
 			)
 		),
 		'supports' => array(
@@ -258,7 +312,7 @@ return array(
 		'name' => 'clanspress/team-create-form',
 		'version' => '0.1.0',
 		'title' => 'Team Create Form',
-		'category' => 'clanspress',
+		'category' => 'clanspress-teams',
 		'icon' => 'welcome-write-blog',
 		'description' => 'Render a block-based team creation form.',
 		'textdomain' => 'clanspress',
@@ -334,9 +388,21 @@ return array(
 		),
 		'supports' => array(
 			'html' => false,
+			'layout' => array(
+				'allowSwitching' => false,
+				'allowInheriting' => false,
+				'default' => array(
+					'type' => 'flex',
+					'flexWrap' => 'wrap'
+				)
+			),
 			'spacing' => array(
 				'margin' => true,
-				'padding' => true
+				'padding' => true,
+				'blockGap' => true,
+				'__experimentalDefaultControls' => array(
+					'blockGap' => true
+				)
 			)
 		),
 		'editorScript' => 'file:./index.js',
@@ -373,9 +439,21 @@ return array(
 		),
 		'supports' => array(
 			'html' => false,
+			'layout' => array(
+				'allowSwitching' => false,
+				'allowInheriting' => false,
+				'default' => array(
+					'type' => 'flex',
+					'flexWrap' => 'wrap'
+				)
+			),
 			'spacing' => array(
 				'margin' => true,
-				'padding' => true
+				'padding' => true,
+				'blockGap' => true,
+				'__experimentalDefaultControls' => array(
+					'blockGap' => true
+				)
 			)
 		),
 		'editorScript' => 'file:./index.js',
@@ -443,13 +521,33 @@ return array(
 			'label' => array(
 				'type' => 'string',
 				'default' => ''
+			),
+			'prefix' => array(
+				'type' => 'string',
+				'default' => ''
+			),
+			'postfix' => array(
+				'type' => 'string',
+				'default' => ''
 			)
 		),
 		'supports' => array(
 			'html' => false,
+			'layout' => array(
+				'allowSwitching' => false,
+				'allowInheriting' => false,
+				'default' => array(
+					'type' => 'flex',
+					'flexWrap' => 'wrap'
+				)
+			),
 			'spacing' => array(
 				'margin' => true,
-				'padding' => true
+				'padding' => true,
+				'blockGap' => true,
+				'__experimentalDefaultControls' => array(
+					'blockGap' => true
+				)
 			)
 		),
 		'editorScript' => 'file:./index.js',
@@ -514,6 +612,18 @@ return array(
 			),
 			'textAlign' => array(
 				'type' => 'string'
+			),
+			'isLink' => array(
+				'type' => 'boolean',
+				'default' => false
+			),
+			'linkTarget' => array(
+				'type' => 'string',
+				'default' => '_self'
+			),
+			'rel' => array(
+				'type' => 'string',
+				'default' => ''
 			)
 		),
 		'supports' => array(
@@ -523,9 +633,16 @@ return array(
 				'margin' => true,
 				'padding' => true
 			),
+			'color' => array(
+				'link' => true,
+				'__experimentalDefaultControls' => array(
+					'link' => true
+				)
+			),
 			'typography' => array(
 				'fontSize' => true,
-				'lineHeight' => true
+				'lineHeight' => true,
+				'textAlign' => true
 			)
 		),
 		'editorScript' => 'file:./index.js',
@@ -562,9 +679,21 @@ return array(
 		),
 		'supports' => array(
 			'html' => false,
+			'layout' => array(
+				'allowSwitching' => false,
+				'allowInheriting' => false,
+				'default' => array(
+					'type' => 'flex',
+					'flexWrap' => 'wrap'
+				)
+			),
 			'spacing' => array(
 				'margin' => true,
-				'padding' => true
+				'padding' => true,
+				'blockGap' => true,
+				'__experimentalDefaultControls' => array(
+					'blockGap' => true
+				)
 			)
 		),
 		'editorScript' => 'file:./index.js',

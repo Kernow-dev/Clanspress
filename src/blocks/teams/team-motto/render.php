@@ -12,7 +12,7 @@ if ( $team_id < 1 ) {
 			'class' => 'clanspress-team-motto clanspress-team-motto--placeholder',
 		)
 	);
-	echo '<div ' . $wrapper . '><span>' . esc_html__( 'Team motto', 'clanspress' ) . '</span></div>';
+	echo '<div ' . $wrapper . '><span>' . esc_html__( 'Team motto', 'clanspress' ) . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
 }
 
@@ -26,4 +26,4 @@ $wrapper_attributes = get_block_wrapper_attributes(
 
 $display = '' === $motto ? __( 'No motto set.', 'clanspress' ) : $motto;
 
-echo '<div ' . $wrapper_attributes . '><p class="clanspress-team-motto__text">' . esc_html( $display ) . '</p></div>';
+echo '<div ' . $wrapper_attributes . '><p class="clanspress-team-motto__text">' . esc_html( $display ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.

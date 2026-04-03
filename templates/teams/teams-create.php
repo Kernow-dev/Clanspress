@@ -1,17 +1,18 @@
-<!-- wp:template-part {"slug":"header","area":"header","tagName":"header"} /-->
+<?php
+/**
+ * Front template: create team (classic / hybrid themes).
+ *
+ * Block markup: `teams-create.html` (also registered for FSE as `clanspress//teams-create`).
+ *
+ * @package clanspress
+ */
 
-<!-- wp:group {"tagName":"main","layout":{"type":"constrained"}} -->
-<main class="wp-block-group">
-	<!-- wp:heading -->
-	<h2 class="wp-block-heading">Create Team</h2>
-	<!-- /wp:heading -->
+defined( 'ABSPATH' ) || exit;
 
-	<!-- wp:paragraph -->
-	<p>Create a new team profile for your community.</p>
-	<!-- /wp:paragraph -->
+get_header();
 
-	<!-- wp:clanspress/team-create-form /-->
-</main>
-<!-- /wp:group -->
+if ( function_exists( 'clanspress_render_block_markup_file' ) ) {
+	clanspress_render_block_markup_file( __DIR__ . '/teams-create.html' );
+}
 
-<!-- wp:template-part {"slug":"footer","area":"footer","tagName":"footer"} /-->
+get_footer();

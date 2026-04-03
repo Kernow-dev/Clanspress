@@ -14,7 +14,7 @@
 $nav_items = (array) apply_filters( 'clanspress_players_settings_nav_items', array() );
 ?>
 <div
-	<?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>
+	<?php echo get_block_wrapper_attributes( array(), $block ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes. ?>
 	data-wp-interactive="clanspress-player-settings"
 	data-wp-init="callbacks.init"
 >
@@ -28,6 +28,7 @@ $nav_items = (array) apply_filters( 'clanspress_players_settings_nav_items', arr
 				?>
 			<div class="nav-item">
 				<button
+					type="button"
 					class="nav-item-header"
 					data-wp-on--click="actions.toggleNav"
 					data-wp-args='<?php echo wp_json_encode( $nav_item ); ?>'
@@ -49,6 +50,7 @@ $nav_items = (array) apply_filters( 'clanspress_players_settings_nav_items', arr
 						$sub_label = $sub_item['label'] ?? '';
 						?>
 						<button
+							type="button"
 							class="nav-sub-item"
 							data-wp-on--click="actions.showPanel"
 							data-wp-class--active="state.isThisPanelActive"
@@ -64,6 +66,7 @@ $nav_items = (array) apply_filters( 'clanspress_players_settings_nav_items', arr
 			<div class="nav-item controls">
 				<?php wp_nonce_field( 'clanspress_profile_settings_save_action', '_clanspress_profile_settings_save_nonce', true, true ); ?>
 				<button
+					type="button"
 					class="save"
 					data-wp-on--click="actions.save"
 				><?php esc_html_e( 'Save changes', 'clanspress' ); ?></button>
@@ -96,6 +99,9 @@ $nav_items = (array) apply_filters( 'clanspress_players_settings_nav_items', arr
 	</div>
 	<div
 		class="toast-box"
+		role="status"
+		aria-live="polite"
+		aria-atomic="true"
 		data-wp-bind--hidden="!state.toast.visible"
 		data-wp-class--success="state.isToastSuccess"
 		data-wp-class--error="state.isToastError"

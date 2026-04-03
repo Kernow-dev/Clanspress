@@ -100,6 +100,21 @@ function clanspress_teams_get_team_action_url( int $team_id, string $action ): s
 }
 
 /**
+ * Front-end URL to create a team event (`/teams/{slug}/events/create/`).
+ *
+ * @param int $team_id Team post ID (`cp_team`).
+ * @return string Empty when the team has no slug.
+ */
+function clanspress_teams_get_team_events_create_url( int $team_id ): string {
+	$slug = (string) get_post_field( 'post_name', $team_id );
+	if ( '' === $slug ) {
+		return '';
+	}
+
+	return home_url( user_trailingslashit( 'teams/' . $slug . '/events/create' ) );
+}
+
+/**
  * User ID of the team owner (`post_author` of the `cp_team` post).
  *
  * @param int $team_id Team post ID.
@@ -199,6 +214,47 @@ function clanspress_teams_get_member_roles_map( int $team_id ): array {
 }
 
 /**
+ * User IDs on a team roster for templating (e.g. Player Query loop), optionally omitting banned members.
+ *
+ * @param int  $team_id               Team post ID.
+ * @param bool $exclude_banned        When true, skip members with the `banned` role.
+ * @param bool $preserve_roster_order When true, keep member map iteration order; when false, sort by user ID (default).
+ * @return list<int>
+ */
+function clanspress_teams_get_roster_user_ids( int $team_id, bool $exclude_banned = true, bool $preserve_roster_order = false ): array {
+	if ( $team_id < 1 ) {
+		return array();
+	}
+
+	$map = clanspress_teams_get_member_roles_map( $team_id );
+	$ids = array();
+
+	foreach ( $map as $uid => $role ) {
+		$uid = (int) $uid;
+		if ( $uid < 1 ) {
+			continue;
+		}
+		if ( $exclude_banned && 'banned' === (string) $role ) {
+			continue;
+		}
+		$ids[] = $uid;
+	}
+
+	if ( ! $preserve_roster_order ) {
+		sort( $ids, SORT_NUMERIC );
+	}
+
+	/**
+	 * Filter roster user IDs before rendering a team player loop.
+	 *
+	 * @param list<int> $ids             Ordered user IDs.
+	 * @param int       $team_id         Team post ID.
+	 * @param bool      $exclude_banned  Whether banned members were omitted.
+	 */
+	return array_values( array_map( 'intval', (array) apply_filters( 'clanspress_team_roster_user_ids', $ids, $team_id, $exclude_banned ) ) );
+}
+
+/**
  * Per-team options (join mode, invites, front-end edit, ban capability, match challenges).
  *
  * @param int $team_id Team post ID.
@@ -224,6 +280,80 @@ function clanspress_team_accepts_challenges( int $team_id ): bool {
 	$team = clanspress_get_team( $team_id );
 
 	return $team ? $team->get_accept_challenges() : true;
+}
+
+/**
+ * Parse a team profile URL into origin + slug when it matches `/teams/{slug}/` (with optional subpaths).
+ *
+ * @param string $url Full HTTP(S) URL.
+ * @return array{origin: string, slug: string}|null Null when the pattern does not match.
+ */
+function clanspress_parse_team_profile_url( string $url ): ?array {
+	$url = trim( $url );
+	if ( '' === $url ) {
+		return null;
+	}
+
+	$parts = wp_parse_url( $url );
+	if ( ! is_array( $parts ) || empty( $parts['host'] ) ) {
+		return null;
+	}
+
+	$scheme = isset( $parts['scheme'] ) && in_array( strtolower( (string) $parts['scheme'] ), array( 'http', 'https' ), true )
+		? strtolower( (string) $parts['scheme'] )
+		: 'https';
+
+	$host = strtolower( (string) $parts['host'] );
+	$port = isset( $parts['port'] ) ? ':' . (int) $parts['port'] : '';
+	$path = isset( $parts['path'] ) ? '/' . ltrim( (string) $parts['path'], '/' ) : '/';
+
+	if ( ! preg_match( '#/teams/([^/]+)#', $path, $m ) ) {
+		return null;
+	}
+
+	$slug = sanitize_title( (string) $m[1] );
+	if ( '' === $slug || in_array( $slug, array( 'create', 'manage' ), true ) ) {
+		return null;
+	}
+
+	$origin = $scheme . '://' . $host . $port;
+
+	return array(
+		'origin' => $origin,
+		'slug'   => $slug,
+	);
+}
+
+/**
+ * Team post IDs the user may manage on the front end (admin or editor, not banned).
+ *
+ * @param int $user_id User ID.
+ * @return array<int, int> Unique team post IDs.
+ */
+function clanspress_teams_get_user_managed_team_ids( int $user_id ): array {
+	$t = clanspress_teams();
+
+	return $t ? $t->get_user_managed_team_ids( $user_id ) : array();
+}
+
+/**
+ * Whether the user manages at least one published team from the front end.
+ *
+ * @param int|null $user_id User ID or null for the current user.
+ * @return bool
+ */
+function clanspress_teams_user_manages_any_team( ?int $user_id = null ): bool {
+	$uid = (int) ( $user_id ?? get_current_user_id() );
+	if ( $uid < 1 ) {
+		return false;
+	}
+
+	$t = clanspress_teams();
+	if ( $t && $t->user_is_teams_site_admin( $uid ) ) {
+		return true;
+	}
+
+	return array() !== clanspress_teams_get_user_managed_team_ids( $uid );
 }
 
 /**
@@ -407,7 +537,66 @@ function clanspress_team_block_resolve_team_id( array $block_context = array() )
 		return (int) $qo->ID;
 	}
 
+	$virtual_id = clanspress_team_virtual_route_team_id();
+	if ( $virtual_id > 0 ) {
+		return $virtual_id;
+	}
+
 	return 0;
+}
+
+/**
+ * Team post ID from virtual team URLs (`/teams/{slug}/events/`, `/teams/{slug}/manage/`), or 0.
+ *
+ * @return int
+ */
+function clanspress_team_virtual_route_team_id(): int {
+	$action = sanitize_key( (string) get_query_var( 'clanspress_team_action' ) );
+	if ( (int) get_query_var( 'clanspress_events_team_id' ) > 0 && 'events' === $action ) {
+		return (int) get_query_var( 'clanspress_events_team_id' );
+	}
+	if ( (int) get_query_var( 'clanspress_manage_team_id' ) > 0 && 'manage' === $action ) {
+		return (int) get_query_var( 'clanspress_manage_team_id' );
+	}
+
+	return 0;
+}
+
+/**
+ * Team ID for profile header/nav: singular `cp_team` or virtual team routes.
+ *
+ * @return int
+ */
+function clanspress_team_profile_context_team_id(): int {
+	if ( is_singular( 'cp_team' ) ) {
+		$qid = (int) get_queried_object_id();
+		if ( $qid > 0 ) {
+			return $qid;
+		}
+	}
+
+	return clanspress_team_virtual_route_team_id();
+}
+
+/**
+ * Active profile sub-route slug for team nav (e.g. `events`, `settings` for manage, or registered subpage).
+ *
+ * @return string
+ */
+function clanspress_team_profile_route_current_slug(): string {
+	if ( is_singular( 'cp_team' ) ) {
+		return sanitize_key( (string) get_query_var( 'cp_team_subpage' ) );
+	}
+
+	$action = sanitize_key( (string) get_query_var( 'clanspress_team_action' ) );
+	if ( 'events' === $action ) {
+		return 'events';
+	}
+	if ( 'manage' === $action ) {
+		return 'settings';
+	}
+
+	return '';
 }
 
 /**

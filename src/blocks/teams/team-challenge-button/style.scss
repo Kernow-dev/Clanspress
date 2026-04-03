@@ -1,0 +1,86 @@
+.clanspress-team-challenge {
+	box-sizing: border-box;
+}
+
+.clanspress-team-challenge__backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.45);
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+}
+
+.clanspress-team-challenge__dialog {
+	background: #fff;
+	color: #111;
+	max-width: 32rem;
+	width: 100%;
+	max-height: 90vh;
+	overflow: auto;
+	border-radius: 8px;
+	padding: 1.25rem;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.clanspress-team-challenge__dialog h2 {
+	margin-top: 0;
+	font-size: 1.25rem;
+}
+
+.clanspress-team-challenge__field {
+	margin-bottom: 0.75rem;
+}
+
+.clanspress-team-challenge__field label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 0.25rem;
+}
+
+.clanspress-team-challenge__field input,
+.clanspress-team-challenge__field textarea,
+.clanspress-team-challenge__field select {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+.clanspress-team-challenge__preview {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin: 0.5rem 0 0;
+	padding: 0.5rem;
+	background: #f5f5f5;
+	border-radius: 6px;
+}
+
+.clanspress-team-challenge__preview img {
+	width: 48px;
+	height: 48px;
+	object-fit: cover;
+	border-radius: 4px;
+}
+
+.clanspress-team-challenge__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+
+.clanspress-team-challenge__notice {
+	margin: 0.5rem 0 0;
+	font-size: 0.9rem;
+}
+
+.clanspress-team-challenge__notice.is-error {
+	color: #b32d2e;
+}
+
+.clanspress-team-challenge__notice.is-success {
+	color: #1e4620;
+}

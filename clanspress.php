@@ -3,12 +3,15 @@
  * Plugin Name: Clanspress
  * Plugin URI: https://clanspress.com
  * Description: Community management system for Gamers and Sports teams
- * Version: 1.0.0
+ * Version: 0.1.0
+ * Requires at least: 6.7
+ * Tested up to: 6.8
  * Requires PHP: 8.2
  * Author: kernow.dev
  * Author URI: https://kernow.dev
  * Donate link: https://kernow.dev
- * License: See license.txt
+ * License: GPL-2.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: clanspress
  * Domain Path: /languages
  *
@@ -23,11 +26,17 @@ namespace Kernowdev\Clanspress;
 use AllowDynamicProperties;
 use Kernowdev\Clanspress\Admin\Settings;
 use Kernowdev\Clanspress\Extensions\Loader as Extension_Loader;
-use Kernowdev\Clanspress\Notifications\Notifications;
+use Kernowdev\Clanspress\Cross_Site_Match_Sync;
+use Kernowdev\Clanspress\Public_Rest;
 
 // Use composer autoload.
 require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/inc/class-block-patterns.php';
 require_once __DIR__ . '/inc/clanspress-private-media.php';
+require_once __DIR__ . '/inc/clanspress-team-challenge-uploads.php';
+require_once __DIR__ . '/inc/functions-block-templates.php';
+require_once __DIR__ . '/inc/functions-country-flags.php';
+require_once __DIR__ . '/inc/functions-block-entity-link.php';
 require_once __DIR__ . '/shortcut-function.php';
 
 /**
@@ -40,14 +49,14 @@ final class Main {
 	 *
 	 * @var string
 	 */
-	public const VERSION = '0.0.1';
+	public const VERSION = '0.1.0';
 
 	/**
-	 * What version of maintenance upgrades we are at.
+	 * Maintenance upgrade counter (single step for 1.0.0 public release).
 	 *
 	 * @var int
 	 */
-	public const MAINTENANCE_VERSION = 3;
+	public const MAINTENANCE_VERSION = 1;
 
 	/**
 	 * Singleton instance of plugin.
@@ -137,8 +146,9 @@ final class Main {
 			return;
 		}
 
-		// Make sure any rewrite functionality has been loaded.
-		flush_rewrite_rules();
+		Extension_Loader::persist_required_extensions_on_activation();
+		// Regenerate on next request so extensions that register rewrites on `init` are included.
+		delete_option( 'rewrite_rules' );
 	}
 
 	/**
@@ -297,6 +307,8 @@ final class Main {
 			dirname( $this->basename ) . '/languages/'
 		);
 
+		require_once $this->path . 'inc/groups/functions.php';
+
 		// Perform maintenance.
 		$this->maybe_run_maintenance();
 
@@ -307,8 +319,10 @@ final class Main {
 		// React settings app calls `clanspress/v1/admin/*` from the browser.
 		Settings::instance();
 
-		// Initialize notifications system.
-		Notifications::instance();
+		add_action( 'rest_api_init', array( Public_Rest::class, 'register_routes' ) );
+		add_action( 'rest_api_init', array( Cross_Site_Match_Sync::class, 'register_routes' ) );
+
+		add_action( 'init', array( Block_Patterns::class, 'register' ), 100 );
 	}
 
 	/**
@@ -325,19 +339,25 @@ final class Main {
 			$this->_token . '_maint_version'
 		);
 
+		// Pre-1.0.0 installs used higher integers; normalize so the 1.0 maintenance step can run once.
+		if ( $maintenance_version > self::MAINTENANCE_VERSION ) {
+			$maintenance_version = 0;
+		}
+
 		if ( $maintenance_version < self::MAINTENANCE_VERSION ) {
 			for (
-					$version = $maintenance_version + 1;
-					$version <= self::MAINTENANCE_VERSION; $version++
+				$version = $maintenance_version + 1;
+				$version <= self::MAINTENANCE_VERSION;
+				$version++
 			) {
 				Maintenance::run( $version );
 			}
-		}
 
-		update_option(
-			$this->_token . '_maint_version',
-			self::MAINTENANCE_VERSION
-		);
+			update_option(
+				$this->_token . '_maint_version',
+				self::MAINTENANCE_VERSION
+			);
+		}
 	}
 
 	/**

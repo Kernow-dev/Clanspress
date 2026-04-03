@@ -19,6 +19,18 @@
     "width": {
       "type": "number",
       "default": 120
+    },
+    "isLink": {
+      "type": "boolean",
+      "default": false
+    },
+    "linkTarget": {
+      "type": "string",
+      "default": "_self"
+    },
+    "rel": {
+      "type": "string",
+      "default": ""
     }
   },
   "supports": {

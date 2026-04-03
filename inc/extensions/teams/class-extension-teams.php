@@ -6,12 +6,14 @@ use Kernowdev\Clanspress\Main;
 use Kernowdev\Clanspress\Extensions\Abstract_Settings;
 use Kernowdev\Clanspress\Extensions\Teams\Admin;
 use Kernowdev\Clanspress\Extensions\Teams\Team;
+use Kernowdev\Clanspress\Extensions\Teams\Team_Challenges;
 use Kernowdev\Clanspress\Extensions\Teams\Team_Data_Store;
 use Kernowdev\Clanspress\Extensions\Teams\Team_Data_Store_CPT;
 
 require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/../data-stores/class-wp-post-meta-data-store.php';
 require_once __DIR__ . '/class-team-data-store-cpt.php';
+require_once __DIR__ . '/class-team-challenges.php';
 
 /**
  * Extension skeleton.
@@ -24,6 +26,18 @@ class Teams extends Skeleton {
 	public const TEAM_ROLE_EDITOR = 'editor';
 	public const TEAM_ROLE_MEMBER = 'member';
 	public const TEAM_ROLE_BANNED = 'banned';
+
+	/**
+	 * Slug for the virtual `wp_template_part` resolved from `templates/teams/parts/team-profile-header.html`.
+	 */
+	public const TEAM_PROFILE_HEADER_TEMPLATE_PART_SLUG = 'clanspress-team-profile-header';
+
+	/**
+	 * Cached {@see \WP_Block_Template} for {@see Teams::TEAM_PROFILE_HEADER_TEMPLATE_PART_SLUG} (per request).
+	 *
+	 * @var \WP_Block_Template|null
+	 */
+	protected static ?\WP_Block_Template $team_profile_header_template_part_cache = null;
 
 	/**
 	 * Teams admin settings manager.
@@ -48,7 +62,7 @@ class Teams extends Skeleton {
 			'cp_teams',
 			'Adds team functionality.',
 			'',
-			'0.0.1',
+			'1.0.0',
 			array( 'cp_players' )
 		);
 	}
@@ -111,7 +125,10 @@ class Teams extends Skeleton {
 		 */
 		do_action( "clanspress_teams_mode_{$team_mode}", $this );
 
-		add_action( 'init', array( $this, 'register_team_front_routes' ), 5 );
+		// After `cp_team` rewrites register (init:10) so `teams/create` wins over `teams/([^/]+)`.
+		add_filter( 'pre_get_block_file_template', array( $this, 'filter_pre_get_block_file_template_team_profile_header' ), 10, 3 );
+		add_filter( 'get_block_templates', array( $this, 'filter_get_block_templates_include_team_profile_header' ), 10, 3 );
+		add_action( 'init', array( $this, 'register_team_front_routes' ), 15 );
 		add_action( 'init', array( $this, 'register_team_post_type' ), 10 );
 		add_action( 'init', array( $this, 'register_team_meta' ), 10 );
 		add_action( 'init', array( $this, 'register_team_blocks' ), 10 );
@@ -133,16 +150,22 @@ class Teams extends Skeleton {
 		add_action( 'parse_query', array( $this, 'parse_query_for_team_virtual_pages' ) );
 		add_filter( 'posts_pre_query', array( $this, 'posts_pre_query_team_virtual_pages' ), 10, 2 );
 		add_filter( 'template_include', array( $this, 'maybe_load_team_virtual_templates' ), 100 );
+		add_action( 'wp', array( $this, 'set_plugin_block_template_id_for_site_editor' ), 99 );
 		add_action( 'template_redirect', array( $this, 'maybe_fix_team_create_route_404' ), 0 );
+		add_action( 'template_redirect', array( $this, 'maybe_fix_team_events_route_404' ), 0 );
 		add_action( 'template_redirect', array( $this, 'maybe_block_banned_team_access' ), 5 );
 		add_filter( 'pre_render_block', array( $this, 'prime_cp_team_single_loop_for_plugin_template' ), 0, 3 );
 		add_filter( 'render_block_context', array( $this, 'filter_team_singular_block_context' ), 10, 3 );
 		add_filter( 'get_block_templates', array( $this, 'prefer_plugin_single_cp_team_block_template' ), 100, 3 );
 		add_filter( 'single_template', array( $this, 'maybe_single_team_template' ) );
 		add_filter( 'rest_prepare_cp_team', array( $this, 'rest_prepare_cp_team_merge_meta' ), 10, 3 );
+		add_action( 'add_meta_boxes', array( $this, 'add_team_events_meta_box' ) );
+		add_action( 'save_post_cp_team', array( $this, 'save_team_events_meta_box' ), 10, 2 );
 		add_filter( 'map_meta_cap', array( $this, 'map_team_front_edit_meta_cap' ), 10, 4 );
 		add_filter( 'wp_unique_post_slug', array( $this, 'reserve_team_route_slugs' ), 10, 6 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'maybe_enqueue_team_manage_form_assets' ), 20 );
+
+		Team_Challenges::instance()->register();
 	}
 
 	/**
@@ -461,6 +484,29 @@ class Teams extends Skeleton {
 	}
 
 	/**
+	 * Action slugs used for `teams/{slug}/{action}/` rewrite registration (may omit `events` when the Events extension is off).
+	 *
+	 * @return list<string>
+	 */
+	protected function get_team_front_action_slugs_for_rewrites(): array {
+		$actions = array_keys( $this->get_team_front_action_rewrite_slugs() );
+		if ( ! $this->events_extension_is_active() ) {
+			$actions = array_values( array_diff( $actions, array( 'events' ) ) );
+		}
+
+		return $actions;
+	}
+
+	/**
+	 * Whether the Events extension is enabled so team event routes and templates should resolve.
+	 *
+	 * @return bool
+	 */
+	protected function events_extension_is_active(): bool {
+		return function_exists( 'clanspress_events_extension_active' ) && clanspress_events_extension_active();
+	}
+
+	/**
 	 * Front routes (BuddyPress-style: component / item / action).
 	 *
 	 * - /teams/create/ — global create (no team context).
@@ -471,7 +517,7 @@ class Teams extends Skeleton {
 	public function register_team_front_routes(): void {
 		add_rewrite_rule( '^teams/create/?$', 'index.php?clanspress_team_create=1', 'top' );
 
-		$actions = array_keys( $this->get_team_front_action_rewrite_slugs() );
+		$actions = $this->get_team_front_action_slugs_for_rewrites();
 		foreach ( $actions as $action_slug ) {
 			$action_slug = sanitize_key( (string) $action_slug );
 			if ( '' === $action_slug || 'create' === $action_slug ) {
@@ -480,6 +526,22 @@ class Teams extends Skeleton {
 			add_rewrite_rule(
 				'^teams/([^/]+)/' . preg_quote( $action_slug, '/' ) . '/?$',
 				'index.php?clanspress_team_slug=$matches[1]&clanspress_team_action=' . $action_slug,
+				'top'
+			);
+		}
+
+		if ( $this->events_extension_is_active() ) {
+			// teams/{slug}/events/create/ — add event (before numeric event ID rule).
+			add_rewrite_rule(
+				'^teams/([^/]+)/events/create/?$',
+				'index.php?clanspress_team_slug=$matches[1]&clanspress_team_action=events&clanspress_team_events_sub=create',
+				'top'
+			);
+
+			// teams/{slug}/events/{id}/ — single scheduled event (must be registered after the generic …/events/ rule).
+			add_rewrite_rule(
+				'^teams/([^/]+)/events/([0-9]+)/?$',
+				'index.php?clanspress_team_slug=$matches[1]&clanspress_team_action=events&clanspress_team_event_id=$matches[2]',
 				'top'
 			);
 		}
@@ -500,6 +562,7 @@ class Teams extends Skeleton {
 	public function get_team_front_action_rewrite_slugs(): array {
 		$actions = array(
 			'manage' => __( 'Manage', 'clanspress' ),
+			'events' => __( 'Events', 'clanspress' ),
 		);
 
 		/**
@@ -523,6 +586,9 @@ class Teams extends Skeleton {
 		$vars[] = 'clanspress_team_action';
 		$vars[] = 'clanspress_team_slug';
 		$vars[] = 'clanspress_manage_team_id';
+		$vars[] = 'clanspress_team_event_id';
+		$vars[] = 'clanspress_team_events_sub';
+		$vars[] = 'clanspress_events_team_id';
 		$vars[] = 'cp_team_subpage';
 		return $vars;
 	}
@@ -568,7 +634,7 @@ class Teams extends Skeleton {
 	 * @return array<string, mixed>
 	 */
 	protected function strip_conflicting_query_vars_for_team_virtual_routes( array $query_vars ): array {
-		foreach ( array( 'pagename', 'name', 'page_id', 'p', 'attachment', 'attachment_id', 'year', 'monthnum', 'day', 'feed' ) as $key ) {
+		foreach ( array( 'pagename', 'name', 'page_id', 'p', 'attachment', 'attachment_id', 'year', 'monthnum', 'day', 'feed', 'post_type', 'cp_team', 'error' ) as $key ) {
 			unset( $query_vars[ $key ] );
 		}
 
@@ -610,7 +676,25 @@ class Teams extends Skeleton {
 			return $this->strip_conflicting_query_vars_for_team_virtual_routes( $query_vars );
 		}
 
-		$actions = array_keys( $this->get_team_front_action_rewrite_slugs() );
+		if ( $this->events_extension_is_active() ) {
+			if ( preg_match( '#^teams/([^/]+)/events/create/?$#', $path, $m ) ) {
+				$query_vars['clanspress_team_slug']       = $m[1];
+				$query_vars['clanspress_team_action']     = 'events';
+				$query_vars['clanspress_team_events_sub'] = 'create';
+
+				return $this->strip_conflicting_query_vars_for_team_virtual_routes( $query_vars );
+			}
+
+			if ( preg_match( '#^teams/([^/]+)/events/([0-9]+)/?$#', $path, $m ) ) {
+				$query_vars['clanspress_team_slug']     = $m[1];
+				$query_vars['clanspress_team_action']   = 'events';
+				$query_vars['clanspress_team_event_id'] = $m[2];
+
+				return $this->strip_conflicting_query_vars_for_team_virtual_routes( $query_vars );
+			}
+		}
+
+		$actions = $this->get_team_front_action_slugs_for_rewrites();
 		foreach ( $actions as $action_slug ) {
 			$action_slug = sanitize_key( (string) $action_slug );
 			if ( '' === $action_slug || 'create' === $action_slug ) {
@@ -630,15 +714,12 @@ class Teams extends Skeleton {
 
 	/**
 	 * If core still marked /teams/create as 404, recover before templates load (rewrite flush / ordering edge cases).
+	 * Does not depend on team directory mode; create is always available when Teams is enabled.
 	 *
 	 * @return void
 	 */
 	public function maybe_fix_team_create_route_404(): void {
 		if ( ! is_404() ) {
-			return;
-		}
-
-		if ( ! $this->is_team_directories_mode() ) {
 			return;
 		}
 
@@ -670,6 +751,66 @@ class Teams extends Skeleton {
 		$wp_query->posts               = array();
 
 		set_query_var( 'clanspress_team_create', '1' );
+	}
+
+	/**
+	 * If core still marked /teams/{slug}/events/ as 404, recover before templates load (rewrite flush / ordering edge cases).
+	 *
+	 * Does not require team directory mode (unlike {@see maybe_fix_team_create_route_404}); events list URLs are public.
+	 *
+	 * @return void
+	 */
+	public function maybe_fix_team_events_route_404(): void {
+		if ( ! is_404() ) {
+			return;
+		}
+
+		if ( ! $this->events_extension_is_active() ) {
+			return;
+		}
+
+		$path       = $this->get_canonical_request_path();
+		$slug       = '';
+		$event_id   = 0;
+		$events_sub = '';
+
+		if ( preg_match( '#^teams/([^/]+)/events/([0-9]+)/?$#', $path, $m ) ) {
+			$slug     = $m[1];
+			$event_id = (int) $m[2];
+		} elseif ( preg_match( '#^teams/([^/]+)/events/create/?$#', $path, $m ) ) {
+			$slug       = $m[1];
+			$events_sub = 'create';
+		} elseif ( preg_match( '#^teams/([^/]+)/events/?$#', $path, $m ) ) {
+			$slug = $m[1];
+		} else {
+			return;
+		}
+
+		global $wp_query;
+
+		status_header( 200 );
+		nocache_headers();
+		$wp_query->is_404              = false;
+		$wp_query->is_home             = false;
+		$wp_query->is_front_page       = false;
+		$wp_query->is_posts_page       = false;
+		$wp_query->is_page             = false;
+		$wp_query->is_singular         = false;
+		$wp_query->is_single           = false;
+		$wp_query->is_archive          = false;
+		$wp_query->is_post_type_archive = false;
+		$wp_query->found_posts         = 0;
+		$wp_query->max_num_pages       = 0;
+		$wp_query->posts               = array();
+
+		set_query_var( 'clanspress_team_slug', $slug );
+		set_query_var( 'clanspress_team_action', 'events' );
+		if ( $event_id > 0 ) {
+			set_query_var( 'clanspress_team_event_id', $event_id );
+		}
+		if ( '' !== $events_sub ) {
+			set_query_var( 'clanspress_team_events_sub', $events_sub );
+		}
 	}
 
 	/**
@@ -730,6 +871,56 @@ class Teams extends Skeleton {
 	}
 
 	/**
+	 * Point the Site Editor admin-bar link at Clanspress team templates instead of the theme fallback.
+	 *
+	 * Virtual team URLs use PHP loaders while core may have resolved a generic theme template first.
+	 *
+	 * @return void
+	 */
+	public function set_plugin_block_template_id_for_site_editor(): void {
+		if ( is_admin() || ! function_exists( 'wp_is_block_theme' ) || ! wp_is_block_theme() ) {
+			return;
+		}
+
+		global $_wp_current_template_id;
+
+		if ( is_singular( 'cp_team' ) ) {
+			$_wp_current_template_id = 'clanspress//single-cp_team';
+			return;
+		}
+
+		if ( ! $this->is_team_directories_mode() ) {
+			return;
+		}
+
+		if ( (int) get_query_var( 'clanspress_team_create' ) ) {
+			$_wp_current_template_id = 'clanspress//teams-create';
+			return;
+		}
+
+		$action = sanitize_key( (string) get_query_var( 'clanspress_team_action' ) );
+		if ( '' === $action ) {
+			return;
+		}
+
+		if ( 'manage' === $action ) {
+			$_wp_current_template_id = 'clanspress//teams-manage';
+			return;
+		}
+
+		if ( 'events' === $action && $this->events_extension_is_active() ) {
+			$events_sub = sanitize_key( (string) get_query_var( 'clanspress_team_events_sub' ) );
+			if ( 'create' === $events_sub ) {
+				$_wp_current_template_id = 'clanspress//teams-events-create';
+				return;
+			}
+			$_wp_current_template_id = ( (int) get_query_var( 'clanspress_team_event_id' ) > 0 )
+				? 'clanspress//teams-events-single'
+				: 'clanspress//teams-events';
+		}
+	}
+
+	/**
 	 * Load virtual team templates (create / manage).
 	 *
 	 * @param string $template Default template path.
@@ -737,27 +928,33 @@ class Teams extends Skeleton {
 	 */
 	public function maybe_load_team_virtual_templates( string $template ): string {
 		if ( (int) get_query_var( 'clanspress_team_create' ) ) {
-			if ( ! $this->is_team_directories_mode() ) {
-				return $template;
-			}
-
 			if ( ! is_user_logged_in() ) {
 				wp_safe_redirect( wp_login_url( $this->get_team_create_url() ) );
 				exit;
 			}
 
-			$templates = array( 'teams-create.php', 'index.php' );
-			$located   = locate_template( $templates );
+			$hierarchy = array( 'teams-create.php', 'index.php' );
+			$located   = locate_template( array( 'teams-create.php' ) );
+			if ( ! $located ) {
+				$located = clanspress()->path . 'templates/teams/teams-create.php';
+			}
 
-			return apply_filters(
+			$resolved = function_exists( 'locate_block_template' )
+				? locate_block_template( $located, 'teams-create', $hierarchy )
+				: $located;
+			if ( ! $resolved && is_readable( $located ) ) {
+				$resolved = $located;
+			}
+
+			return (string) apply_filters(
 				'clanspress_load_team_create_template',
-				locate_block_template( $located, 'teams-create', $templates )
+				$resolved ? $resolved : $template
 			);
 		}
 
 		$team_action = sanitize_key( (string) get_query_var( 'clanspress_team_action' ) );
 		if ( '' !== $team_action ) {
-			if ( ! is_user_logged_in() ) {
+			if ( 'events' !== $team_action && ! is_user_logged_in() ) {
 				wp_safe_redirect( wp_login_url( $this->get_current_url() ) );
 				exit;
 			}
@@ -799,6 +996,81 @@ class Teams extends Skeleton {
 			 */
 			do_action( 'clanspress_team_action_dispatch', $team_action, $team_id, $this );
 
+			if ( 'events' === $team_action ) {
+				if ( ! $this->events_extension_is_active() ) {
+					status_header( 404 );
+					nocache_headers();
+					$not_found = get_404_template();
+					return $not_found ? $not_found : $template;
+				}
+				if ( function_exists( 'clanspress_events_are_enabled_for_team' ) && ! clanspress_events_are_enabled_for_team( $team_id ) ) {
+					status_header( 404 );
+					nocache_headers();
+					$not_found = get_404_template();
+					return $not_found ? $not_found : $template;
+				}
+
+				set_query_var( 'clanspress_events_team_id', $team_id );
+
+				$events_sub = sanitize_key( (string) get_query_var( 'clanspress_team_events_sub' ) );
+				if ( 'create' === $events_sub ) {
+					if ( ! is_user_logged_in() ) {
+						wp_safe_redirect( wp_login_url( $this->get_current_url() ) );
+						exit;
+					}
+					if ( ! $this->user_can_manage_team_on_frontend( $team_id ) ) {
+						$back = $this->get_team_action_url( $team_id, 'events' );
+						wp_safe_redirect( $back ? $back : home_url( '/' ) );
+						exit;
+					}
+
+					$hierarchy = array( 'teams-events-create.php', 'index.php' );
+					$located   = locate_template( array( 'teams-events-create.php' ) );
+					if ( ! $located ) {
+						$located = clanspress()->path . 'templates/teams/teams-events-create.php';
+					}
+
+					return (string) apply_filters(
+						'clanspress_load_team_action_template',
+						function_exists( 'locate_block_template' ) ? locate_block_template( $located, 'teams-events-create', $hierarchy ) : $located,
+						$team_action,
+						$team_id,
+						$this
+					);
+				}
+
+				$event_id = (int) get_query_var( 'clanspress_team_event_id' );
+				if ( $event_id > 0 ) {
+					$hierarchy = array( 'teams-events-single.php', 'index.php' );
+					$located   = locate_template( array( 'teams-events-single.php' ) );
+					if ( ! $located ) {
+						$located = clanspress()->path . 'templates/teams/teams-events-single.php';
+					}
+
+					return (string) apply_filters(
+						'clanspress_load_team_action_template',
+						function_exists( 'locate_block_template' ) ? locate_block_template( $located, 'teams-events-single', $hierarchy ) : $located,
+						$team_action,
+						$team_id,
+						$this
+					);
+				}
+
+				$hierarchy = array( 'teams-events.php', 'index.php' );
+				$located   = locate_template( array( 'teams-events.php' ) );
+				if ( ! $located ) {
+					$located = clanspress()->path . 'templates/teams/teams-events.php';
+				}
+
+				return (string) apply_filters(
+					'clanspress_load_team_action_template',
+					function_exists( 'locate_block_template' ) ? locate_block_template( $located, 'teams-events', $hierarchy ) : $located,
+					$team_action,
+					$team_id,
+					$this
+				);
+			}
+
 			if ( 'manage' === $team_action ) {
 				if ( ! $this->user_can_manage_team_on_frontend( $team_id ) ) {
 					wp_safe_redirect( home_url( '/' ) );
@@ -810,6 +1082,9 @@ class Teams extends Skeleton {
 				// Hierarchy slug must match register_block_template id segment (teams-manage), not team-manage.
 				$templates = array( 'teams-manage.php', 'index.php' );
 				$located   = locate_template( $templates );
+				if ( ! $located ) {
+					$located = clanspress()->path . 'templates/teams/teams-manage.php';
+				}
 
 				$loaded = apply_filters(
 					'clanspress_load_team_manage_template',
@@ -1108,6 +1383,61 @@ class Teams extends Skeleton {
 	}
 
 	/**
+	 * Published teams the user may manage on the front end (admin or editor roster role, or site teams admin).
+	 *
+	 * @param int $user_id User ID.
+	 * @return array<int, int> Unique `cp_team` post IDs.
+	 */
+	public function get_user_managed_team_ids( int $user_id ): array {
+		if ( $user_id < 1 ) {
+			return array();
+		}
+
+		$ids = array();
+
+		$authored = get_posts(
+			array(
+				'post_type'              => self::POST_TYPE,
+				'post_status'            => 'publish',
+				'author'                 => $user_id,
+				'posts_per_page'         => 200,
+				'fields'                 => 'ids',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => false,
+			)
+		);
+		foreach ( $authored as $tid ) {
+			$tid = (int) $tid;
+			if ( $tid > 0 && $this->user_can_manage_team_on_frontend( $tid, $user_id ) ) {
+				$ids[] = $tid;
+			}
+		}
+
+		$indexed = get_user_meta( $user_id, 'cp_team_membership_ids', true );
+		if ( is_array( $indexed ) ) {
+			foreach ( array_map( 'intval', $indexed ) as $tid ) {
+				if ( $tid < 1 || in_array( $tid, $ids, true ) ) {
+					continue;
+				}
+				if ( $this->user_can_manage_team_on_frontend( $tid, $user_id ) ) {
+					$ids[] = $tid;
+				}
+			}
+		}
+
+		/**
+		 * Filter resolved managed team IDs for a user.
+		 *
+		 * @param array $ids     Unique team post IDs.
+		 * @param int   $user_id User ID.
+		 * @param Teams $extension Teams extension instance.
+		 */
+		$ids = (array) apply_filters( 'clanspress_user_managed_team_ids', $ids, $user_id, $this );
+
+		return array_values( array_unique( array_filter( array_map( 'intval', $ids ) ) ) );
+	}
+
+	/**
 	 * Whether the user is a team admin on the front end.
 	 *
 	 * @param int      $team_id Team post ID.
@@ -1346,6 +1676,13 @@ class Teams extends Skeleton {
 			return new \WP_Error( 'notifications_unavailable', __( 'Notifications system not available.', 'clanspress' ) );
 		}
 
+		if ( function_exists( 'clanspress_notifications_extension_active' ) && ! clanspress_notifications_extension_active() ) {
+			return new \WP_Error(
+				'notifications_unavailable',
+				__( 'Notifications are not available. Enable the Notifications extension under Clanspress → Extensions.', 'clanspress' )
+			);
+		}
+
 		$team      = get_post( $team_id );
 		$inviter   = get_userdata( $inviter_id );
 		$team_name = $team ? $team->post_title : __( 'a team', 'clanspress' );
@@ -1434,6 +1771,12 @@ class Teams extends Skeleton {
 
 			case 'team_invite_decline':
 				return $this->handle_team_invite_decline( $notification, $user_id );
+
+			case 'team_challenge_accept':
+				return Team_Challenges::handle_notification_accept( $notification, $user_id );
+
+			case 'team_challenge_decline':
+				return Team_Challenges::handle_notification_decline( $notification, $user_id );
 
 			default:
 				return null;
@@ -2164,14 +2507,14 @@ class Teams extends Skeleton {
 			do_action( 'clanspress_team_manage_form_after_sections', $team_id, $this );
 			?>
 
-			<div class="clanspress-team-create-form__actions" role="navigation" aria-label="<?php esc_attr_e( 'Step navigation', 'clanspress' ); ?>">
-				<button type="button" class="button" data-wp-on--click="actions.previousStep" data-wp-bind--hidden="!state.canGoBack"><?php esc_html_e( 'Back', 'clanspress' ); ?></button>
-				<button type="button" class="button" data-wp-on--click="actions.nextStep" data-wp-bind--hidden="!state.canGoNext"><?php esc_html_e( 'Next', 'clanspress' ); ?></button>
+			<div class="clanspress-team-create-form__actions clanspress-team-create-form__actions--split clanspress-team-manage-form__step-actions" role="navigation" aria-label="<?php esc_attr_e( 'Step navigation', 'clanspress' ); ?>">
+				<button type="button" class="button clanspress-team-create-form__nav-btn" data-wp-on--click="actions.previousStep" data-wp-bind--hidden="!state.canGoBack()"><?php esc_html_e( 'Back', 'clanspress' ); ?></button>
+				<div class="clanspress-team-create-form__actions-end">
+					<button type="button" class="button clanspress-team-create-form__nav-btn" data-wp-on--click="actions.nextStep" data-wp-bind--hidden="!state.canGoNext()"><?php esc_html_e( 'Next', 'clanspress' ); ?></button>
+					<button type="submit" class="button button-primary clanspress-team-create-form__nav-btn clanspress-team-create-form__nav-btn--primary"><?php esc_html_e( 'Save changes', 'clanspress' ); ?></button>
+					<a class="button clanspress-team-create-form__nav-btn" href="<?php echo esc_url( get_permalink( $team_id ) ); ?>"><?php esc_html_e( 'View team', 'clanspress' ); ?></a>
+				</div>
 			</div>
-			<p class="clanspress-team-manage-form__actions">
-				<button type="submit" class="button button-primary"><?php esc_html_e( 'Save changes', 'clanspress' ); ?></button>
-				<a class="button" href="<?php echo esc_url( get_permalink( $team_id ) ); ?>"><?php esc_html_e( 'View team', 'clanspress' ); ?></a>
-			</p>
 		</form>
 		</div>
 		<?php
@@ -2704,6 +3047,90 @@ class Teams extends Skeleton {
 				'show_in_rest'      => true,
 			)
 		);
+
+		$this->register_cp_team_meta_key(
+			'cp_team_events_enabled',
+			array(
+				'type'              => 'boolean',
+				'single'            => true,
+				'default'           => true,
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'show_in_rest'      => true,
+			)
+		);
+	}
+
+	/**
+	 * Meta box: per-team events toggle (requires global events enabled).
+	 *
+	 * @return void
+	 */
+	public function add_team_events_meta_box(): void {
+		if ( ! function_exists( 'clanspress_events_extension_active' ) || ! clanspress_events_extension_active() ) {
+			return;
+		}
+		if ( ! function_exists( 'clanspress_events_are_globally_enabled' ) || ! clanspress_events_are_globally_enabled() ) {
+			return;
+		}
+
+		add_meta_box(
+			'clanspress_team_events',
+			__( 'Events', 'clanspress' ),
+			array( $this, 'render_team_events_meta_box' ),
+			'cp_team',
+			'side',
+			'default'
+		);
+	}
+
+	/**
+	 * Output the team events meta box.
+	 *
+	 * @param \WP_Post $post Team post.
+	 * @return void
+	 */
+	public function render_team_events_meta_box( \WP_Post $post ): void {
+		wp_nonce_field( 'clanspress_team_events_meta', 'clanspress_team_events_meta_nonce' );
+		$raw = get_post_meta( $post->ID, 'cp_team_events_enabled', true );
+		// Empty meta: enabled; explicit off stored as false/0.
+		$checked = ! ( false === $raw || 0 === $raw || '0' === $raw );
+		?>
+		<p>
+			<label>
+				<input type="checkbox" name="cp_team_events_enabled" value="1" <?php checked( $checked ); ?> />
+				<?php esc_html_e( 'Enable scheduled events for this team', 'clanspress' ); ?>
+			</label>
+		</p>
+		<p class="description">
+			<?php esc_html_e( 'Uncheck to hide team event routes, listings, and creation for this team.', 'clanspress' ); ?>
+		</p>
+		<?php
+	}
+
+	/**
+	 * Save the team events meta box.
+	 *
+	 * @param int     $post_id Post ID.
+	 * @param \WP_Post $post    Post object.
+	 * @return void
+	 */
+	public function save_team_events_meta_box( int $post_id, \WP_Post $post ): void {
+		if ( ! isset( $_POST['clanspress_team_events_meta_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['clanspress_team_events_meta_nonce'] ) ), 'clanspress_team_events_meta' ) ) {
+			return;
+		}
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+		if ( 'cp_team' !== $post->post_type ) {
+			return;
+		}
+
+		$enabled_raw = isset( $_POST['cp_team_events_enabled'] ) ? wp_unslash( $_POST['cp_team_events_enabled'] ) : '';
+		$enabled     = ( '1' === (string) $enabled_raw );
+		update_post_meta( $post_id, 'cp_team_events_enabled', $enabled );
 	}
 
 	/**
@@ -3640,7 +4067,10 @@ class Teams extends Skeleton {
 		}
 
 		$block_name = isset( $parsed_block['blockName'] ) ? (string) $parsed_block['blockName'] : '';
-		if ( '' === $block_name || strpos( $block_name, 'clanspress/team-' ) !== 0 ) {
+		$is_team_block_family = ( '' !== $block_name && strpos( $block_name, 'clanspress/team-' ) === 0 );
+		$is_player_query      = ( 'clanspress/player-query' === $block_name );
+		$is_player_template   = ( 'clanspress/player-template' === $block_name );
+		if ( ! $is_team_block_family && ! $is_player_query && ! $is_player_template ) {
 			return $context;
 		}
 
@@ -3679,6 +4109,14 @@ class Teams extends Skeleton {
 		unset( $attributes, $content, $block );
 
 		$team_id = (int) get_query_var( 'clanspress_manage_team_id' );
+
+		// In Site Editor previews the manage route query var is usually missing; show a safe placeholder.
+		if ( $team_id < 1 ) {
+			return sprintf(
+				'<div class="clanspress-team-manage--placeholder"><p>%s</p></div>',
+				esc_html__( 'Select a team to manage.', 'clanspress' )
+			);
+		}
 
 		ob_start();
 		$this->render_frontend_team_manage( $team_id );
@@ -3729,23 +4167,175 @@ class Teams extends Skeleton {
 			'single-cp_team' => array(
 				'title'       => __( 'Single Team', 'clanspress' ),
 				'description' => __( 'Team profile with cover, avatar, record, motto, and description.', 'clanspress' ),
-				'path'        => clanspress()->path . '/templates/teams/single-cp_team.php',
+				'path'        => clanspress()->path . 'templates/teams/single-cp_team.html',
 				// WP 6.7+: tie the plugin template to this CPT so singular views use it in the Site Editor hierarchy.
 				'post_types'  => array( 'cp_team' ),
 			),
+			// Virtual routes (create / manage / events) stay gated by `is_team_directories_mode()` in rewrites
+			// and template loaders; templates are always registered so they remain editable in the Site Editor.
+			'teams-create'          => array(
+				'title'       => __( 'Teams — Create', 'clanspress' ),
+				'description' => __( 'Create team screen at /teams/create/ when team directory mode is enabled.', 'clanspress' ),
+				'path'        => clanspress()->path . 'templates/teams/teams-create.html',
+			),
+			'teams-manage'          => array(
+				'title'       => __( 'Teams — Manage', 'clanspress' ),
+				'description' => __( 'Team management and settings at /teams/{slug}/manage/ when directory mode is enabled.', 'clanspress' ),
+				'path'        => clanspress()->path . 'templates/teams/teams-manage.html',
+			),
+			'teams-events'          => array(
+				'title'       => __( 'Teams — Events', 'clanspress' ),
+				'description' => __( 'Team events list at /teams/{slug}/events/ (block theme).', 'clanspress' ),
+				'path'        => clanspress()->path . 'templates/teams/teams-events.html',
+			),
+			'teams-events-single'   => array(
+				'title'       => __( 'Teams — Event', 'clanspress' ),
+				'description' => __( 'Single team event at /teams/{slug}/events/{id}/ (block theme).', 'clanspress' ),
+				'path'        => clanspress()->path . 'templates/teams/teams-events-single.html',
+			),
+			'teams-events-create'   => array(
+				'title'       => __( 'Teams — Create event', 'clanspress' ),
+				'description' => __( 'Create team event at /teams/{slug}/events/create/ (managers only).', 'clanspress' ),
+				'path'        => clanspress()->path . 'templates/teams/teams-events-create.html',
+			),
 		);
 
-		if ( $this->is_team_directories_mode() ) {
-			$templates['teams-create'] = array(
-				'title' => __( 'Teams — Create', 'clanspress' ),
-				'path'  => clanspress()->path . '/templates/teams/teams-create.php',
-			);
-			$templates['teams-manage'] = array(
-				'title' => __( 'Teams — Manage', 'clanspress' ),
-				'path'  => clanspress()->path . '/templates/teams/teams-manage.php',
-			);
+		return $templates;
+	}
+
+	/**
+	 * Resolves the shared team profile header as a theme-scoped template part for `core/template-part`.
+	 *
+	 * @param \WP_Block_Template|null $block_template Short-circuit return value.
+	 * @param string                  $id             Template id (`theme_slug//slug`).
+	 * @param string                  $template_type  `wp_template` or `wp_template_part`.
+	 * @return \WP_Block_Template|null
+	 */
+	public function filter_pre_get_block_file_template_team_profile_header( $block_template, string $id, string $template_type ) {
+		if ( null !== $block_template || 'wp_template_part' !== $template_type ) {
+			return $block_template;
 		}
 
-		return $templates;
+		$parts = explode( '//', $id, 2 );
+		if ( count( $parts ) < 2 ) {
+			return $block_template;
+		}
+
+		list( $theme, $slug ) = $parts;
+
+		if ( get_stylesheet() !== $theme || self::TEAM_PROFILE_HEADER_TEMPLATE_PART_SLUG !== $slug ) {
+			return $block_template;
+		}
+
+		return $this->get_team_profile_header_template_part();
+	}
+
+	/**
+	 * Lists the virtual team profile header with other template parts (Site Editor, inserter).
+	 *
+	 * @param mixed  $query_result Found templates (expected array of {@see \WP_Block_Template}).
+	 * @param mixed  $query        Query arguments (expected array).
+	 * @param string $template_type Template type.
+	 * @return mixed
+	 */
+	public function filter_get_block_templates_include_team_profile_header( $query_result, $query, $template_type ) {
+		if ( 'wp_template_part' !== $template_type || ! is_array( $query_result ) ) {
+			return $query_result;
+		}
+
+		$query = is_array( $query ) ? $query : array();
+
+		$part = $this->get_team_profile_header_template_part();
+		if ( null === $part ) {
+			return $query_result;
+		}
+
+		$slug = $part->slug;
+
+		if ( ! empty( $query['slug__in'] ) && ! in_array( $slug, (array) $query['slug__in'], true ) ) {
+			return $query_result;
+		}
+
+		if ( ! empty( $query['slug__not_in'] ) && in_array( $slug, (array) $query['slug__not_in'], true ) ) {
+			return $query_result;
+		}
+
+		foreach ( $query_result as $existing ) {
+			if ( isset( $existing->slug ) && $slug === $existing->slug ) {
+				return $query_result;
+			}
+		}
+
+		$query_result[] = $part;
+
+		return $query_result;
+	}
+
+	/**
+	 * Returns a cached {@see \WP_Block_Template} for the team profile header markup file.
+	 *
+	 * @return \WP_Block_Template|null
+	 */
+	protected function get_team_profile_header_template_part(): ?\WP_Block_Template {
+		if ( null !== self::$team_profile_header_template_part_cache ) {
+			return self::$team_profile_header_template_part_cache;
+		}
+
+		self::$team_profile_header_template_part_cache = $this->create_team_profile_header_template_part_object();
+
+		return self::$team_profile_header_template_part_cache;
+	}
+
+	/**
+	 * Builds the virtual template part from `templates/teams/parts/team-profile-header.html`.
+	 *
+	 * Mirrors {@see _build_block_template_result_from_file()} for `wp_template_part` (hooked blocks).
+	 *
+	 * @return \WP_Block_Template|null
+	 */
+	protected function create_team_profile_header_template_part_object(): ?\WP_Block_Template {
+		$path = clanspress()->path . 'templates/teams/parts/team-profile-header.html';
+
+		if ( ! is_readable( $path ) ) {
+			return null;
+		}
+
+		$raw = file_get_contents( $path );
+		if ( false === $raw || '' === trim( $raw ) ) {
+			return null;
+		}
+
+		$theme = get_stylesheet();
+		$slug  = self::TEAM_PROFILE_HEADER_TEMPLATE_PART_SLUG;
+
+		$template                 = new \WP_Block_Template();
+		$template->id             = $theme . '//' . $slug;
+		$template->theme          = $theme;
+		$template->slug           = $slug;
+		$template->type           = 'wp_template_part';
+		$template->title          = __( 'Team profile header', 'clanspress' );
+		$template->description    = __( 'Shared cover, stats row, and profile navigation for Clanspress team templates.', 'clanspress' );
+		$template->content        = $raw;
+		$template->source         = 'plugin';
+		$template->origin         = 'plugin';
+		$template->plugin         = 'clanspress';
+		$template->status         = 'publish';
+		$template->has_theme_file = true;
+		$template->is_custom      = true;
+		$template->area           = \WP_TEMPLATE_PART_AREA_UNCATEGORIZED;
+
+		$content = get_comment_delimited_block_content(
+			'core/template-part',
+			array(),
+			$template->content
+		);
+		$content           = apply_block_hooks_to_content(
+			$content,
+			$template,
+			'insert_hooked_blocks_and_set_ignored_hooked_blocks_metadata'
+		);
+		$template->content = remove_serialized_parent_block( $content );
+
+		return $template;
 	}
 }

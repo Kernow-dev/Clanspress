@@ -59,7 +59,7 @@ const parsePlayerSettingsRouteFromWindow = () => {
 			return { nav: null, panel: null };
 		}
 		const parts = rest.split( '/' ).filter( Boolean );
-		return { nav: parts[0] || null, panel: parts[1] || null };
+		return { nav: parts[ 0 ] || null, panel: parts[ 1 ] || null };
 	} catch {
 		return { nav: null, panel: null };
 	}
@@ -488,9 +488,7 @@ const { state, actions } = store( 'clanspress-player-settings', {
 					credentials: 'same-origin',
 					headers: {
 						'Content-Type': 'application/json',
-						...( restNonce
-							? { 'X-WP-Nonce': restNonce }
-							: {} ),
+						...( restNonce ? { 'X-WP-Nonce': restNonce } : {} ),
 					},
 					body:
 						method === 'GET' || method === 'HEAD'
@@ -560,7 +558,8 @@ const { state, actions } = store( 'clanspress-player-settings', {
 						return;
 					}
 					const firstNav = state.root.querySelector( '.nav-item' );
-					const navButton = firstNav?.querySelector( '.nav-item-header' );
+					const navButton =
+						firstNav?.querySelector( '.nav-item-header' );
 					const subItem = firstNav?.querySelector( '.nav-sub-item' );
 					const navId = navButton?.getAttribute( 'aria-controls' );
 					const panelId = subItem

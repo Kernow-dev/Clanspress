@@ -22,6 +22,18 @@
     },
     "textAlign": {
       "type": "string"
+    },
+    "isLink": {
+      "type": "boolean",
+      "default": false
+    },
+    "linkTarget": {
+      "type": "string",
+      "default": "_self"
+    },
+    "rel": {
+      "type": "string",
+      "default": ""
     }
   },
   "supports": {
@@ -31,9 +43,16 @@
       "margin": true,
       "padding": true
     },
+    "color": {
+      "link": true,
+      "__experimentalDefaultControls": {
+        "link": true
+      }
+    },
     "typography": {
       "fontSize": true,
-      "lineHeight": true
+      "lineHeight": true,
+      "textAlign": true
     }
   },
   "editorScript": "file:./index.js",

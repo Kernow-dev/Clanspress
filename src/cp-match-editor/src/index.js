@@ -42,6 +42,8 @@ function MatchMetaFields() {
 					onChange={ ( v ) =>
 						patch( 'cp_match_home_team_id', parseInt( v, 10 ) || 0 )
 					}
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
 				/>
 			</PanelRow>
 			<PanelRow>
@@ -53,6 +55,8 @@ function MatchMetaFields() {
 					onChange={ ( v ) =>
 						patch( 'cp_match_away_team_id', parseInt( v, 10 ) || 0 )
 					}
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
 				/>
 			</PanelRow>
 			<PanelRow>
@@ -64,6 +68,8 @@ function MatchMetaFields() {
 					) }
 					value={ scheduled }
 					onChange={ ( v ) => patch( 'cp_match_scheduled_at', v ) }
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
 				/>
 			</PanelRow>
 			<PanelRow>
@@ -82,6 +88,8 @@ function MatchMetaFields() {
 					onChange={ ( v ) =>
 						patch( 'cp_match_home_score', parseInt( v, 10 ) || 0 )
 					}
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
 				/>
 			</PanelRow>
 			<PanelRow>
@@ -92,6 +100,8 @@ function MatchMetaFields() {
 					onChange={ ( v ) =>
 						patch( 'cp_match_away_score', parseInt( v, 10 ) || 0 )
 					}
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
 				/>
 			</PanelRow>
 			<PanelRow>
@@ -99,6 +109,8 @@ function MatchMetaFields() {
 					label={ __( 'Venue', 'clanspress' ) }
 					value={ venue }
 					onChange={ ( v ) => patch( 'cp_match_venue', v ) }
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
 				/>
 			</PanelRow>
 		</>

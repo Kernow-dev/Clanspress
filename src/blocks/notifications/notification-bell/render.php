@@ -13,14 +13,11 @@ $user_id        = get_current_user_id();
 $show_dropdown  = $attributes['showDropdown'] ?? true;
 $dropdown_count = $attributes['dropdownCount'] ?? 10;
 
-$unread_count    = clanspress_get_unread_notification_count( $user_id );
-$notifications   = array();
+$unread_count      = clanspress_get_unread_notification_count( $user_id );
 $notifications_url = clanspress_get_notifications_url( $user_id );
 
-if ( $show_dropdown ) {
-	$result        = clanspress_get_notifications( $user_id, 1, $dropdown_count );
-	$notifications = $result['notifications'];
-}
+// List body is loaded on first open via REST (see view.js loadNotifications) — avoid a duplicate DB query on every page view.
+$notifications = array();
 
 $context = array(
 	'isOpen'             => false,
@@ -49,11 +46,12 @@ $context = array(
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
 		'class' => 'clanspress-notification-bell',
-	)
+	),
+	$block
 );
 ?>
 <div
-	<?php echo $wrapper_attributes; // phpcs:ignore ?>
+	<?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes. ?>
 	data-wp-interactive="clanspress/notification-bell"
 	data-wp-context="<?php echo esc_attr( wp_json_encode( $context ) ); ?>"
 	data-wp-init="callbacks.init"
@@ -114,14 +112,17 @@ $wrapper_attributes = get_block_wrapper_attributes(
 				class="clanspress-notification-bell__dropdown-content"
 				data-wp-class--is-loading="context.isLoading"
 			>
-				<div class="clanspress-notification-bell__list" data-wp-watch="callbacks.renderNotifications">
+				<div
+					class="clanspress-notification-bell__list"
+					data-wp-watch="callbacks.renderNotifications"
+				>
 					<?php if ( empty( $notifications ) ) : ?>
 						<p class="clanspress-notification-bell__empty">
 							<?php esc_html_e( 'No notifications yet.', 'clanspress' ); ?>
 						</p>
 					<?php else : ?>
 						<?php foreach ( $notifications as $notification ) : ?>
-							<?php echo clanspress_render_notification( $notification, true ); // phpcs:ignore ?>
+							<?php echo clanspress_render_notification( $notification, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- clanspress_render_notification() returns escaped HTML. ?>
 						<?php endforeach; ?>
 					<?php endif; ?>
 				</div>

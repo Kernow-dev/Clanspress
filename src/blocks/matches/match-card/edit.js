@@ -23,6 +23,8 @@ export default function Edit( { attributes, setAttributes } ) {
 						onChange={ ( v ) =>
 							setAttributes( { matchId: parseInt( v, 10 ) || 0 } )
 						}
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
 					/>
 				</PanelBody>
 			</InspectorControls>

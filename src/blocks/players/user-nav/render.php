@@ -42,7 +42,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 );
 ?>
 <div
-	<?php echo $wrapper_attributes; // phpcs:ignore ?>
+	<?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes. ?>
 	data-wp-interactive="clanspress/user-nav"
 	data-wp-context="<?php echo esc_attr( wp_json_encode( $context ) ); ?>"
 	data-wp-on-document--click="actions.handleOutsideClick"

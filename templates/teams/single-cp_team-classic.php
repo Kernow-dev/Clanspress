@@ -2,7 +2,7 @@
 /**
  * Single team template for classic (non-block) themes.
  *
- * Renders the same block markup as the FSE template (`single-cp_team.php`) via `do_blocks()`
+ * Renders the same block markup as the FSE template (`single-cp_team.html`) via {@see do_blocks()}
  * so team blocks resolve the current post in the loop.
  *
  * @package clanspress
@@ -15,7 +15,7 @@ get_header();
 while ( have_posts() ) {
 	the_post();
 
-	$markup_path = clanspress()->path . 'templates/teams/single-cp_team.php';
+	$markup_path = __DIR__ . '/single-cp_team.html';
 	if ( ! is_readable( $markup_path ) ) {
 		the_content();
 		continue;

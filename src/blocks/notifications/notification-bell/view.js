@@ -10,9 +10,9 @@ import { store, getContext, getElement } from '@wordpress/interactivity';
  * Simple fetch wrapper for REST API calls.
  * Uses native fetch since @wordpress/api-fetch isn't available in module scripts.
  *
- * @param {string} restUrl  Base REST URL from context.
- * @param {string} nonce    WP REST nonce from context.
- * @param {Object} options  Fetch options.
+ * @param {string} restUrl        Base REST URL from context.
+ * @param {string} nonce          WP REST nonce from context.
+ * @param {Object} options        Fetch options.
  * @param {string} options.path   REST API path (relative to namespace, e.g., 'notifications').
  * @param {string} options.method HTTP method (default GET).
  * @param {Object} options.data   Request body data.
@@ -51,90 +51,155 @@ async function restFetch( restUrl, nonce, { path, method = 'GET', data } ) {
 }
 
 /**
- * Escape HTML entities in a string.
+ * Allow only http(s) URLs for href/src built from REST JSON.
  *
- * @param {string} str String to escape.
- * @return {string} Escaped string.
+ * @param {string} href Raw URL.
+ * @return {string} Safe absolute URL or empty string.
  */
-function escapeHtml( str ) {
-	if ( ! str ) {
+function safeHttpUrl( href ) {
+	if ( ! href || typeof href !== 'string' ) {
 		return '';
 	}
-	const div = document.createElement( 'div' );
-	div.textContent = str;
-	return div.innerHTML;
+	try {
+		const u = new URL( href, window.location.origin );
+		if ( u.protocol !== 'http:' && u.protocol !== 'https:' ) {
+			return '';
+		}
+		return u.href;
+	} catch {
+		return '';
+	}
 }
 
 /**
- * Render a single notification item as HTML string.
+ * Sanitize CSS class suffix from API (e.g. status slug).
+ *
+ * @param {string} raw Raw slug.
+ * @return {string}
+ */
+function safeClassSuffix( raw ) {
+	return String( raw || '' ).replace( /[^a-z0-9-]/gi, '' );
+}
+
+/**
+ * Build one notification row using DOM APIs (avoid innerHTML with API-sourced strings).
  *
  * @param {Object} notification Notification data.
  * @param {Object} i18n         Internationalization strings.
- * @return {string} HTML string.
+ * @return {HTMLElement|null}
  */
-function renderNotificationItem( notification, i18n ) {
-	const timeAgo = notification.time_ago || '';
-	const isUnread = ! notification.is_read;
-	const isActionable = notification.is_actionable;
+function createNotificationItemElement( notification, i18n ) {
+	const id = parseInt( notification?.id, 10 );
+	if ( ! Number.isFinite( id ) || id < 1 ) {
+		return null;
+	}
 
+	const root = document.createElement( 'div' );
 	let classes = 'clanspress-notification is-compact';
-	if ( isUnread ) {
+	if ( ! notification.is_read ) {
 		classes += ' is-unread';
 	}
-	if ( isActionable ) {
+	if ( notification.is_actionable ) {
 		classes += ' is-actionable';
 	}
-	if ( notification.status && notification.status !== 'pending' ) {
-		classes += ` is-${ notification.status }`;
+	const statusSlug = safeClassSuffix( notification.status );
+	if ( statusSlug && statusSlug !== 'pending' ) {
+		classes += ` is-${ statusSlug }`;
 	}
+	root.className = classes;
+	root.dataset.notificationId = String( id );
 
-	let avatarHtml = '';
-	if ( notification.actor && notification.actor.avatar_url ) {
-		avatarHtml = `
-			<div class="clanspress-notification__avatar">
-				<img src="${ notification.actor.avatar_url }" alt="" />
-			</div>
-		`;
+	const avatarWrap = document.createElement( 'div' );
+	const avatarSrc =
+		notification.actor && notification.actor.avatar_url
+			? safeHttpUrl( notification.actor.avatar_url )
+			: '';
+	if ( notification.actor && avatarSrc ) {
+		avatarWrap.className = 'clanspress-notification__avatar';
+		const img = document.createElement( 'img' );
+		img.src = avatarSrc;
+		img.alt = notification.actor.name
+			? String( notification.actor.name )
+			: '';
+		img.loading = 'lazy';
+		img.decoding = 'async';
+		avatarWrap.appendChild( img );
 	} else {
-		avatarHtml = `
-			<div class="clanspress-notification__icon">
-				<span class="dashicons dashicons-bell"></span>
-			</div>
-		`;
+		avatarWrap.className = 'clanspress-notification__icon';
+		const span = document.createElement( 'span' );
+		span.className = 'dashicons dashicons-bell';
+		avatarWrap.appendChild( span );
 	}
 
-	let titleHtml = '';
-	if ( notification.url && ! isActionable ) {
-		titleHtml = `
-			<a href="${ notification.url }" class="clanspress-notification__link" data-notification-id="${ notification.id }">
-				<span class="clanspress-notification__title">${ escapeHtml( notification.title ) }</span>
-			</a>
-		`;
+	const content = document.createElement( 'div' );
+	content.className = 'clanspress-notification__content';
+
+	const header = document.createElement( 'div' );
+	header.className = 'clanspress-notification__header';
+
+	const linkUrl =
+		notification.url && ! notification.is_actionable
+			? safeHttpUrl( notification.url )
+			: '';
+	if ( linkUrl ) {
+		const a = document.createElement( 'a' );
+		a.href = linkUrl;
+		a.className = 'clanspress-notification__link';
+		a.dataset.notificationId = String( id );
+		const titleSpan = document.createElement( 'span' );
+		titleSpan.className = 'clanspress-notification__title';
+		titleSpan.textContent = notification.title
+			? String( notification.title )
+			: '';
+		a.appendChild( titleSpan );
+		header.appendChild( a );
 	} else {
-		titleHtml = `<span class="clanspress-notification__title">${ escapeHtml( notification.title ) }</span>`;
+		const titleSpan = document.createElement( 'span' );
+		titleSpan.className = 'clanspress-notification__title';
+		titleSpan.textContent = notification.title
+			? String( notification.title )
+			: '';
+		header.appendChild( titleSpan );
 	}
 
-	let messageHtml = '';
+	const timeSpan = document.createElement( 'span' );
+	timeSpan.className = 'clanspress-notification__time';
+	timeSpan.textContent = notification.time_ago
+		? String( notification.time_ago )
+		: '';
+	header.appendChild( timeSpan );
+
+	content.appendChild( header );
+
 	if ( notification.message ) {
-		messageHtml = `<p class="clanspress-notification__message">${ escapeHtml( notification.message ) }</p>`;
+		const p = document.createElement( 'p' );
+		p.className = 'clanspress-notification__message';
+		p.textContent = String( notification.message );
+		content.appendChild( p );
 	}
 
-	let actionsHtml = '';
-	if ( isActionable && notification.actions && notification.actions.length > 0 ) {
-		const buttons = notification.actions.map( ( action ) => {
-			const style = action.style || 'secondary';
-			const confirmAttr = action.confirm ? ` data-confirm="${ escapeHtml( action.confirm ) }"` : '';
-			return `
-				<button
-					type="button"
-					class="clanspress-notification__action clanspress-notification__action--${ style }"
-					data-action="${ action.key }"
-					data-notification-id="${ notification.id }"
-					${ confirmAttr }
-				>${ escapeHtml( action.label ) }</button>
-			`;
-		} ).join( '' );
-		actionsHtml = `<div class="clanspress-notification__actions">${ buttons }</div>`;
+	if (
+		notification.is_actionable &&
+		notification.actions &&
+		notification.actions.length > 0
+	) {
+		const actionsRow = document.createElement( 'div' );
+		actionsRow.className = 'clanspress-notification__actions';
+		notification.actions.forEach( ( action ) => {
+			const btn = document.createElement( 'button' );
+			btn.type = 'button';
+			const rawStyle = String( action.style || 'secondary' );
+			const safeStyle = safeClassSuffix( rawStyle ) || 'secondary';
+			btn.className = `clanspress-notification__action clanspress-notification__action--${ safeStyle }`;
+			btn.dataset.action = action.key != null ? String( action.key ) : '';
+			btn.dataset.notificationId = String( id );
+			if ( action.confirm ) {
+				btn.dataset.confirm = String( action.confirm );
+			}
+			btn.textContent = action.label != null ? String( action.label ) : '';
+			actionsRow.appendChild( btn );
+		} );
+		content.appendChild( actionsRow );
 	} else if ( notification.status && notification.status !== 'pending' ) {
 		const statusLabels = i18n?.statusLabels || {
 			accepted: 'Accepted',
@@ -142,35 +207,31 @@ function renderNotificationItem( notification, i18n ) {
 			dismissed: 'Dismissed',
 			expired: 'Expired',
 		};
-		actionsHtml = `<div class="clanspress-notification__status">${ statusLabels[ notification.status ] || notification.status }</div>`;
+		const st = String( notification.status );
+		const statusEl = document.createElement( 'div' );
+		statusEl.className = 'clanspress-notification__status';
+		const label = statusLabels[ st ] ?? st;
+		statusEl.textContent = String( label );
+		content.appendChild( statusEl );
 	}
 
-	let unreadDot = '';
-	if ( isUnread && ! isActionable ) {
-		unreadDot = '<div class="clanspress-notification__unread-dot"></div>';
+	root.appendChild( avatarWrap );
+	root.appendChild( content );
+
+	if ( ! notification.is_read && ! notification.is_actionable ) {
+		const dot = document.createElement( 'div' );
+		dot.className = 'clanspress-notification__unread-dot';
+		root.appendChild( dot );
 	}
 
-	return `
-		<div class="${ classes }" data-notification-id="${ notification.id }">
-			${ avatarHtml }
-			<div class="clanspress-notification__content">
-				<div class="clanspress-notification__header">
-					${ titleHtml }
-					<span class="clanspress-notification__time">${ escapeHtml( timeAgo ) }</span>
-				</div>
-				${ messageHtml }
-				${ actionsHtml }
-			</div>
-			${ unreadDot }
-		</div>
-	`;
+	return root;
 }
 
 /**
- * Render the notifications list into the DOM.
+ * Render the notifications list into the DOM (no innerHTML for API-sourced text).
  *
  * @param {Object}      ctx Context object with notifications and i18n.
- * @param {HTMLElement} ref Block element reference.
+ * @param {HTMLElement} ref Block root element reference.
  */
 function renderNotificationsList( ctx, ref ) {
 	if ( ! ref ) {
@@ -183,11 +244,143 @@ function renderNotificationsList( ctx, ref ) {
 	}
 
 	if ( ! ctx.notifications || ctx.notifications.length === 0 ) {
-		listEl.innerHTML = `<p class="clanspress-notification-bell__empty">${ ctx.i18n?.noNotifications || 'No notifications yet.' }</p>`;
+		const empty = document.createElement( 'p' );
+		empty.className = 'clanspress-notification-bell__empty';
+		empty.textContent =
+			ctx.i18n?.noNotifications || 'No notifications yet.';
+		listEl.replaceChildren( empty );
 		return;
 	}
 
-	listEl.innerHTML = ctx.notifications.map( ( n ) => renderNotificationItem( n, ctx.i18n ) ).join( '' );
+	const frag = document.createDocumentFragment();
+	ctx.notifications.forEach( ( n ) => {
+		const el = createNotificationItemElement( n, ctx.i18n );
+		if ( el ) {
+			frag.appendChild( el );
+		}
+	} );
+	listEl.replaceChildren( frag );
+}
+
+/**
+ * Accessible confirmation dialog (replaces window.confirm for notification actions).
+ *
+ * @param {string}           message            Plain-text message from the server.
+ * @param {HTMLElement|null} restoreFocusTarget Control to restore focus after close.
+ * @return {Promise<boolean>} Resolves true when the user confirms.
+ */
+function accessibleConfirm( message, restoreFocusTarget ) {
+	return new Promise( ( resolve ) => {
+		const custom = window.wp?.hooks?.applyFilters?.(
+			'clanspress.notifications.accessibleConfirm',
+			null,
+			message
+		);
+		if ( custom instanceof Promise ) {
+			custom.then( resolve );
+			return;
+		}
+
+		const uid = `clanspress-nb-confirm-${ Date.now() }`;
+
+		const overlay = document.createElement( 'div' );
+		overlay.className = 'clanspress-notification-bell__confirm-overlay';
+
+		const dialog = document.createElement( 'div' );
+		dialog.className = 'clanspress-notification-bell__confirm';
+		dialog.setAttribute( 'role', 'alertdialog' );
+		dialog.setAttribute( 'aria-modal', 'true' );
+		dialog.setAttribute( 'aria-labelledby', `${ uid }-title` );
+		dialog.setAttribute( 'aria-describedby', `${ uid }-desc` );
+
+		const title = document.createElement( 'h2' );
+		title.className = 'clanspress-notification-bell__confirm-title';
+		title.id = `${ uid }-title`;
+		title.textContent = 'Confirm action';
+
+		const body = document.createElement( 'p' );
+		body.className = 'clanspress-notification-bell__confirm-message';
+		body.id = `${ uid }-desc`;
+		body.textContent = message;
+
+		const actionsRow = document.createElement( 'div' );
+		actionsRow.className = 'clanspress-notification-bell__confirm-actions';
+
+		const cancelBtn = document.createElement( 'button' );
+		cancelBtn.type = 'button';
+		cancelBtn.className =
+			'clanspress-notification-bell__confirm-btn clanspress-notification-bell__confirm-btn--cancel';
+		cancelBtn.textContent = 'Cancel';
+
+		const okBtn = document.createElement( 'button' );
+		okBtn.type = 'button';
+		okBtn.className =
+			'clanspress-notification-bell__confirm-btn clanspress-notification-bell__confirm-btn--ok';
+		okBtn.textContent = 'OK';
+
+		const focusables = [ cancelBtn, okBtn ];
+
+		function cleanup() {
+			document.removeEventListener( 'keydown', onKeyDown, true );
+			overlay.remove();
+			if (
+				restoreFocusTarget &&
+				typeof restoreFocusTarget.focus === 'function'
+			) {
+				restoreFocusTarget.focus();
+			}
+		}
+
+		function finish( value ) {
+			cleanup();
+			resolve( value );
+		}
+
+		function onKeyDown( event ) {
+			if ( event.key === 'Escape' ) {
+				event.preventDefault();
+				event.stopPropagation();
+				finish( false );
+				return;
+			}
+			if ( event.key === 'Tab' ) {
+				const active = overlay.ownerDocument.activeElement;
+				const i = focusables.indexOf( active );
+				if ( event.shiftKey ) {
+					if ( i <= 0 ) {
+						event.preventDefault();
+						okBtn.focus();
+					}
+				} else if ( i === focusables.length - 1 ) {
+					event.preventDefault();
+					cancelBtn.focus();
+				}
+			}
+		}
+
+		cancelBtn.addEventListener( 'click', () => finish( false ) );
+		okBtn.addEventListener( 'click', () => finish( true ) );
+		overlay.addEventListener( 'click', ( event ) => {
+			if ( event.target === overlay ) {
+				finish( false );
+			}
+		} );
+
+		actionsRow.append( cancelBtn, okBtn );
+		dialog.append( title, body, actionsRow );
+		overlay.append( dialog );
+		document.body.append( overlay );
+
+		document.addEventListener( 'keydown', onKeyDown, true );
+
+		if ( window.wp?.a11y?.speak ) {
+			window.wp.a11y.speak( message, 'assertive' );
+		}
+
+		window.requestAnimationFrame( () => {
+			cancelBtn.focus();
+		} );
+	} );
 }
 
 /**
@@ -315,7 +508,9 @@ const { state, actions, callbacks } = store( 'clanspress/notification-bell', {
 		},
 
 		async markRead( event ) {
-			const notificationId = event.target.closest( '[data-notification-id]' )?.dataset?.notificationId;
+			const notificationId = event.target.closest(
+				'[data-notification-id]'
+			)?.dataset?.notificationId;
 			if ( ! notificationId ) {
 				return;
 			}
@@ -331,7 +526,9 @@ const { state, actions, callbacks } = store( 'clanspress/notification-bell', {
 
 				ctx.unreadCount = response.unread_count || 0;
 
-				const idx = ctx.notifications.findIndex( ( n ) => n.id === parseInt( notificationId, 10 ) );
+				const idx = ctx.notifications.findIndex(
+					( n ) => n.id === parseInt( notificationId, 10 )
+				);
 				if ( idx !== -1 ) {
 					ctx.notifications[ idx ].is_read = true;
 				}
@@ -352,8 +549,11 @@ const { state, actions, callbacks } = store( 'clanspress/notification-bell', {
 			const actionKey = button.dataset.action;
 			const confirmMsg = button.dataset.confirm;
 
-			if ( confirmMsg && ! window.confirm( confirmMsg ) ) {
-				return;
+			if ( confirmMsg ) {
+				const confirmed = await accessibleConfirm( confirmMsg, button );
+				if ( ! confirmed ) {
+					return;
+				}
 			}
 
 			const ctx = getContext();
@@ -370,11 +570,14 @@ const { state, actions, callbacks } = store( 'clanspress/notification-bell', {
 				ctx.unreadCount = response.unread_count || 0;
 
 				// Remove or update the notification.
-				const idx = ctx.notifications.findIndex( ( n ) => n.id === parseInt( notificationId, 10 ) );
+				const idx = ctx.notifications.findIndex(
+					( n ) => n.id === parseInt( notificationId, 10 )
+				);
 				if ( idx !== -1 ) {
 					ctx.notifications[ idx ].is_actionable = false;
 					ctx.notifications[ idx ].is_read = true;
-					ctx.notifications[ idx ].status = response.status || 'dismissed';
+					ctx.notifications[ idx ].status =
+						response.status || 'dismissed';
 				}
 
 				renderNotificationsList( ctx, ref );
@@ -386,7 +589,10 @@ const { state, actions, callbacks } = store( 'clanspress/notification-bell', {
 
 				// Handle redirect if provided.
 				if ( response.redirect ) {
-					window.location.href = response.redirect;
+					const next = safeHttpUrl( response.redirect );
+					if ( next ) {
+						window.location.assign( next );
+					}
 				}
 			} catch ( error ) {
 				console.error( 'Failed to execute action:', error );
@@ -422,8 +628,15 @@ const { state, actions, callbacks } = store( 'clanspress/notification-bell', {
 			 * @param {Array}  providers Array of sync provider objects.
 			 * @param {string} channel   The channel name ('clanspress.notifications').
 			 */
-			const providers = window.wp?.hooks?.applyFilters?.( 'sync.providers', [], 'clanspress.notifications' ) || [];
-			const wsProvider = providers.find( ( p ) => p && typeof p.subscribe === 'function' );
+			const providers =
+				window.wp?.hooks?.applyFilters?.(
+					'sync.providers',
+					[],
+					'clanspress.notifications'
+				) || [];
+			const wsProvider = providers.find(
+				( p ) => p && typeof p.subscribe === 'function'
+			);
 
 			if ( wsProvider ) {
 				// Use WebSocket provider.
@@ -433,6 +646,20 @@ const { state, actions, callbacks } = store( 'clanspress/notification-bell', {
 				// Fall back to HTTP long polling.
 				startPolling( ctx );
 			}
+		},
+
+		/**
+		 * Sync list markup when context.notifications changes (e.g. long poll) while dropdown is open.
+		 */
+		renderNotifications() {
+			const ctx = getContext();
+			if ( ! ctx.isOpen ) {
+				return;
+			}
+			const { ref } = getElement();
+			const root =
+				ref?.closest?.( '.clanspress-notification-bell' ) || ctx._ref;
+			renderNotificationsList( ctx, root );
 		},
 	},
 } );
@@ -471,7 +698,7 @@ function startPolling( ctx ) {
 		try {
 			const params = new URLSearchParams( {
 				last_id: ctx.lastId || 0,
-				timeout: 30,
+				timeout: 25,
 			} );
 
 			if ( ctx.lastTimestamp && ! ctx.lastId ) {

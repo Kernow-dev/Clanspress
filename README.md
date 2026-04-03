@@ -55,6 +55,24 @@ npm run build:production   # admin + blocks + manifests + match editor
 
 To restore a **standalone** PHP submenu for an extension settings class, filter `clanspress_extension_settings_register_submenu` to `true` for that `Abstract_Settings` instance.
 
+### Public REST, team challenges, and cross-site match sync
+
+These routes are **unauthenticated** (defense in depth: nonces, rate limits, and/or HMAC as documented). They exist so other Clanspress installs and the **Team challenge** block can interoperate.
+
+| Method | Route | Purpose |
+|--------|--------|---------|
+| `GET` | `/wp-json/clanspress/v1/discovery` | Returns `{ clanspress, name, version }` and, when PHP sodium is available, `match_sync` hints for cross-site match signing. |
+| `GET` | `/wp-json/clanspress/v1/site-sync-public-key` | Returns `{ clanspress, algorithm: ed25519, public_key }` (base64) so peer installs can verify signed `sync-peer-match` requests. |
+| `GET` | `/wp-json/clanspress/v1/public-team` | Query args `slug` or `url` — public metadata for a published `cp_team` (title, permalink, logo, motto, country, short description). |
+| `GET` | `/wp-json/clanspress/v1/challenge-remote-team` | Same-site proxy: `team_id`, `url`, `challenge_nonce` — server fetches discovery + `public-team` on the remote host (avoids browser CORS). |
+| `POST` | `/wp-json/clanspress/v1/team-challenges` | JSON body: `team_id`, `challenge_nonce`, contact fields, optional `opponent_team_url`, `challenger_team_id`, `challenger_team_name`, `challenger_team_logo_id`, `proposed_scheduled_at`, `message`. Creates `cp_team_challenge` and notifies challenged team admins (`team_challenge` + accept/decline handlers). Requires **Matches** + **Teams**. |
+| `POST` | `/wp-json/clanspress/v1/team-challenge-media` | `multipart/form-data`: `team_id`, `challenge_nonce`, `file` — optional logo (image, max 2MB) for manual challengers; returns `{ id, url }` attachment reference for `challenger_team_logo_id`. |
+| `POST` | `/wp-json/clanspress/v1/sync-peer-match` | Signed JSON body (see below). Creates a **mirror** `cp_match` on the **challenger’s** site when the challenged site accepts a remote Clanspress challenge. |
+
+**Cross-site mirror (two-way listings):** Each install generates an **Ed25519** keypair (PHP **sodium** extension required) stored in the `clanspress_match_sync_site_keys` option. When a challenge is accepted, if the snapshot came from another Clanspress site (`source: remote`, with `origin` + `remoteTeamId` from `public-team`), the challenged site POSTs to `{origin}/wp-json/clanspress/v1/sync-peer-match` with `X-Clanspress-Sync: v1:{timestamp}:{base64url_signature}` (detached Ed25519 over `{timestamp}\n{json body}`). The receiving site fetches the sender’s public key from `{source_site}wp-json/clanspress/v1/site-sync-public-key` (HTTPS), verifies the signature, then creates the mirror match. **No shared manual secret** — only Clanspress installs that expose the public-key route and accept verified requests participate. For legacy integrations, the `clanspress_cross_site_sync_key` filter can force the older `timestamp:hmac` header using a shared secret. Without sodium and without that filter, mirror push is skipped (the local match on the challenged site still works).
+
+**Filters / actions:** `clanspress_team_challenge_button_visible`, `clanspress_team_challenge_notify_user_ids`, `clanspress_team_challenge_created`, `clanspress_team_challenge_accepted`, `clanspress_cross_site_sync_key`, `clanspress_cross_site_sync_outbound_payload`, `clanspress_cross_site_sync_incoming_payload`, `clanspress_cross_site_sync_verify_source`, `clanspress_cross_site_sync_push_succeeded`, `clanspress_cross_site_sync_push_failed`, `clanspress_cross_site_sync_push_rejected`, `clanspress_cross_site_sync_incoming_created`. See `AGENTS.md` for the hook table.
+
 ## Extension System
 Extensions are registered through filter-based discovery and loaded by the extension loader.
 
@@ -63,6 +81,10 @@ Extensions are registered through filter-based discovery and loaded by the exten
 - Extensions may declare dependencies (`requires`) and parent-child relationships (`parent_slug`).
 - Extensions with unmet requirements must not be enabled.
 - Lifecycle methods are available for installer, updater, runtime boot, and uninstaller flows.
+- **Required** first-party slug (`cp_players` by default) stays enabled; third-party code may adjust the list via the `clanspress_required_extension_slugs` filter (use sparingly). **Notifications** (`cp_notifications`) and **Events** (`cp_events`) are official and enabled once by default via one-time loader migrations when missing; either can be disabled from **Extensions** like Teams/Matches.
+- **Official** extensions are whitelisted in `Loader::get_official_extensions()` and register on `clanspress_official_registered_extensions` with an exact class-name match. Bundled extensions and separate first-party companion plugins both use that path; see **First-party extensions in separate plugins** below (e.g. Social Kit).
+- The admin **Core** badge marks only extensions whose code ships **inside the main Clanspress plugin** (`clanspress_core_bundled_extension_slugs`: `cp_players`, `cp_notifications`, `cp_teams`, `cp_matches`, `cp_events` by default). An extension can be **Official** without being **Core** (external first-party plugin).
+- Community and third-party extensions register on `clanspress_registered_extensions` instead. Adjust the bundled list with `clanspress_core_bundled_extension_slugs` if needed.
 
 ### Extension loader bootstrap
 
@@ -150,86 +172,15 @@ Extend or override the object with filter **`clanspress_player_settings_frontend
 
 Your REST route must validate `X-WP-Nonce`, check capabilities, and return appropriate HTTP status codes (`runPluginAction` treats non-OK responses as errors).
 
-### Social Kit: automatic activity posts
+### First-party extensions in separate plugins
 
-When the **Clanspress Social Kit** extension is enabled, social “activity” posts are created automatically for common events and rendered in the **Social feed** block (`clanspress-social/social-feed`):
+Official extensions that ship outside the main package register on **`clanspress_official_registered_extensions`** and must match the slug → class map in `Loader::get_official_extensions()`. Core validates the class name only; it does not `require` add-on files (the companion plugin must load before Clanspress so the class exists). Those extensions get the **Official** badge but not the **Core** badge unless their slug is also listed in `clanspress_core_bundled_extension_slugs`.
 
-- **Friendship accepted:** When two players become friends (`clanspress_social_kit_friendship_accepted`), Social Kit inserts an `activity` post for each user so that both see a “became friends” card in their feed.
-- **Team created:** When a team is created (`clanspress_team_created`), the creator gets an `activity` post that can show the team’s cover and avatar.
-- **Team joined:** When a player joins a team (`clanspress_team_roster_updated`), that player gets an `activity` post indicating they joined the team.
+**Example — Clanspress Social Kit (`cp_social_kit`):** the separate plugin registers the extension and may mirror domain events (matches, RSVPs, team actions) into an activity feed using the same hooks documented for third-party integrations (`clanspress_match_*`, `clanspress_event_rsvp_updated`, team lifecycle actions, etc.). There is no second registration API — only `clanspress_official_registered_extensions` plus the whitelist entry in `Loader::get_official_extensions()`.
 
-Per-user toggles live in the **Player → Account → Social posts** settings panel (rendered by Social Kit):
+### Community extensions
 
-- **Default post visibility** and **Allow replies on new posts** (existing).
-- Additional booleans (stored as user meta) such as:
-  - `cp_social_kit_activity_friends_enabled` — show “became friends” updates.
-  - `cp_social_kit_activity_teams_enabled` — show team create/join updates.
-
-These are respected by Social Kit’s `Activity_Logger` before inserting new activity rows.
-
-#### Activity payload and filters
-
-Social Kit uses the `cp_social_posts` table with `post_type = 'activity'` for these items and fills structured context using existing columns:
-
-- `author_id` — the player whose feed the item belongs to.
-- `actor_user_id` — the “other” player for friendship events.
-- `team_id` — the team for create/join events.
-
-The low-level insert payload for automatic activity posts is filterable:
-
-```php
-add_filter(
-	'clanspress_social_kit_activity_payload',
-	function ( array $payload, int $user_id, array $args ) {
-		// Inspect/modify $payload before it is passed to Data_Access::insert_post().
-		// Example: change visibility, override post_type, or inject custom link metadata.
-		return $payload;
-	},
-	10,
-	3
-);
-```
-
-When Social Kit formats posts for the REST API, it also builds an `activity` structure for `activity` posts (user/team objects, labels, etc.). Per-activity filters allow customization of that structure before it is sent to the Social feed block:
-
-```php
-add_filter(
-	'clanspress_social_kit_activity_friendship',
-	function ( array $activity, object $row ) {
-		// $activity contains primary/secondary user payloads for "became friends" events.
-		// You can swap avatars, change labels, or attach extra metadata.
-		return $activity;
-	},
-	10,
-	2
-);
-
-add_filter(
-	'clanspress_social_kit_activity_team_created',
-	function ( array $activity, object $row ) {
-		// Customize “created the team” cards (e.g. extra badges or stats).
-		return $activity;
-	},
-	10,
-	2
-);
-```
-
-Finally, the short activity label shown next to the author name in the feed header can be overridden per type:
-
-```php
-add_filter(
-	'clanspress_social_kit_activity_label_friendship',
-	function ( string $label, array $activity, object $row ) {
-		// Replace the default “became friends” string.
-		return $label;
-	},
-	10,
-	3
-);
-```
-
-These hooks allow third-party plugins to completely change the text, imagery, or behaviour of automatic activity posts (friendships, teams, or future action types) without modifying core Social Kit code.
+Unaffiliated or custom extensions register on **`clanspress_registered_extensions`**, own their blocks and FSE templates, and document their own hooks.
 
 ## Admin Extension Manager
 The `Clanspress > Extensions` screen should remain the source of truth for extension state.
@@ -246,6 +197,8 @@ The Teams extension now supports mode-based behavior through admin settings (`Cl
 - `multiple_teams`: multi-team clan setup under one community.
 - `team_directories`: directory mode where users can create and manage teams.
   - Includes block-based FSE templates `teams-create` (`/teams/create/`) and `teams-manage` (`/teams/{slug}/manage/`, BuddyPress-style actions). Legacy `/teams/manage/{slug}/` still resolves. Extend actions via `clanspress_team_front_action_rewrite_slugs` and `clanspress_team_action_dispatch`.
+  - **Template files:** Serialized block markup for the Site Editor lives in `templates/**/*.html`. Companion `*.php` files in the same folder call `get_header()` / `get_footer()` and `clanspress_render_block_markup_file()` so classic themes never print raw `<!-- wp:... -->` comments. `Skeleton::register_extension_templates()` reads the `.html` path for `register_block_template()`.
+  - **Edit Site (block themes):** Player/team virtual routes still look like author or generic archives to core’s block-template resolver, so the admin bar’s Site Editor link is aligned to the correct `clanspress//…` template via `$_wp_current_template_id` on the `wp` hook (see Players/Teams `set_plugin_block_template_id_for_site_editor`).
 
 Mode helpers available on the teams extension class:
 - `get_team_mode()`
@@ -600,84 +553,15 @@ add_action(
   - Filter ban capability.
   - Args: `bool $allowed`, `int $team_id`, `array $options`, `Teams $extension`
 
-## Social Kit: Automatic Activity Posts
-
-Social Kit automatically creates activity posts in users' feeds when certain events occur. Users can toggle these off in their player settings under "Activity posts".
-
-### Supported Activity Types
-
-| Activity Type | Trigger | Visibility |
-|---------------|---------|------------|
-| `team_created` | User creates a new team | Creator's feed only |
-| `team_joined` | User joins a team | User's feed + team's feed |
-| `friendship_accepted` | Two users become friends | Both users' feeds (reversed perspective) |
-
-### Activity Cards
-
-Activity posts display rich cards:
-- **Team activities**: Team cover image, avatar, and name with link to team profile
-- **Friendship activities**: Target user's avatar and name with link to their profile
-
-### PHP Filters
-
-**Modifying activity post data before insertion:**
-
-```php
-// Modify activity payload before insertion
-add_filter( 'clanspress_social_kit_activity_payload', function( $payload, $user_id, $args ) {
-    // Customize the activity post data
-    return $payload;
-}, 10, 3 );
-
-// Modify payload for a specific activity type
-add_filter( 'clanspress_social_kit_activity_team_created', function( $payload, $user_id, $args ) {
-    // Customize team_created activity specifically
-    return $payload;
-}, 10, 3 );
-
-// Customize the activity label shown in the feed header
-add_filter( 'clanspress_social_kit_activity_label_team_created', function( $label, $activity_type ) {
-    return __( 'founded a new team', 'my-plugin' );
-}, 10, 2 );
-```
-
-**Rendering custom activity cards:**
-
-Third-party developers can render custom activity cards for their own activity types:
-
-```php
-// Render a custom card for any activity type
-add_filter( 'clanspress_social_kit_activity_card_html', function( $html, $activity_type, $row, $team_payload, $target_user, $viewer_id ) {
-    if ( 'my_custom_activity' === $activity_type ) {
-        return '<div class="my-custom-card">Custom content here</div>';
-    }
-    return $html;
-}, 10, 6 );
-
-// Or use the type-specific filter (cleaner for single types)
-add_filter( 'clanspress_social_kit_activity_card_html_my_custom_activity', function( $html, $row, $team_payload, $target_user, $viewer_id ) {
-    return '<div class="my-custom-card">Custom content here</div>';
-}, 10, 5 );
-```
-
-The card HTML is rendered server-side and injected into the feed. Available data:
-- `$row` - Database row with `id`, `author_id`, `team_id`, `activity_type`, `content`, etc.
-- `$team_payload` - Array with `id`, `name`, `avatar_url`, `cover_url`, `profile_url` (if team activity)
-- `$target_user` - Array with `id`, `name`, `avatar_url`, `profile_url` (if friendship activity)
-- `$viewer_id` - Current logged-in user ID
-
-### User Preferences
-
-Users can disable specific activity types via user meta:
-- `cp_social_kit_activity_friendship_accepted_enabled` (default: `'1'`)
-- `cp_social_kit_activity_team_created_enabled` (default: `'1'`)
-- `cp_social_kit_activity_team_joined_enabled` (default: `'1'`)
-
-Set to `'0'` to disable that activity type for the user.
-
 ## Notifications System
 
 Clanspress includes a core notifications system that supports both simple notifications and interactive notifications with action buttons. The system uses HTTP long polling for real-time updates with filters to swap in WebSocket transport.
+
+The **Notifications** extension (`cp_notifications`) must be enabled under **Clanspress → Extensions** for REST routes, the bell block, and persistence to run. Third-party code should call `clanspress_notifications_extension_active()` before assuming notifications exist, or treat a `WP_Error` from `clanspress_notify()` with code `notifications_inactive` as “extension off.”
+
+The **Events** extension (`cp_events`) gates the `cp_event` post type, RSVP database table, event REST endpoints, and event blocks. Use `clanspress_events_extension_active()` (or `function_exists( 'clanspress_events_are_globally_enabled' )` for feature flags that load with the extension) before relying on event behavior. Team virtual URLs under `/teams/{slug}/events/` are registered only when both **Teams** and **Events** are enabled.
+
+**Event REST (`POST`/`PUT` `clanspress/v1/event-posts`):** optional JSON field `member_outreach` — `none` (default), `notify` (in-app notification to each roster member), or `rsvp_tentative` (add tentative RSVP rows for members without an existing RSVP, plus notify). Team rosters use the Teams extension membership map (banned users excluded). Group rosters use the `clanspress_group_event_member_user_ids` filter (core supplies an empty list until a groups integration fills it). Adjust recipients with `clanspress_event_member_outreach_user_ids`. After a run, `clanspress_event_member_outreach_completed` fires with counts (`notified`, `rsvp_set`, `skipped`).
 
 ### Notification Bell Block
 
@@ -807,6 +691,7 @@ class My_Extension {
 
 | Function | Description |
 |----------|-------------|
+| `clanspress_notifications_extension_active()` | Whether `cp_notifications` is enabled (use before UI or optional features) |
 | `clanspress_notify( $user_id, $type, $title, $args )` | Send a notification |
 | `clanspress_get_notifications( $user_id, $page, $per_page, $unread_only )` | Get notifications for a user |
 | `clanspress_get_notification( $id )` | Get a single notification |
@@ -837,12 +722,12 @@ class My_Extension {
 
 ### Real-Time Updates (Long Polling)
 
-The notification bell uses HTTP long polling by default. The poll endpoint (`/notifications/poll`) waits up to 30 seconds for new notifications before returning.
+The notification bell uses HTTP long polling by default. The poll endpoint (`/notifications/poll`) may block until new notifications arrive or the timeout elapses (default cap **25** seconds; overridable via `clanspress_notification_poll_timeout`). The handler does **not** flush the object cache on each iteration (that would clear the entire site cache). Hosts that need lower PHP worker occupancy can set **`clanspress_notification_poll_blocking_wait`** to `false` to perform a single read and return immediately (client still uses `next_poll` spacing).
 
 **Polling parameters:**
 - `since` - ISO timestamp to get notifications after
 - `last_id` - Get notifications with ID greater than this
-- `timeout` - Max wait time in seconds (default 30)
+- `timeout` - Max wait time in seconds (capped by server default, typically 25)
 
 **Response includes:**
 - `notifications` - Array of new notifications
@@ -913,6 +798,7 @@ add_filter( 'clanspress_notification_transport_config', function( $config, $user
 | Filter | Description |
 |--------|-------------|
 | `clanspress_notification_poll_timeout` | Modify poll timeout |
+| `clanspress_notification_poll_blocking_wait` | Set `false` to skip the sleep loop (single query per request) |
 | `clanspress_notification_poll_interval` | Modify poll check interval |
 | `clanspress_notification_poll_transport` | Override polling with custom transport |
 | `clanspress_notification_next_poll_interval` | Modify next poll interval |
@@ -931,6 +817,9 @@ add_filter( 'clanspress_notification_transport_config', function( $config, $user
 | `team_join` | User joined a team |
 | `team_role` | Team role changed |
 | `team_removed` | Removed from team |
+| `team_challenge` | Match challenge with Accept/Decline |
+| `team_match_event` | Match-related scheduled event (e.g. after accept) |
+| `team_event` / `group_event` | Roster outreach for manual `cp_event` posts |
 | `mention` | Mentioned in content |
 | `system` | System notifications |
 

@@ -9,31 +9,51 @@ $team_id = clanspress_team_single_block_team_id( $block );
 if ( $team_id < 1 ) {
 	$wrapper = get_block_wrapper_attributes(
 		array(
-			'class' => 'clanspress-team-country clanspress-team-country--placeholder',
+			'class' => 'clanspress-team-country clanspress-country-display clanspress-country-display--placeholder',
 		)
 	);
-	echo '<div ' . $wrapper . '><span>' . esc_html__( 'Team country', 'clanspress' ) . '</span></div>';
+	echo '<div ' . $wrapper . '><span class="clanspress-country-display__label">' . esc_html__( 'Team country', 'clanspress' ) . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
 }
 
 $code = (string) get_post_meta( $team_id, 'cp_team_country', true );
 
-$label    = '' !== $code && function_exists( 'clanspress_team_country_label' ) ? clanspress_team_country_label( $code ) : $code;
-$show_code = ! empty( $attributes['showCode'] );
+$label = '' !== $code && function_exists( 'clanspress_team_country_label' )
+	? clanspress_team_country_label( $code )
+	: '';
 
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
-		'class' => 'clanspress-team-country' . ( '' === $code ? ' clanspress-team-country--empty' : '' ),
-	)
+		'class' => 'clanspress-team-country clanspress-country-display' . ( '' === $code ? ' clanspress-country-display--empty' : '' ),
+	),
+	$block
 );
 
-if ( '' === $code ) {
-	$inner = esc_html__( '—', 'clanspress' );
-} else {
-	$inner = esc_html( $label );
-	if ( $show_code && $label !== $code ) {
-		$inner .= ' <span class="clanspress-team-country__code">(' . esc_html( strtoupper( $code ) ) . ')</span>';
+if ( ! function_exists( 'clanspress_country_block_inner_html' ) ) {
+	if ( '' === $code ) {
+		$inner = esc_html__( '—', 'clanspress' );
+	} else {
+		$inner = esc_html( $label );
 	}
+	echo '<div ' . $wrapper_attributes . '><span class="clanspress-country-display__label">' . $inner . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $wrapper_attributes from get_block_wrapper_attributes(); $inner escaped.
+	return;
 }
 
-echo '<div ' . $wrapper_attributes . '><span class="clanspress-team-country__label">' . $inner . '</span></div>';
+if ( '' === $code ) {
+	$inner = '<span class="clanspress-country-display__label">' . esc_html__( '—', 'clanspress' ) . '</span>';
+} else {
+	$inner = clanspress_country_block_inner_html(
+		$attributes,
+		$code,
+		$label,
+		'team',
+		'clanspress/team-country',
+		$block
+	);
+}
+
+if ( '' === $inner ) {
+	$inner = '<span class="clanspress-country-display__label">' . esc_html__( '—', 'clanspress' ) . '</span>';
+}
+
+echo '<div ' . $wrapper_attributes . '>' . $inner . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $wrapper_attributes from get_block_wrapper_attributes(); $inner built via esc_html / filters.

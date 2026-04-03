@@ -1,0 +1,79 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/player-template",
+	"version": "0.1.0",
+	"title": "Player template",
+	"category": "clanspress-players",
+	"icon": "list-view",
+	"description": "Layout repeated for each team member. Use only inside a Player query block.",
+	"textdomain": "clanspress",
+	"ancestor": [ "clanspress/player-query" ],
+	"usesContext": [
+		"clanspress/teamId",
+		"clanspress/inheritTeamContext",
+		"clanspress/excludeBannedMembers",
+		"clanspress/queryOrderby",
+		"clanspress/queryOrder",
+		"clanspress/queryMetaKey",
+		"clanspress/queryPerPage",
+		"clanspress/queryOffset",
+		"clanspress/queryMetaQueryJson",
+		"clanspress/queryExcludeUsers",
+		"clanspress/queryExcludeCurrentUser",
+		"clanspress/queryExcludeRoles",
+		"clanspress/queryExcludeMetaQueryJson",
+		"postId",
+		"postType"
+	],
+	"supports": {
+		"anchor": true,
+		"reusable": false,
+		"html": false,
+		"align": [ "wide", "full" ],
+		"layout": true,
+		"color": {
+			"gradients": true,
+			"link": true,
+			"__experimentalDefaultControls": {
+				"background": true,
+				"text": true
+			}
+		},
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true,
+			"__experimentalFontFamily": true,
+			"__experimentalFontWeight": true,
+			"__experimentalFontStyle": true,
+			"__experimentalTextTransform": true,
+			"__experimentalTextDecoration": true,
+			"__experimentalLetterSpacing": true,
+			"__experimentalDefaultControls": {
+				"fontSize": true
+			}
+		},
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": {
+				"__experimentalDefault": "1.25em"
+			},
+			"__experimentalDefaultControls": {
+				"blockGap": true,
+				"padding": false,
+				"margin": false
+			}
+		},
+		"__experimentalBorder": {
+			"radius": true,
+			"color": true,
+			"width": true,
+			"style": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}

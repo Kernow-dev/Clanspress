@@ -40,7 +40,8 @@
   },
   "usesContext": [
     "postId",
-    "postType"
+    "postType",
+    "clanspress/playerId"
   ],
   "supports": {
     "anchor": true,
