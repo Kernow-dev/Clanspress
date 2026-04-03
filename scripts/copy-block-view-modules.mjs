@@ -42,6 +42,32 @@ function walk( dir ) {
 walk( srcBlocks );
 
 /**
+ * Cross-block helpers for interactivity view modules (ESM); copied next to `build/` block trees so relative imports resolve.
+ */
+const blocksSharedSrc = path.join( srcBlocks, 'shared' );
+const blocksSharedDest = path.join( root, 'build', 'shared' );
+if ( fs.existsSync( blocksSharedSrc ) ) {
+	fs.mkdirSync( blocksSharedDest, { recursive: true } );
+	for ( const ent of fs.readdirSync( blocksSharedSrc, {
+		withFileTypes: true,
+	} ) ) {
+		if ( ! ent.isFile() || ! ent.name.endsWith( '.js' ) ) {
+			continue;
+		}
+		const from = path.join( blocksSharedSrc, ent.name );
+		const to = path.join( blocksSharedDest, ent.name );
+		fs.copyFileSync( from, to );
+		// eslint-disable-next-line no-console
+		console.log(
+			'Copied',
+			`shared/${ ent.name }`,
+			'->',
+			`build/shared/${ ent.name }`
+		);
+	}
+}
+
+/**
  * Team block view modules import shared helpers (e.g. sync-team-form-tabs.js); copy alongside build output.
  */
 const teamsSharedSrc = path.join( srcBlocks, 'teams', 'shared' );

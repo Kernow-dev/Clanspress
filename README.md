@@ -129,9 +129,13 @@ For ad-hoc or third-party blocks that ship as separate compiled folders, you can
 
 First-party blocks declare `supports` (spacing, color, typography, border, shadow, and link color where relevant) and `selectors` in each block’s `block.json`, so **Appearance → Editor → Styles** can target the right DOM nodes. Dynamic blocks pass the `WP_Block` instance into `get_block_wrapper_attributes( …, $block )` on the front end so those styles apply there too.
 
-To set **defaults for every Clanspress block** from your theme, merge the `styles.blocks` entries below into your theme’s `theme.json` under the existing `styles` key (add `styles.blocks` if it is missing). If a block name is already present, merge objects by hand or replace with your overrides.
+To set **defaults for every Clanspress block** from your theme, merge the `styles.blocks` entries into your theme’s `theme.json` under the existing `styles` key (add `styles.blocks` if it is missing). If a block name is already present, merge objects by hand or replace with your overrides.
 
-The scaffold uses empty objects as placeholders. Fill any block with standard `theme.json` style properties, for example:
+Nested keys under each block’s `color` object (`text`, `background`, `link`) mirror that block’s `selectors.color` map in its `block.json`—core maps them onto the inner DOM nodes those selectors describe. Where `selectors` includes `typography` or `filter.duotone`, the scaffold shows matching `styles.blocks[…].typography` / `filter` entries (see `clanspress/player-cover` for `filter.duotone`). Blocks that declare `selectors.border`, or that support spacing, shadows, and other features in `block.json`, accept the usual keys under `styles.blocks[ blockName ]` as in the [Styles reference](https://developer.wordpress.org/themes/global-settings-and-styles/styles/styles-reference/).
+
+The **copy-paste file** below is valid `theme.json`. It adds small **`cp-scaffold-*`** palette, font-size, and duotone presets under `settings` so every `var:preset|color|…`, `var:preset|font-size|…`, and `var:preset|duotone|…` value resolves. Merge into an existing theme by combining those presets with yours (rename slugs if they collide) and merging `styles.blocks`, or use the file as a new block theme starter and swap tokens for your design.
+
+One-off override example (uses CSS variables instead of `var:preset|…`):
 
 ```json
 "clanspress/team-name": {
@@ -141,48 +145,364 @@ The scaffold uses empty objects as placeholders. Fill any block with standard `t
 }
 ```
 
-**Copy-paste scaffold** (full `theme.json` you can trim, or copy only the `styles.blocks` object into an existing file):
+**Copy-paste scaffold** (full `theme.json`; trim or merge `settings` / `styles` as needed):
 
 ```json
 {
 	"$schema": "https://schemas.wp.org/trunk/theme.json",
 	"version": 2,
+	"settings": {
+		"appearanceTools": true,
+		"color": {
+			"palette": [
+				{
+					"color": "#1e1e1e",
+					"name": "Clanspress scaffold text",
+					"slug": "cp-scaffold-text"
+				},
+				{
+					"color": "#ffffff",
+					"name": "Clanspress scaffold background",
+					"slug": "cp-scaffold-bg"
+				},
+				{
+					"color": "#3858e9",
+					"name": "Clanspress scaffold accent (links)",
+					"slug": "cp-scaffold-accent"
+				}
+			],
+			"duotone": [
+				{
+					"colors": [
+						"#1e1e1e",
+						"#ffffff"
+					],
+					"name": "Clanspress scaffold grayscale",
+					"slug": "cp-scaffold-grayscale"
+				}
+			]
+		},
+		"typography": {
+			"fontSizes": [
+				{
+					"name": "Clanspress scaffold medium",
+					"slug": "cp-scaffold-m",
+					"size": "1rem"
+				}
+			]
+		}
+	},
 	"styles": {
 		"blocks": {
-			"clanspress/event-calendar": {},
-			"clanspress/event-create-form": {},
-			"clanspress/event-detail": {},
-			"clanspress/event-list": {},
-			"clanspress/event-rsvp": {},
-			"clanspress/match-card": {},
-			"clanspress/match-list": {},
-			"clanspress/notification-bell": {},
-			"clanspress/player-avatar": {},
-			"clanspress/player-country": {},
-			"clanspress/player-cover": {},
-			"clanspress/player-display-name": {},
-			"clanspress/player-profile-nav": {},
-			"clanspress/player-query": {},
-			"clanspress/player-settings": {},
-			"clanspress/player-settings-link": {},
-			"clanspress/player-template": {},
-			"clanspress/team-avatar": {},
-			"clanspress/team-card": {},
-			"clanspress/team-challenge-button": {},
-			"clanspress/team-code": {},
-			"clanspress/team-country": {},
-			"clanspress/team-cover": {},
-			"clanspress/team-create-form": {},
-			"clanspress/team-description": {},
-			"clanspress/team-draws": {},
-			"clanspress/team-losses": {},
-			"clanspress/team-manage-link": {},
-			"clanspress/team-members-count": {},
-			"clanspress/team-motto": {},
-			"clanspress/team-name": {},
-			"clanspress/team-profile-nav": {},
-			"clanspress/team-wins": {},
-			"clanspress/user-nav": {}
+			"clanspress/event-calendar": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/event-create-form": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/event-detail": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/event-list": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/event-rsvp": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/match-card": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg",
+					"link": "var:preset|color|cp-scaffold-accent"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/match-list": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg",
+					"link": "var:preset|color|cp-scaffold-accent"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/notification-bell": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/player-avatar": {
+				"color": {
+					"background": "var:preset|color|cp-scaffold-bg"
+				}
+			},
+			"clanspress/player-country": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/player-cover": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				},
+				"filter": {
+					"duotone": "var:preset|duotone|cp-scaffold-grayscale"
+				}
+			},
+			"clanspress/player-display-name": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg",
+					"link": "var:preset|color|cp-scaffold-accent"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/player-profile-nav": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg",
+					"link": "var:preset|color|cp-scaffold-accent"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/player-query": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/player-settings": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/player-settings-link": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/player-template": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg",
+					"link": "var:preset|color|cp-scaffold-accent"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-avatar": {
+				"color": {
+					"background": "var:preset|color|cp-scaffold-bg"
+				}
+			},
+			"clanspress/team-card": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-challenge-button": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-code": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-country": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-cover": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-create-form": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-description": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-draws": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-losses": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-manage-link": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-members-count": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-motto": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-name": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg",
+					"link": "var:preset|color|cp-scaffold-accent"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-profile-nav": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg",
+					"link": "var:preset|color|cp-scaffold-accent"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/team-wins": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/user-nav": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg",
+					"link": "var:preset|color|cp-scaffold-accent"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			}
 		}
 	}
 }
@@ -216,6 +536,19 @@ The **Player settings** block (`clanspress/player-settings`) uses the Interactiv
 | `settings_url_base` | (Player settings page only.) Trailing-slash base URL, e.g. `https://example.com/players/settings/`. |
 | `settings_initial_nav` | (Player settings page only.) Resolved parent tab slug (`profile`, `account`, `teams`, …). |
 | `settings_initial_panel` | (Player settings page only.) Resolved panel slug (`profile-info`, `account-info`, …). |
+
+**Profile save AJAX (`clanspress_save_player_settings`).** POST to `ajax_url` with `action` set to `clanspress_save_player_settings`, the nonce in `nonce` (same value as localized `nonce`, verified with `clanspress_profile_settings_save_action`), plus the form fields your UI collects (including optional multipart `profile_avatar` / `profile_cover` when uploading inline). Domain saving is delegated to `clanspress_save_player_settings` and related filters; the handler itself does not persist fields.
+
+On **success**, the JSON body matches `wp_send_json_success()`: `success` is true and `data` is an object with at least:
+
+| Key | Purpose |
+|-----|---------|
+| `avatarUrl` | Resolved display URL for the logged-in user’s avatar (attachments + defaults, after `clanspress_players_get_display_avatar` filters). |
+| `coverUrl` | Resolved display URL for the logged-in user’s cover (`clanspress_players_get_display_cover`). |
+
+The **player-avatar** and **player-cover** interactivity modules use these values after save to point `<img>` / background previews at the server URL and revoke temporary object URLs. Custom front-end code calling the same action should do the same if you show blob previews.
+
+On **failure**, `wp_send_json_error()` returns `success: false` and `data` typically includes an `errors` object from `clanspress_save_player_settings_errors`.
 
 Extend or override the object with filter **`clanspress_player_settings_frontend_config`** (same array shape as above).
 
