@@ -252,6 +252,8 @@ final class Main {
 	public function hooks(): void {
 		add_action( 'init', array( $this, 'init' ), 0 );
 
+		add_filter( 'plugin_action_links_' . $this->basename, array( $this, 'filter_plugin_action_links' ) );
+
 		add_filter( 'block_categories_all', array( $this, 'register_block_categories' ), 5, 2 );
 
 		// Scripts and styles.
@@ -289,6 +291,36 @@ final class Main {
 		);
 
 		return array_merge( $ours, $categories );
+	}
+
+	/**
+	 * Prepend Settings and website links on the Plugins list screen.
+	 *
+	 * @param array<int, string> $links Existing action link HTML.
+	 * @return array<int, string>
+	 */
+	public function filter_plugin_action_links( array $links ): array {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			return $links;
+		}
+
+		$prepend = array();
+
+		if ( current_user_can( 'manage_options' ) ) {
+			$prepend[] = sprintf(
+				'<a href="%1$s">%2$s</a>',
+				esc_url( admin_url( 'admin.php?page=clanspress' ) ),
+				esc_html__( 'Settings', 'clanspress' )
+			);
+		}
+
+		$prepend[] = sprintf(
+			'<a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a>',
+			esc_url( 'https://clanspress.com/' ),
+			esc_html__( 'Website', 'clanspress' )
+		);
+
+		return array_merge( $prepend, $links );
 	}
 
 	/**

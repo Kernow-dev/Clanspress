@@ -19,7 +19,7 @@
 		"type": "git",
 		"url": "git+https://github.com/Kernow-dev/Clanspress.git"
 	},
-	"license": "ISC",
+	"license": "GPL-2.0-or-later",
 	"author": "Kernow.dev",
 	"type": "Wordpress Plugin",
 	"main": "clanspress.php",
