@@ -86,6 +86,8 @@ function clanspress_team_challenge_logo_attachment_matches_team( int $attachment
  * @param int $challenged_team_id Challenged team ID (must match {@see CLANSPRESS_TEAM_CHALLENGE_LOGO_TEAM_META}).
  * @param int $match_id           New match ID.
  * @return bool True when the file now lives under the match directory (or already did).
+ *
+ * When `WP_DEBUG_LOG` is enabled, missing source paths are written to the debug log to simplify host debugging.
  */
 function clanspress_relocate_team_challenge_logo_to_match_dir( int $attachment_id, int $challenged_team_id, int $match_id ): bool {
 	if ( $attachment_id < 1 || $match_id < 1 || ! clanspress_team_challenge_logo_attachment_matches_team( $attachment_id, $challenged_team_id ) ) {
@@ -99,6 +101,16 @@ function clanspress_relocate_team_challenge_logo_to_match_dir( int $attachment_i
 
 	$old_path = get_attached_file( $attachment_id );
 	if ( ! is_string( $old_path ) || '' === $old_path || ! file_exists( $old_path ) ) {
+		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Opt-in debug logging for failed relocations.
+			error_log(
+				sprintf(
+					'Clanspress: team challenge logo relocate skipped; source missing or invalid path (attachment %1$d, path "%2$s").',
+					$attachment_id,
+					is_string( $old_path ) ? $old_path : ''
+				)
+			);
+		}
 		return false;
 	}
 
@@ -131,23 +143,49 @@ function clanspress_relocate_team_challenge_logo_to_match_dir( int $attachment_i
 		}
 	}
 
+	if ( ! file_exists( $old_path ) ) {
+		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Opt-in debug logging for failed relocations.
+			error_log(
+				sprintf(
+					'Clanspress: team challenge logo relocate aborted; source file missing before move (attachment %1$d, path "%2$s").',
+					$attachment_id,
+					$old_path
+				)
+			);
+		}
+		return false;
+	}
+
 	global $wp_filesystem;
 	if ( ! function_exists( 'WP_Filesystem' ) ) {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 	}
-	if ( ! WP_Filesystem() || ! $wp_filesystem ) {
-		return false;
+
+	$filesystem_ok = WP_Filesystem() && $wp_filesystem;
+	$moved           = false;
+
+	if ( $filesystem_ok ) {
+		// Third argument true: mirror PHP rename() overwrite when the destination already exists.
+		$moved = $wp_filesystem->move( $old_path, $dest_path, true );
+		if ( ! $moved ) {
+			if ( $wp_filesystem->copy( $old_path, $dest_path, true ) && $wp_filesystem->delete( $old_path, false ) ) {
+				$moved = true;
+			}
+		}
+	} else {
+		// When credentials are not configured, direct PHP IO often still works on the same host.
+		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Intentional: probe OS rename before copy+delete.
+		if ( @rename( $old_path, $dest_path ) ) {
+			$moved = true;
+		} elseif ( @copy( $old_path, $dest_path ) ) {
+			wp_delete_file( $old_path );
+			$moved = true;
+		}
 	}
 
-	// Third argument true: mirror PHP rename() overwrite when the destination already exists.
-	$moved = $wp_filesystem->move( $old_path, $dest_path, true );
 	if ( ! $moved ) {
-		if ( ! $wp_filesystem->copy( $old_path, $dest_path, true ) ) {
-			return false;
-		}
-		if ( ! $wp_filesystem->delete( $old_path, false ) ) {
-			return false;
-		}
+		return false;
 	}
 
 	$relative_file = $relative_dir . '/' . wp_basename( $dest_path );

@@ -3684,8 +3684,8 @@ class Teams extends Skeleton {
 			);
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified below via check_ajax_referer().
-		$team_id = isset( $_POST['clanspress_team_id'] ) ? absint( wp_unslash( $_POST['clanspress_team_id'] ) ) : 0;
+		// Team id from POST; file fields stay on `$_FILES` and are validated in `team_manage_form_has_image_upload()` / `maybe_handle_team_media_upload()`.
+		$team_id = clanspress_request_post_absint( 'clanspress_team_id' );
 		if ( $team_id < 1 ) {
 			wp_send_json_error(
 				array( 'message' => __( 'Invalid team.', 'clanspress' ) ),

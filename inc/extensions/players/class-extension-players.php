@@ -2024,6 +2024,9 @@ class Players extends Skeleton {
 	 * other functions to hook in and save the data. This function returns a
 	 * json response to the front-end player settings block.
 	 *
+	 * Successful responses include `avatarUrl` and `coverUrl` (resolved display URLs)
+	 * so inline media blocks can swap previews to server URLs and revoke blob URLs.
+	 *
 	 * @return void
 	 */
 	public function ajax_save_player_settings() {
@@ -2059,7 +2062,15 @@ class Players extends Skeleton {
 			);
 		}
 
-		wp_send_json_success();
+		$success_data = array();
+		if ( function_exists( 'clanspress_players_get_display_avatar' ) ) {
+			$success_data['avatarUrl'] = clanspress_players_get_display_avatar( $user_id );
+		}
+		if ( function_exists( 'clanspress_players_get_display_cover' ) ) {
+			$success_data['coverUrl'] = clanspress_players_get_display_cover( $user_id );
+		}
+
+		wp_send_json_success( $success_data );
 	}
 
 	/**

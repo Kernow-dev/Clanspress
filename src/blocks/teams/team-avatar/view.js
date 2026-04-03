@@ -2,6 +2,13 @@
  * Front-end: team avatar upload when the block enables inline editing.
  */
 import { store, getContext, getElement } from '@wordpress/interactivity';
+import {
+	applyClanspressInlineMediaSavePayload,
+	createClanspressShowToast,
+	createClanspressToolbarPanelToggler,
+	rejectClanspressInvalidImageFile,
+	setClanspressPreviewObjectUrlFromFile,
+} from '../../shared/front-media-interactivity.js';
 
 const { state, actions } = store( 'clanspress-team-avatar', {
 	state: {
@@ -31,32 +38,10 @@ const { state, actions } = store( 'clanspress-team-avatar', {
 	},
 
 	actions: {
-		togglePanel() {
-			const { ref, attributes } = getElement();
-			if ( ! ref || ! attributes || ! ref.parentNode ) {
-				return;
-			}
-			const panelName = attributes[ 'data-wp-args' ];
-			if ( ! panelName ) {
-				return;
-			}
-			const panel = ref.parentNode.querySelector(
-				`.clanspress-team-avatar__panel--${ panelName }`
-			);
-			if ( ! panel ) {
-				return;
-			}
-			const willOpen = ! panel.classList.contains( 'is-open' );
-			ref.parentNode
-				.querySelectorAll( '.clanspress-team-avatar__panel' )
-				.forEach( ( p ) => p.classList.remove( 'is-open' ) );
-			if ( willOpen ) {
-				panel.classList.add( 'is-open' );
-				state.activePanel = panelName;
-			} else {
-				state.activePanel = null;
-			}
-		},
+		togglePanel: createClanspressToolbarPanelToggler( state, {
+			panelSelectorPrefix: '.clanspress-team-avatar__panel--',
+			allPanelsSelector: '.clanspress-team-avatar__panel',
+		} ),
 
 		selectFile() {
 			state.root?.querySelector( 'input[name="team_avatar"]' )?.click();
@@ -68,32 +53,14 @@ const { state, actions } = store( 'clanspress-team-avatar', {
 				return;
 			}
 			const { strings } = getContext();
-			const badType = strings?.invalidFileType || 'Invalid file type.';
-			if ( ! [ 'image/png', 'image/jpeg' ].includes( file.type ) ) {
-				if ( window.wp?.a11y?.speak ) {
-					window.wp.a11y.speak( badType, 'assertive' );
-				}
-				const noticesDispatcher =
-					window.wp?.data?.dispatch?.( 'core/notices' );
-				if ( noticesDispatcher?.createNotice ) {
-					noticesDispatcher.createNotice( 'error', badType, {
-						type: 'snackbar',
-					} );
-				}
-				actions.showToast( {
-					type: 'error',
-					message: badType,
-					duration: 6000,
-				} );
-				event.target.value = '';
+			if (
+				rejectClanspressInvalidImageFile( file, event.target, strings, {
+					showToast: actions.showToast,
+				} )
+			) {
 				return;
 			}
-			if ( state.previewObjectUrl ) {
-				URL.revokeObjectURL( state.previewObjectUrl );
-				state.previewObjectUrl = null;
-			}
-			const url = URL.createObjectURL( file );
-			state.previewObjectUrl = url;
+			const url = setClanspressPreviewObjectUrlFromFile( state, file );
 			const preview = state.root?.querySelector(
 				'.clanspress-team-avatar__img'
 			);
@@ -103,19 +70,7 @@ const { state, actions } = store( 'clanspress-team-avatar', {
 			}
 		},
 
-		showToast( { type = 'success', message = '', duration = 6000 } ) {
-			if ( state.toast.timeout ) {
-				clearTimeout( state.toast.timeout );
-			}
-			state.toast.type = type;
-			state.toast.message = message;
-			state.toast.visible = true;
-			if ( duration ) {
-				state.toast.timeout = setTimeout( () => {
-					state.toast.visible = false;
-				}, duration );
-			}
-		},
+		showToast: createClanspressShowToast( state ),
 
 		async save() {
 			const { ref } = getElement();
@@ -170,20 +125,17 @@ const { state, actions } = store( 'clanspress-team-avatar', {
 
 				if ( json.success && json.data?.avatarUrl ) {
 					ref.classList.add( 'saved' );
-					const img = state.root.querySelector(
-						'.clanspress-team-avatar__img'
-					);
-					if ( img && img.tagName === 'IMG' ) {
-						if ( state.previewObjectUrl ) {
-							URL.revokeObjectURL( state.previewObjectUrl );
-							state.previewObjectUrl = null;
-						}
-						img.src = json.data.avatarUrl;
-						img.classList.remove(
-							'clanspress-team-avatar__img--empty'
-						);
-					}
-					fileInput.value = '';
+					applyClanspressInlineMediaSavePayload( state, json.data, {
+						items: [
+							{
+								urlKey: 'avatarUrl',
+								mediaSelector: '.clanspress-team-avatar__img',
+								requireImg: true,
+								emptyClass: 'clanspress-team-avatar__img--empty',
+								clearInputName: 'team_avatar',
+							},
+						],
+					} );
 					actions.showToast( {
 						type: 'success',
 						message:
