@@ -47,7 +47,7 @@ if ( 'player' === $scope ) {
 	$scope_api = 'player';
 } elseif ( 'team' === $scope ) {
 	if ( $team_id < 1 ) {
-		$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-calendar clanspress-event-calendar--placeholder' ) );
+		$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-calendar clanspress-event-calendar--placeholder' ), $block );
 		echo '<div ' . $wrapper . '><p>' . esc_html__( 'No team context for events.', 'clanspress' ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 		return;
 	}
@@ -59,7 +59,7 @@ if ( 'player' === $scope ) {
 	$scope_api = 'team';
 } elseif ( 'group' === $scope ) {
 	if ( $group_id < 1 ) {
-		$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-calendar clanspress-event-calendar--placeholder' ) );
+		$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-calendar clanspress-event-calendar--placeholder' ), $block );
 		echo '<div ' . $wrapper . '><p>' . esc_html__( 'No group context for events.', 'clanspress' ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 		return;
 	}
@@ -152,7 +152,8 @@ if ( 'month' === $default_view && function_exists( 'clanspress_event_calendar_mo
 $wrapper = get_block_wrapper_attributes(
 	array(
 		'class' => 'clanspress-event-calendar-wrap clanspress-event-calendar-wrap--interactive',
-	)
+	),
+	$block
 );
 ?>
 <div

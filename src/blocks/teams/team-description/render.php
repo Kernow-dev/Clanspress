@@ -15,9 +15,10 @@ if ( $team_id < 1 ) {
 	$wrapper = get_block_wrapper_attributes(
 		array(
 			'class' => 'clanspress-team-description clanspress-team-description--placeholder',
-		)
+		),
+		$block
 	);
-	echo '<div ' . $wrapper . '><span>' . esc_html__( 'Team description', 'clanspress' ) . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
+	echo '<div ' . $wrapper . '><span class="clanspress-team-description__content">' . esc_html__( 'Team description', 'clanspress' ) . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
 }
 
@@ -26,9 +27,10 @@ if ( ! $post || 'cp_team' !== $post->post_type ) {
 	$wrapper = get_block_wrapper_attributes(
 		array(
 			'class' => 'clanspress-team-description clanspress-team-description--placeholder',
-		)
+		),
+		$block
 	);
-	echo '<div ' . $wrapper . '><span>' . esc_html__( 'Team description', 'clanspress' ) . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
+	echo '<div ' . $wrapper . '><span class="clanspress-team-description__content">' . esc_html__( 'Team description', 'clanspress' ) . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
 }
 
@@ -37,9 +39,10 @@ if ( '' === trim( $content ) ) {
 	$wrapper_attributes = get_block_wrapper_attributes(
 		array(
 			'class' => 'clanspress-team-description clanspress-team-description--empty entry-content',
-		)
+		),
+		$block
 	);
-	echo '<div ' . $wrapper_attributes . '><p>' . esc_html__( 'No description yet.', 'clanspress' ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
+	echo '<div ' . $wrapper_attributes . '><div class="clanspress-team-description__content"><p>' . esc_html__( 'No description yet.', 'clanspress' ) . '</p></div></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
 }
 
@@ -49,7 +52,8 @@ $html = apply_filters( 'the_content', $content );
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
 		'class' => 'clanspress-team-description entry-content',
-	)
+	),
+	$block
 );
 
-echo '<div ' . $wrapper_attributes . '>' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes; $html from the_content filter.
+echo '<div ' . $wrapper_attributes . '><div class="clanspress-team-description__content">' . $html . '</div></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes; $html from the_content filter.

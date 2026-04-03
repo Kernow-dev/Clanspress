@@ -1,18 +1,16 @@
 /**
- * Front-end: profile avatar upload when the block enables inline editing.
+ * Front-end: team avatar upload when the block enables inline editing.
  */
 import { store, getContext, getElement } from '@wordpress/interactivity';
 
-const { state, actions } = store( 'clanspress-player-avatar', {
+const { state, actions } = store( 'clanspress-team-avatar', {
 	state: {
 		root: null,
 		activePanel: null,
 		isSaving: false,
-		errors: {},
 		toast: {
 			visible: false,
 			type: 'success',
-			heading: '',
 			message: '',
 			timeout: null,
 		},
@@ -34,22 +32,22 @@ const { state, actions } = store( 'clanspress-player-avatar', {
 	actions: {
 		togglePanel() {
 			const { ref, attributes } = getElement();
-			if ( ! ref || ! attributes ) {
+			if ( ! ref || ! attributes || ! ref.parentNode ) {
 				return;
 			}
 			const panelName = attributes[ 'data-wp-args' ];
-			if ( ! panelName || ! ref.parentNode ) {
+			if ( ! panelName ) {
 				return;
 			}
 			const panel = ref.parentNode.querySelector(
-				`.clanspress-player-avatar__panel--${ panelName }`
+				`.clanspress-team-avatar__panel--${ panelName }`
 			);
 			if ( ! panel ) {
 				return;
 			}
 			const willOpen = ! panel.classList.contains( 'is-open' );
 			ref.parentNode
-				.querySelectorAll( '.clanspress-player-avatar__panel' )
+				.querySelectorAll( '.clanspress-team-avatar__panel' )
 				.forEach( ( p ) => p.classList.remove( 'is-open' ) );
 			if ( willOpen ) {
 				panel.classList.add( 'is-open' );
@@ -59,14 +57,11 @@ const { state, actions } = store( 'clanspress-player-avatar', {
 			}
 		},
 
-		selectAvatar() {
-			const input = state.root?.querySelector(
-				'input[name="profile_avatar"]'
-			);
-			input?.click();
+		selectFile() {
+			state.root?.querySelector( 'input[name="team_avatar"]' )?.click();
 		},
 
-		updateAvatar( event ) {
+		updateImage( event ) {
 			const file = event.target.files[ 0 ];
 			if ( ! file ) {
 				return;
@@ -83,25 +78,19 @@ const { state, actions } = store( 'clanspress-player-avatar', {
 				return;
 			}
 			const preview = state.root?.querySelector(
-				'.clanspress-player-avatar__img'
+				'.clanspress-team-avatar__img'
 			);
 			if ( preview && preview.tagName === 'IMG' ) {
-				preview.classList.remove( 'clanspress-player-avatar__img--empty' );
+				preview.classList.remove( 'clanspress-team-avatar__img--empty' );
 				preview.src = URL.createObjectURL( file );
 			}
 		},
 
-		showToast( {
-			type = 'success',
-			heading = '',
-			message = '',
-			duration = 6000,
-		} ) {
+		showToast( { type = 'success', message = '', duration = 6000 } ) {
 			if ( state.toast.timeout ) {
 				clearTimeout( state.toast.timeout );
 			}
 			state.toast.type = type;
-			state.toast.heading = heading;
 			state.toast.message = message;
 			state.toast.visible = true;
 			if ( duration ) {
@@ -111,18 +100,11 @@ const { state, actions } = store( 'clanspress-player-avatar', {
 			}
 		},
 
-		hideToast() {
-			if ( state.toast.timeout ) {
-				clearTimeout( state.toast.timeout );
-			}
-			state.toast.visible = false;
-		},
-
 		async save() {
 			const { ref } = getElement();
-			const { strings } = getContext();
+			const { ajaxUrl, teamId, strings } = getContext();
 
-			if ( ! state.root || ! ref ) {
+			if ( ! state.root || ! ref || ! ajaxUrl || ! teamId ) {
 				return;
 			}
 
@@ -130,51 +112,37 @@ const { state, actions } = store( 'clanspress-player-avatar', {
 			ref.classList.remove( 'saved', 'error' );
 			ref.classList.add( 'saving' );
 
-			const data = {};
-			state.root
-				.querySelectorAll( 'input, select, textarea' )
-				.forEach( ( field ) => {
-					if ( ! field.name || field.disabled ) {
-						return;
-					}
-					if ( field.type === 'checkbox' ) {
-						data[ field.name ] = field.checked ? '1' : '0';
-					} else if ( field.type === 'radio' ) {
-						if ( field.checked ) {
-							data[ field.name ] = field.value;
-						}
-					} else if ( field.type !== 'file' ) {
-						data[ field.name ] = field.value;
-					}
-				} );
-
 			const nonceInput = state.root.querySelector(
-				'input[name="_clanspress_profile_settings_save_nonce"]'
+				'input[name="_clanspress_team_media_nonce"]'
+			);
+			const fileInput = state.root.querySelector(
+				'input[name="team_avatar"]'
 			);
 
-			if ( ! nonceInput || ! window.CLANSPRESSPLAYERSETTINGS?.ajax_url ) {
+			if ( ! nonceInput || ! fileInput?.files?.[ 0 ] ) {
 				state.isSaving = false;
 				ref.classList.remove( 'saving' );
 				ref.classList.add( 'error' );
+				actions.showToast( {
+					type: 'error',
+					message:
+						strings?.saveError ||
+						'There was an error while saving changes.',
+				} );
 				return;
 			}
-			data.nonce = nonceInput.value;
-			data.action = 'clanspress_save_player_settings';
 
 			const formData = new FormData();
-			Object.keys( data ).forEach( ( key ) => {
-				formData.append( key, data[ key ] );
-			} );
-
-			const avatarInput = state.root.querySelector(
-				'input[name="profile_avatar"]'
+			formData.append( 'action', 'clanspress_save_team_media' );
+			formData.append( 'clanspress_team_id', String( teamId ) );
+			formData.append(
+				'_clanspress_team_media_nonce',
+				nonceInput.value
 			);
-			if ( avatarInput?.files[ 0 ] ) {
-				formData.append( 'profile_avatar', avatarInput.files[ 0 ] );
-			}
+			formData.append( 'team_avatar', fileInput.files[ 0 ] );
 
 			try {
-				const res = await fetch( CLANSPRESSPLAYERSETTINGS.ajax_url, {
+				const res = await fetch( ajaxUrl, {
 					method: 'POST',
 					credentials: 'same-origin',
 					body: formData,
@@ -183,27 +151,34 @@ const { state, actions } = store( 'clanspress-player-avatar', {
 				const json = await res.json();
 				ref.classList.remove( 'saving' );
 
-				if ( json.success ) {
+				if ( json.success && json.data?.avatarUrl ) {
 					ref.classList.add( 'saved' );
-					state.errors = {};
+					const img = state.root.querySelector(
+						'.clanspress-team-avatar__img'
+					);
+					if ( img && img.tagName === 'IMG' ) {
+						img.src = json.data.avatarUrl;
+						img.classList.remove(
+							'clanspress-team-avatar__img--empty'
+						);
+					}
+					fileInput.value = '';
 					actions.showToast( {
 						type: 'success',
-						heading: '',
 						message:
 							strings?.saveSuccess ||
 							'Your changes were saved successfully.',
 					} );
 					state.root
-						.querySelectorAll( '.clanspress-player-avatar__panel' )
+						.querySelectorAll( '.clanspress-team-avatar__panel' )
 						.forEach( ( p ) => p.classList.remove( 'is-open' ) );
 					state.activePanel = null;
 				} else {
 					ref.classList.add( 'error' );
-					state.errors = json?.data?.errors;
 					actions.showToast( {
 						type: 'error',
-						heading: '',
 						message:
+							json?.data?.message ||
 							strings?.saveError ||
 							'There was an error while saving changes.',
 					} );
@@ -211,6 +186,8 @@ const { state, actions } = store( 'clanspress-player-avatar', {
 			} catch ( err ) {
 				// eslint-disable-next-line no-console
 				console.error( 'Save failed', err );
+				ref.classList.remove( 'saving' );
+				ref.classList.add( 'error' );
 			} finally {
 				state.isSaving = false;
 			}

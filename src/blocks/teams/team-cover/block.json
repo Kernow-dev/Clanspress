@@ -8,9 +8,18 @@
 	"icon": "format-image",
 	"description": "Displays the team cover image on single team templates.",
 	"textdomain": "clanspress",
-	"postTypes": [ "cp_team" ],
-	"usesContext": [ "postId", "postType" ],
+	"postTypes": [
+		"cp_team"
+	],
+	"usesContext": [
+		"postId",
+		"postType"
+	],
 	"attributes": {
+		"allowFrontEndMediaEdit": {
+			"type": "boolean",
+			"default": false
+		},
 		"minHeight": {
 			"type": "string",
 			"default": "220px"
@@ -20,24 +29,53 @@
 			"default": "bottom center"
 		},
 		"templateLock": {
-			"type": [ "string", "boolean" ],
-			"enum": [ "all", "insert", "contentOnly", false ]
+			"type": [
+				"string",
+				"boolean"
+			],
+			"enum": [
+				"all",
+				"insert",
+				"contentOnly",
+				false
+			]
 		}
 	},
 	"supports": {
-		"anchor": true,
-		"html": false,
-		"align": [ "wide", "full" ],
-		"shadow": true,
 		"spacing": {
+			"margin": [
+				"top",
+				"bottom"
+			],
 			"padding": true,
-			"margin": [ "top", "bottom" ],
 			"blockGap": true,
 			"__experimentalDefaultControls": {
 				"padding": true,
 				"blockGap": true
 			}
 		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": false,
+			"heading": true,
+			"__experimentalSkipSerialization": [
+				"gradients"
+			],
+			"enableContrastChecker": false
+		},
+		"anchor": true,
+		"html": false,
+		"align": [
+			"wide",
+			"full"
+		],
 		"__experimentalBorder": {
 			"color": true,
 			"radius": true,
@@ -49,13 +87,6 @@
 				"style": true,
 				"width": true
 			}
-		},
-		"color": {
-			"heading": true,
-			"text": true,
-			"background": false,
-			"__experimentalSkipSerialization": [ "gradients" ],
-			"enableContrastChecker": false
 		},
 		"dimensions": {
 			"aspectRatio": true
@@ -76,10 +107,21 @@
 		"layout": {
 			"allowJustification": false
 		},
+		"interactivity": true,
 		"allowedBlocks": true
 	},
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
 	"style": "file:./style-index.css",
-	"render": "file:./render.php"
+	"render": "file:./render.php",
+	"viewScriptModule": "file:./view.js",
+	"selectors": {
+		"root": ".wp-block-clanspress-team-cover",
+		"color": {
+			"text": ".wp-block-clanspress-team-cover .team-cover__content-container",
+			"background": ".wp-block-clanspress-team-cover"
+		},
+		"typography": ".wp-block-clanspress-team-cover .team-cover__content-container",
+		"border": ".wp-block-clanspress-team-cover"
+	}
 }

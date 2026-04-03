@@ -7,13 +7,37 @@
 	"icon": "groups",
 	"description": "Displays the team profile subpage navigation.",
 	"supports": {
-		"html": false,
 		"spacing": {
+			"margin": true,
+			"padding": true,
 			"blockGap": true
-		}
+		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": true,
+			"link": true
+		},
+		"html": false
 	},
 	"textdomain": "clanspress",
 	"editorScript": "file:./index.js",
 	"style": "file:./style-index.css",
-	"render": "file:./render.php"
+	"render": "file:./render.php",
+	"selectors": {
+		"root": ".wp-block-clanspress-team-profile-nav",
+		"color": {
+			"text": ".wp-block-clanspress-team-profile-nav .clanspress-team-profile-nav__link",
+			"background": ".wp-block-clanspress-team-profile-nav",
+			"link": ".wp-block-clanspress-team-profile-nav .clanspress-team-profile-nav__link"
+		},
+		"typography": ".wp-block-clanspress-team-profile-nav .clanspress-team-profile-nav__link",
+		"border": ".wp-block-clanspress-team-profile-nav"
+	}
 }

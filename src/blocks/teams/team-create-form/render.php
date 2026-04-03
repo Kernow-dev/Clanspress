@@ -13,7 +13,8 @@ if ( 'team_directories' !== clanspress_teams_get_team_mode() ) {
 	$wrapper_attributes = get_block_wrapper_attributes(
 		array(
 			'class' => 'clanspress-team-create-form clanspress-team-create-form--unavailable',
-		)
+		),
+		$block
 	);
 	echo '<div ' . $wrapper_attributes . '><p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	echo esc_html__( 'Team creation is only available when Teams is set to "team directories" mode.', 'clanspress' );
@@ -26,7 +27,7 @@ if ( ! is_user_logged_in() ) {
 	return;
 }
 
-$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'clanspress-team-create-form' ) );
+$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'clanspress-team-create-form' ), $block );
 // phpcs:disable WordPress.Security.NonceVerification.Recommended -- Display-only query args after create redirect; values are `sanitize_key()`-ed.
 $status      = sanitize_key( (string) ( $_GET['clanspress_team_status'] ?? '' ) );
 $status_code = sanitize_key( (string) ( $_GET['clanspress_team_code'] ?? '' ) );

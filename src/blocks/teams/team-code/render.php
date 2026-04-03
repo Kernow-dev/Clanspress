@@ -15,9 +15,10 @@ if ( $team_id < 1 ) {
 	$wrapper = get_block_wrapper_attributes(
 		array(
 			'class' => 'clanspress-team-code clanspress-team-code--placeholder',
-		)
+		),
+		$block
 	);
-	echo '<div ' . $wrapper . '><span>' . esc_html__( 'Team code', 'clanspress' ) . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
+	echo '<div ' . $wrapper . '><span class="clanspress-team-code__value">' . esc_html__( 'Team code', 'clanspress' ) . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
 }
 
@@ -26,7 +27,8 @@ $code = (string) get_post_meta( $team_id, 'cp_team_code', true );
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
 		'class' => 'clanspress-team-code' . ( '' === $code ? ' clanspress-team-code--empty' : '' ),
-	)
+	),
+	$block
 );
 
 $display = '' === $code ? __( '—', 'clanspress' ) : $code;

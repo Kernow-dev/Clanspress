@@ -1,9 +1,11 @@
+/**
+ * Front-end: profile cover upload / focal point when the block enables inline editing.
+ */
 import { store, getContext, getElement } from '@wordpress/interactivity';
 
 const { state, actions } = store( 'clanspress-player-cover', {
 	state: {
 		root: null,
-		isEditing: false,
 		activePanel: null,
 		isSaving: false,
 		errors: {},
@@ -15,91 +17,9 @@ const { state, actions } = store( 'clanspress-player-cover', {
 			timeout: null,
 		},
 
-		/**
-		 * Is the current parent nav element expanded.
-		 *
-		 * @return {boolean} True if current active nav is this element.
-		 */
-		isThisNavExpanded() {
-			const { attributes } = getElement();
-			return (
-				this.activeNav === JSON.parse( attributes[ 'data-wp-args' ] )
-			);
-		},
-
-		/**
-		 * Is the current child nav element expanded.
-		 *
-		 * @return {boolean} True if current active nav is this child element.
-		 */
-		isNavExpanded() {
-			const { attributes } = getElement();
-			const isActive = this.activeNav === attributes.id;
-
-			if ( state.root ) {
-				const element = state.root.querySelector(
-					`#${ attributes.id }`
-				);
-				if ( element ) {
-					if ( isActive ) {
-						// Open: set max-height to scrollHeight for smooth transition
-						element.style.maxHeight = element.scrollHeight + 'px';
-					} else {
-						element.style.maxHeight = '0';
-					}
-				}
-			}
-
-			return isActive;
-		},
-
-		isThisControlActive() {},
-
 		isThisPanelActive() {
 			const { attributes } = getElement();
 			return this.activePanel === attributes[ 'data-wp-args' ];
-		},
-
-		isPanelActive() {
-			const { attributes } = getElement();
-			return 'panel-' + this.activePanel === attributes.id;
-		},
-
-		isError() {
-			const { attributes } = getElement();
-			const name = attributes.name;
-
-			if ( ! name ) {
-				return false;
-			}
-
-			return name in this.errors;
-		},
-
-		showError() {
-			const { attributes } = getElement();
-			const name = attributes[ 'data-wp-args' ];
-
-			if ( ! name ) {
-				return false;
-			}
-
-			return ! ( name in this.errors );
-		},
-
-		errorMessage() {
-			const { attributes } = getElement();
-			const name = attributes[ 'data-wp-args' ];
-
-			if ( ! name ) {
-				return null;
-			}
-
-			if ( this.errors && name in this.errors ) {
-				return this.errors[ name ];
-			}
-
-			return null;
 		},
 
 		isToastSuccess() {
@@ -112,117 +32,70 @@ const { state, actions } = store( 'clanspress-player-cover', {
 	},
 
 	actions: {
-		enableControls() {
-			const { canEdit } = getContext();
-			if ( ! canEdit ) {
-				return;
-			}
-
-			state.isEditing = true;
-		},
-
-		disableControls() {
-			const { canEdit } = getContext();
-			if ( ! canEdit ) {
-				return;
-			}
-
-			const openControls = state.root.querySelectorAll(
-				'.player-cover__controls-container .control-panel.active'
-			);
-
-			openControls.forEach( ( control ) => {
-				control.parentElement.querySelector( 'button' ).click();
-			} );
-
-			state.isEditing = false;
-		},
-
-		toggleControl() {
+		togglePanel() {
 			const { ref, attributes } = getElement();
-
-			if ( ! ref || ! attributes ) {
+			if ( ! ref || ! attributes || ! ref.parentNode ) {
 				return;
 			}
-
 			const panelName = attributes[ 'data-wp-args' ];
 			if ( ! panelName ) {
 				return;
 			}
-
-			// Find the panel inside the current control
 			const panel = ref.parentNode.querySelector(
-				`.control-panel.${ panelName }`
+				`.clanspress-player-cover__panel--${ panelName }`
 			);
 			if ( ! panel ) {
 				return;
 			}
-
-			//state.activePanel = panel.id;
-
-			// Toggle the 'active' class
-			panel.classList.toggle( 'active' );
+			const willOpen = ! panel.classList.contains( 'is-open' );
+			ref.parentNode
+				.querySelectorAll( '.clanspress-player-cover__panel' )
+				.forEach( ( p ) => p.classList.remove( 'is-open' ) );
+			if ( willOpen ) {
+				panel.classList.add( 'is-open' );
+				state.activePanel = panelName;
+			} else {
+				state.activePanel = null;
+			}
 		},
 
 		startDrag( event ) {
 			event.preventDefault();
 
 			const { ref } = getElement();
-			if ( ! ref ) {
+			if ( ! ref || ! state.root ) {
 				return;
 			}
 
-			ref.classList.toggle( 'grabbing' );
+			ref.classList.add( 'is-dragging' );
 
-			const box = ref.closest( '.position-box' );
-			if ( ! box ) {
-				return;
-			}
-
+			const box = ref.closest( '.clanspress-player-cover__position-box' );
 			const image = state.root.querySelector(
-				'.player-cover__image-background'
+				'.clanspress-player-cover__media'
 			);
-			if ( ! image ) {
+			if ( ! box || ! image ) {
+				ref.classList.remove( 'is-dragging' );
 				return;
 			}
 
 			const rect = box.getBoundingClientRect();
-
-			// define x and y in outer scope
 			let x = 0;
 			let y = 0;
 
 			const move = ( moveEvent ) => {
-				// support touch events
 				const clientX =
 					moveEvent.clientX ?? moveEvent.touches?.[ 0 ]?.clientX;
 				const clientY =
 					moveEvent.clientY ?? moveEvent.touches?.[ 0 ]?.clientY;
-
 				if ( clientX === undefined || clientY === undefined ) {
 					return;
 				}
-
-				// assign to outer x/y, do NOT redeclare with 'let'
 				x = ( ( clientX - rect.left ) / rect.width ) * 100;
 				y = ( ( clientY - rect.top ) / rect.height ) * 100;
-
-				// clamp
-				x = Math.min( 100, Math.max( 0, x ) );
-				y = Math.min( 100, Math.max( 0, y ) );
-
-				// round to 1% steps
-				x = Math.round( x );
-				y = Math.round( y );
-
-				// update state
-				state.position = { x, y };
-
-				// update thumb
+				x = Math.min( 100, Math.max( 0, Math.round( x ) ) );
+				y = Math.min( 100, Math.max( 0, Math.round( y ) ) );
 				ref.style.left = `${ x }%`;
 				ref.style.top = `${ y }%`;
-
-				// update image background
 				image.style.objectPosition = `${ x }% ${ y }%`;
 			};
 
@@ -231,93 +104,72 @@ const { state, actions } = store( 'clanspress-player-cover', {
 				document.removeEventListener( 'pointerup', stop );
 				document.removeEventListener( 'touchmove', move );
 				document.removeEventListener( 'touchend', stop );
-
-				ref.classList.toggle( 'grabbing' );
-
-				// save normalized position (0–1)
+				ref.classList.remove( 'is-dragging' );
 				const coverXInput = state.root.querySelector(
 					'input[name="profile_cover_position_x"]'
 				);
-				if ( coverXInput ) {
-					coverXInput.value = x / 100;
-				}
-
 				const coverYInput = state.root.querySelector(
 					'input[name="profile_cover_position_y"]'
 				);
+				if ( coverXInput ) {
+					coverXInput.value = String( x / 100 );
+				}
 				if ( coverYInput ) {
-					coverYInput.value = y / 100;
+					coverYInput.value = String( y / 100 );
 				}
 			};
 
-			// attach listeners
 			document.addEventListener( 'pointermove', move );
 			document.addEventListener( 'pointerup', stop );
 			document.addEventListener( 'touchmove', move, { passive: false } );
 			document.addEventListener( 'touchend', stop );
 		},
 
-		showPanel() {
-			const { ref } = getElement();
-			const panelId = ref?.attributes?.[ 'data-wp-args' ]?.value ?? null;
-
-			if ( ! panelId ) {
-				return;
-			}
-
-			state.activePanel = panelId;
-		},
-
 		selectCover() {
-			const coverInput = state.root.querySelector(
-				'input[name="profile_cover"]'
-			);
-
-			if ( coverInput ) {
-				coverInput.click();
-			}
+			state.root?.querySelector( 'input[name="profile_cover"]' )?.click();
 		},
 
 		updateCover( event ) {
 			const file = event.target.files[ 0 ];
+			const { strings } = getContext();
+			const badType = strings?.invalidFileType || 'Invalid file type.';
+
 			if ( ! file ) {
 				return;
 			}
-
-			// Only allow image files
 			if ( ! [ 'image/png', 'image/jpeg' ].includes( file.type ) ) {
-				const msg = 'Only PNG or JPEG images are allowed.';
 				if ( window.wp?.a11y?.speak ) {
-					window.wp.a11y.speak( msg, 'assertive' );
+					window.wp.a11y.speak( badType, 'assertive' );
 				}
 				if ( state.toast.timeout ) {
 					clearTimeout( state.toast.timeout );
 				}
 				state.toast.type = 'error';
 				state.toast.heading = '';
-				state.toast.message = msg;
+				state.toast.message = badType;
 				state.toast.visible = true;
 				state.toast.timeout = setTimeout( () => {
 					state.toast.visible = false;
 				}, 6000 );
+				event.target.value = '';
 				return;
 			}
 
-			// Find the cover preview inside this block
-			const preview = state.root.querySelector(
-				'.player-cover__image-background'
+			const url = URL.createObjectURL( file );
+			const preview = state.root?.querySelector(
+				'.clanspress-player-cover__media'
 			);
 			if ( preview ) {
-				// Update preview using object URL
-				preview.src = `${ URL.createObjectURL( file ) }`;
+				preview.classList.remove( 'clanspress-player-cover__media--empty' );
+				preview.style.opacity = '';
+				preview.style.pointerEvents = '';
+				preview.src = url;
 			}
-
-			const focusPointer = state.root.querySelector( '.position-box' );
-
-			if ( focusPointer ) {
-				focusPointer.style.backgroundImage = `linear-gradient(to right, rgba( 255, 255, 255, 0.6) 1px, transparent 1px), linear-gradient(to bottom, rgba( 255, 255, 255, 0.6) 1px, transparent 1px), url(${ URL.createObjectURL(
-					file
-				) })`;
+			const posBox = state.root?.querySelector(
+				'.clanspress-player-cover__position-box'
+			);
+			if ( posBox ) {
+				posBox.style.backgroundImage = `url(${ url })`;
 			}
 		},
 
@@ -327,17 +179,13 @@ const { state, actions } = store( 'clanspress-player-cover', {
 			message = '',
 			duration = 6000,
 		} ) {
-			// Clear existing timeout
 			if ( state.toast.timeout ) {
 				clearTimeout( state.toast.timeout );
 			}
-
 			state.toast.type = type;
 			state.toast.heading = heading;
 			state.toast.message = message;
 			state.toast.visible = true;
-
-			// Auto-hide
 			if ( duration ) {
 				state.toast.timeout = setTimeout( () => {
 					state.toast.visible = false;
@@ -349,45 +197,39 @@ const { state, actions } = store( 'clanspress-player-cover', {
 			if ( state.toast.timeout ) {
 				clearTimeout( state.toast.timeout );
 			}
-
 			state.toast.visible = false;
 		},
 
 		async save() {
 			const { ref } = getElement();
+			const { strings } = getContext();
 
-			if ( ! state.root ) {
+			if ( ! state.root || ! ref ) {
 				return;
 			}
 
 			state.isSaving = true;
-			ref.classList.remove( 'saved' );
-			ref.classList.remove( 'error' );
+			ref.classList.remove( 'saved', 'error' );
 			ref.classList.add( 'saving' );
 
-			const fields = state.root.querySelectorAll(
-				'input, select, textarea'
-			);
-
 			const data = {};
-
-			fields.forEach( ( field ) => {
-				if ( ! field.name || field.disabled ) {
-					return;
-				}
-
-				if ( field.type === 'checkbox' ) {
-					data[ field.name ] = field.checked ? '1' : '0';
-				} else if ( field.type === 'radio' ) {
-					if ( field.checked ) {
+			state.root
+				.querySelectorAll( 'input, select, textarea' )
+				.forEach( ( field ) => {
+					if ( ! field.name || field.disabled ) {
+						return;
+					}
+					if ( field.type === 'checkbox' ) {
+						data[ field.name ] = field.checked ? '1' : '0';
+					} else if ( field.type === 'radio' ) {
+						if ( field.checked ) {
+							data[ field.name ] = field.value;
+						}
+					} else if ( field.type !== 'file' ) {
 						data[ field.name ] = field.value;
 					}
-				} else if ( field.type !== 'file' ) {
-					data[ field.name ] = field.value;
-				}
-			} );
+				} );
 
-			// Grab the nonce from the hidden field
 			const nonceInput = state.root.querySelector(
 				'input[name="_clanspress_profile_settings_save_nonce"]'
 			);
@@ -399,27 +241,23 @@ const { state, actions } = store( 'clanspress-player-cover', {
 				return;
 			}
 			data.nonce = nonceInput.value;
-
 			data.action = 'clanspress_save_player_settings';
 
 			const formData = new FormData();
-			for ( const key in data ) {
+			Object.keys( data ).forEach( ( key ) => {
 				formData.append( key, data[ key ] );
-			}
+			} );
 
-			// Add files directly from inputs
 			const avatarInput = state.root.querySelector(
 				'input[name="profile_avatar"]'
 			);
 			const coverInput = state.root.querySelector(
 				'input[name="profile_cover"]'
 			);
-
-			if ( avatarInput && avatarInput.files[ 0 ] ) {
+			if ( avatarInput?.files[ 0 ] ) {
 				formData.append( 'profile_avatar', avatarInput.files[ 0 ] );
 			}
-
-			if ( coverInput && coverInput.files[ 0 ] ) {
+			if ( coverInput?.files[ 0 ] ) {
 				formData.append( 'profile_cover', coverInput.files[ 0 ] );
 			}
 
@@ -438,19 +276,28 @@ const { state, actions } = store( 'clanspress-player-cover', {
 					state.errors = {};
 					actions.showToast( {
 						type: 'success',
-						heading: 'Success',
-						message: 'Your changes were saved successfully.',
+						heading: '',
+						message:
+							strings?.saveSuccess ||
+							'Your changes were saved successfully.',
 					} );
+					state.root
+						.querySelectorAll( '.clanspress-player-cover__panel' )
+						.forEach( ( p ) => p.classList.remove( 'is-open' ) );
+					state.activePanel = null;
 				} else {
 					ref.classList.add( 'error' );
 					state.errors = json?.data?.errors;
 					actions.showToast( {
 						type: 'error',
-						heading: 'Error',
-						message: 'There was an error while saving changes.',
+						heading: '',
+						message:
+							strings?.saveError ||
+							'There was an error while saving changes.',
 					} );
 				}
 			} catch ( err ) {
+				// eslint-disable-next-line no-console
 				console.error( 'Save failed', err );
 			} finally {
 				state.isSaving = false;
@@ -461,12 +308,9 @@ const { state, actions } = store( 'clanspress-player-cover', {
 	callbacks: {
 		init() {
 			const { ref } = getElement();
-
-			if ( ! ref ) {
-				return;
+			if ( ref ) {
+				state.root = ref;
 			}
-
-			state.root = ref;
 		},
 	},
 } );

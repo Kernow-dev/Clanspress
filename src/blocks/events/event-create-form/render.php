@@ -45,7 +45,7 @@ if ( $is_edit ) {
 		return;
 	}
 	if ( ! Event_Permissions::user_can_manage_event( $edit_event_id, $viewer_id ) ) {
-		$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-create-form clanspress-event-create-form--locked' ) );
+		$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-create-form clanspress-event-create-form--locked' ), $block );
 		echo '<div ' . $wrapper . '><p>' . esc_html__( 'You cannot edit this event.', 'clanspress' ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 		return;
 	}
@@ -131,7 +131,7 @@ if ( $is_edit ) {
 	}
 
 	if ( ! $can ) {
-		$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-create-form clanspress-event-create-form--locked' ) );
+		$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-create-form clanspress-event-create-form--locked' ), $block );
 		echo '<div ' . $wrapper . '><p>' . esc_html__( 'Only team or group managers can create events.', 'clanspress' ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 		return;
 	}
@@ -171,7 +171,7 @@ $wrapper_classes = array( 'clanspress-event-create-form' );
 if ( $is_edit ) {
 	$wrapper_classes[] = 'clanspress-event-create-form--edit';
 }
-$wrapper = get_block_wrapper_attributes( array( 'class' => implode( ' ', $wrapper_classes ) ) );
+$wrapper = get_block_wrapper_attributes( array( 'class' => implode( ' ', $wrapper_classes ) ), $block );
 ?>
 <div
 	<?php echo $wrapper; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes. ?>

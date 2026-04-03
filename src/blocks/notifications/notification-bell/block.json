@@ -8,6 +8,22 @@
 	"icon": "bell",
 	"description": "Displays a notification bell with unread count and dropdown.",
 	"supports": {
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": true
+		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": true
+		},
 		"html": false,
 		"align": false,
 		"className": true,
@@ -27,5 +43,14 @@
 	"editorScript": "file:./index.js",
 	"viewScriptModule": "file:./view.js",
 	"style": "file:./style-index.css",
-	"render": "file:./render.php"
+	"render": "file:./render.php",
+	"selectors": {
+		"root": ".wp-block-clanspress-notification-bell",
+		"color": {
+			"text": ".wp-block-clanspress-notification-bell .clanspress-notification-bell__trigger, .wp-block-clanspress-notification-bell .clanspress-notification-bell__dropdown",
+			"background": ".wp-block-clanspress-notification-bell"
+		},
+		"typography": ".wp-block-clanspress-notification-bell .clanspress-notification-bell__trigger",
+		"border": ".wp-block-clanspress-notification-bell"
+	}
 }

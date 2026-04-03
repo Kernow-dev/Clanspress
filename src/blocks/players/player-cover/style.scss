@@ -1,4 +1,6 @@
-.wp-block-clanspress-player-cover {
+// Front-end: align with team-cover layout; minimal WP-admin-style toolbar when inline edit is enabled.
+
+.wp-block-clanspress-player-cover.clanspress-player-cover-block {
 	position: relative;
 	background-position: center center;
 	display: flex;
@@ -8,14 +10,16 @@
 	overflow: clip;
 	box-sizing: border-box;
 	width: 100%;
-	height: 280px;
+	min-height: 12rem;
 
 	&.clanspress-player-cover--placeholder {
-		height: auto;
+		min-height: unset;
+		background-color: #f0f0f1;
 	}
 
-	.player-cover__image-background--placeholder {
-		background-color: #e8e8e8;
+	.clanspress-player-cover__media--empty {
+		opacity: 0;
+		pointer-events: none;
 	}
 
 	// Position: Top
@@ -58,154 +62,136 @@
 		justify-content: flex-end;
 	}
 
-	.player-cover__image-background {
-		display: flex;
+	.clanspress-player-cover__media {
+		display: block;
 		position: absolute;
-		top: 0;
-		left: 0;
-		bottom: 0;
-		right: 0;
+		inset: 0;
 		object-fit: cover;
 		height: 100%;
 		width: 100%;
 	}
 
-	.player-cover__controls {
-		display: none;
+	.clanspress-player-cover__toolbar {
 		position: absolute;
 		top: 0;
-		right: 16px;
-		height: fit-content;
-		width: fit-content;
-		z-index: 9;
+		right: 0;
+		z-index: 2;
+		padding: 0.5rem;
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity 0.15s ease;
+	}
 
-		&.active {
-			display: flex;
-		}
+	&:is(:hover, :focus-within) .clanspress-player-cover__toolbar {
+		opacity: 1;
+	}
 
-		.player-cover__controls-container {
-			position: relative;
+	.clanspress-player-cover__toolbar-inner {
+		pointer-events: auto;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 0.25rem;
+	}
 
-			.control {
-				width: fit-content;
-				height: fit-content;
+	.clanspress-player-cover__toggle,
+	.clanspress-player-cover__panel-action {
+		font: inherit;
+		font-size: 0.75rem;
+		line-height: 1.4;
+		padding: 0.25rem 0.5rem;
+		border-radius: 2px;
+		border: 1px solid #c3c4c7;
+		background: #fff;
+		color: #1d2327;
+		cursor: pointer;
+		box-shadow: 0 1px 0 rgb(0 0 0 / 5%);
+	}
 
-				> button {
-					all: unset;
-					display: flex;
-					position: relative;
-					padding: 10px;
-					backdrop-filter: blur(10px);
-					background: hsla(0, 0%, 100%, .1);
-					border: 1px solid hsla(0, 0%, 100%, .2);
-					box-shadow:
-						0 8px 30px rgba(0, 0, 0, 0.18),
-						inset 0 1px 0 rgba(255, 255, 255, 0.25);
-					border-radius: 12px;
-					width: 20px;
-					height: 20px;
+	.clanspress-player-cover__toggle:hover,
+	.clanspress-player-cover__panel-action:hover {
+		background: #f6f7f7;
+	}
 
-					&:hover {
-						cursor: pointer;
-					}
+	.clanspress-player-cover__panel-action--primary {
+		border-color: #2271b1;
+		color: #fff;
+		background: #2271b1;
+	}
 
-					&:after {
-						content: '';
-						width: 20px;
-						height: 20px;
-						position: absolute;
-						mask-repeat: no-repeat;
-						mask-position: center;
-						mask-size: contain;
-						background-color: white;
-					}
+	.clanspress-player-cover__panel-action--primary:hover {
+		background: #135e96;
+		border-color: #135e96;
+		color: #fff;
+	}
 
-				}
+	.clanspress-player-cover__panel {
+		display: none;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0.35rem;
+		min-width: 11rem;
+		padding: 0.5rem;
+		border: 1px solid #c3c4c7;
+		border-radius: 2px;
+		background: #fff;
+		box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+	}
 
-				&.edit-cover {
-					> button {
-						&:after {
-							mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='m22.7 14.3l-1 1l-2-2l1-1c.1-.1.2-.2.4-.2c.1 0 .3.1.4.2l1.3 1.3c.1.2.1.5-.1.7M13 19.9V22h2.1l6.1-6.1l-2-2zm-1.79-4.07l-1.96-2.36L6.5 17h6.62l2.54-2.45l-1.7-2.26zM11 19.9v-.85l.05-.05H5V5h14v6.31l2-1.93V5a2 2 0 0 0-2-2H5c-1.1 0-2 .9-2 2v14a2 2 0 0 0 2 2h6z'/></svg>");
-						}
-					}
-				}
+	.clanspress-player-cover__panel.is-open {
+		display: flex;
+	}
 
-				.control-panel {
-					display: none;
-					flex-direction: column;
-					gap: 10px;
-					justify-content: stretch;
-					position: absolute;
-					top: 56px;
-					right: 0;
-					padding: 10px;
-					backdrop-filter: blur(10px);
-					background: hsla(0, 0%, 100%, .1);
-					border: 1px solid hsla(0, 0%, 100%, .2);
-					box-shadow:
-						0 8px 30px rgba(0, 0, 0, 0.18),
-						inset 0 1px 0 rgba(255, 255, 255, 0.25);
-					color: white;
-					border-radius: 12px;
-					width: fit-content;
-					height: fit-content;
+	.clanspress-player-cover__position-label {
+		margin: 0 0 0.25rem;
+		font-size: 0.7rem;
+		font-weight: 600;
+		color: #1d2327;
+	}
 
-					&.active {
-						display: flex;
-					}
+	.clanspress-player-cover__position-box {
+		position: relative;
+		width: 100%;
+		max-width: 11rem;
+		aspect-ratio: 2 / 1;
+		border: 1px solid #c3c4c7;
+		border-radius: 2px;
+		background-size: contain;
+		background-position: center center;
+		background-repeat: no-repeat;
+		background-color: #f0f0f1;
+	}
 
-					button {
-						&:hover {
-							cursor: pointer;
-						}
-					}
+	.clanspress-player-cover__position-thumb {
+		position: absolute;
+		width: 14px;
+		height: 14px;
+		margin: -7px 0 0 -7px;
+		border: 2px solid #fff;
+		border-radius: 50%;
+		box-shadow: 0 0 0 1px rgb(0 0 0 / 25%);
+		background: rgb(34 113 177 / 90%);
+		touch-action: none;
+		cursor: grab;
+	}
 
-					.position-box {
-						width: 100px;
-						height: 50px;
-						background-color: rgba(255, 255, 255, 0.4);
-						border: 1px solid rgba( 255, 255, 255, 0.6);
-						position: relative;
-						background-position:
-							left top,
-							left top,
-							center;
+	.clanspress-player-cover__position-thumb.is-dragging {
+		cursor: grabbing;
+	}
 
-						background-repeat:
-							repeat,
-							repeat,
-							no-repeat;
-
-						.thumb {
-							width: 16px;
-							height: 16px;
-							background: rgba(255, 255, 255, 0.4);
-							border: 3px solid #ffffff;
-							border-radius: 50%;
-							position: absolute;
-							top: 50%;
-							left: 50%;
-							transform: translate(-50%, -50%);
-							touch-action: none;
-							cursor: grab;
-
-							&.grabbing {
-								cursor: grabbing;
-							}
-						}
-					}
-
-					button {
-						width: 100%;
-					}
-				}
-			}
-		}
+	.clanspress-player-cover__panel-action.saving,
+	.clanspress-player-cover__panel-action.saved,
+	.clanspress-player-cover__panel-action.error {
+		pointer-events: none;
+		opacity: 0.65;
 	}
 
 	.player-cover__content-container {
+		position: relative;
 		z-index: 1;
 		padding: 16px;
 		margin-block-start: 0;
+		box-sizing: border-box;
+		width: 100%;
 	}
 }

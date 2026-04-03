@@ -18,7 +18,8 @@ if ( $user_id < 1 ) {
 	$wrapper = get_block_wrapper_attributes(
 		array(
 			'class' => 'clanspress-player-country clanspress-country-display clanspress-country-display--placeholder',
-		)
+		),
+		$block
 	);
 	echo '<div ' . $wrapper . '><span class="clanspress-country-display__label">' . esc_html__( 'Player country', 'clanspress' ) . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;

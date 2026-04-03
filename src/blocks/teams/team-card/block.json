@@ -9,6 +9,22 @@
 	"description": "Display a simple team profile card.",
 	"textdomain": "clanspress",
 	"supports": {
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": true
+		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": true
+		},
 		"html": false
 	},
 	"attributes": {
@@ -27,5 +43,11 @@
 	},
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
-	"style": "file:./style-index.css"
+	"style": "file:./style-index.css",
+	"selectors": {
+		"root": ".wp-block-clanspress-team-card",
+		"color": ".wp-block-clanspress-team-card",
+		"typography": ".wp-block-clanspress-team-card",
+		"border": ".wp-block-clanspress-team-card"
+	}
 }

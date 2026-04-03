@@ -8,18 +8,47 @@
 	"icon": "text-page",
 	"description": "Displays the team description (post content).",
 	"textdomain": "clanspress",
-	"postTypes": [ "cp_team" ],
-	"usesContext": [ "postId", "postType" ],
+	"postTypes": [
+		"cp_team"
+	],
+	"usesContext": [
+		"postId",
+		"postType"
+	],
 	"supports": {
-		"html": false,
-		"align": [ "wide", "full" ],
 		"spacing": {
 			"margin": true,
-			"padding": true
-		}
+			"padding": true,
+			"blockGap": true
+		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": true
+		},
+		"html": false,
+		"align": [
+			"wide",
+			"full"
+		]
 	},
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
 	"style": "file:./style-index.css",
-	"render": "file:./render.php"
+	"render": "file:./render.php",
+	"selectors": {
+		"root": ".wp-block-clanspress-team-description",
+		"color": {
+			"text": ".wp-block-clanspress-team-description .clanspress-team-description__content",
+			"background": ".wp-block-clanspress-team-description"
+		},
+		"typography": ".wp-block-clanspress-team-description .clanspress-team-description__content",
+		"border": ".wp-block-clanspress-team-description"
+	}
 }

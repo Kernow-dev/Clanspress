@@ -9,6 +9,23 @@
 	"description": "Display one match (title, teams, time, score).",
 	"textdomain": "clanspress",
 	"supports": {
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": true
+		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": true,
+			"link": true
+		},
 		"html": false,
 		"align": true
 	},
@@ -21,5 +38,15 @@
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
 	"style": "file:./style-index.css",
-	"render": "file:./render.php"
+	"render": "file:./render.php",
+	"selectors": {
+		"root": ".wp-block-clanspress-match-card",
+		"color": {
+			"text": ".wp-block-clanspress-match-card .clanspress-match-card, .wp-block-clanspress-match-card .clanspress-match-card a",
+			"background": ".wp-block-clanspress-match-card",
+			"link": ".wp-block-clanspress-match-card .clanspress-match-card a"
+		},
+		"typography": ".wp-block-clanspress-match-card .clanspress-match-card",
+		"border": ".wp-block-clanspress-match-card"
+	}
 }

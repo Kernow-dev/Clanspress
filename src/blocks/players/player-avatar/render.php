@@ -25,26 +25,65 @@ if ( ! $user_id ) {
 
 $avatar_image = clanspress_players_get_display_avatar( $user_id );
 
-if ( ! $avatar_image ) {
-	//return '';
+$can_edit       = get_current_user_id() === $user_id;
+$allow_inline   = ! empty( $attributes['allowFrontEndMediaEdit'] );
+$show_controls  = $can_edit && $allow_inline;
+$display_name   = clanspress_players_get_display_name( $user_id );
+
+$inner_classes = 'clanspress-player-avatar__img';
+// Transparent GIF: valid src when the profile has no avatar yet but inline upload is allowed.
+$placeholder_src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+$wrapper_attributes = get_block_wrapper_attributes(
+	array(
+		'class' => 'clanspress-player-avatar-block',
+	),
+	$block
+);
+
+$interactive_attrs = '';
+if ( $show_controls ) {
+	$context = array(
+		'canEdit'   => true,
+		'strings'   => array(
+			'invalidFileType' => __( 'Only PNG or JPEG images are allowed.', 'clanspress' ),
+			'saveSuccess'     => __( 'Your changes were saved successfully.', 'clanspress' ),
+			'saveError'       => __( 'There was an error while saving changes.', 'clanspress' ),
+		),
+	);
+	$interactive_attrs = sprintf(
+		' data-wp-interactive="clanspress-player-avatar" data-wp-context="%1$s" data-wp-init="callbacks.init"',
+		esc_attr( wp_json_encode( $context ) )
+	);
 }
 
-$can_edit     = get_current_user_id() === $user_id;
-$display_name = clanspress_players_get_display_name( $user_id );
-
-$context = array(
-	'canEdit' => $can_edit,
-);
-
-$wrapper_attributes = get_block_wrapper_attributes( array(), $block );
-
 $avatar_file_input_id = wp_unique_id( 'clanspress-profile-avatar-' );
+$panel_id             = wp_unique_id( 'clanspress-player-avatar-panel-' );
 
-$img_inner = sprintf(
-	'<img class="player-avatar__image-background" src="%1$s" alt="%2$s" loading="lazy" decoding="async" />',
-	esc_url( $avatar_image ),
-	esc_attr( sprintf( /* translators: %s: Player display name. */ __( '%s player avatar', 'clanspress' ), $display_name ) )
-);
+ob_start();
+if ( $avatar_image ) {
+	printf(
+		'<img class="%1$s" src="%2$s" alt="%3$s" loading="lazy" decoding="async" />',
+		esc_attr( $inner_classes ),
+		esc_url( $avatar_image ),
+		esc_attr( sprintf( /* translators: %s: Player display name. */ __( '%s player avatar', 'clanspress' ), $display_name ) )
+	);
+} elseif ( $show_controls ) {
+	printf(
+		'<img class="%1$s clanspress-player-avatar__img--empty" src="%2$s" alt="%3$s" loading="lazy" decoding="async" />',
+		esc_attr( $inner_classes ),
+		esc_url( $placeholder_src ),
+		esc_attr( sprintf( /* translators: %s: Player display name. */ __( '%s — no avatar yet', 'clanspress' ), $display_name ) )
+	);
+} else {
+	printf(
+		'<span class="%1$s clanspress-player-avatar__img--placeholder" role="img" aria-label="%2$s">%3$s</span>',
+		esc_attr( $inner_classes ),
+		esc_attr( sprintf( /* translators: %s: Player display name. */ __( '%s — no avatar yet', 'clanspress' ), $display_name ) ),
+		esc_html__( 'No avatar', 'clanspress' )
+	);
+}
+$img_inner = ob_get_clean();
 
 if ( ! empty( $attributes['isLink'] ) && function_exists( 'clanspress_block_player_profile_url' ) && function_exists( 'clanspress_block_entity_link_url' ) ) {
 	$href = clanspress_block_entity_link_url(
@@ -57,65 +96,62 @@ if ( ! empty( $attributes['isLink'] ) && function_exists( 'clanspress_block_play
 		$target = ( isset( $attributes['linkTarget'] ) && '_blank' === $attributes['linkTarget'] ) ? ' target="_blank"' : '';
 		$rel    = function_exists( 'clanspress_block_entity_link_rel' ) ? clanspress_block_entity_link_rel( $attributes ) : '';
 		$rel_at = '' !== $rel ? ' rel="' . esc_attr( $rel ) . '"' : '';
-		$img_inner = '<a class="player-avatar__link" href="' . esc_url( $href ) . '"' . $target . $rel_at . '>' . $img_inner . '</a>';
+		$img_inner = '<a class="clanspress-player-avatar__link" href="' . esc_url( $href ) . '"' . $target . $rel_at . '>' . $img_inner . '</a>';
 	}
 }
 
 ?>
 <div
 	<?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes. ?>
-	data-wp-interactive="clanspress-player-avatar"
-	data-wp-context="<?php echo esc_attr( wp_json_encode( $context ) ); ?>"
-	data-wp-init="callbacks.init"
-	data-wp-on--pointerenter="actions.enableControls"
-	data-wp-on--pointerleave="actions.disableControls"
+	<?php echo $interactive_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- data-wp-* built with esc_attr( wp_json_encode() ). ?>
 >
-	<div class="player-avatar__frame">
-		<?php echo $img_inner; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built with esc_url/esc_attr. ?>
-		<?php if ( $can_edit ) : ?>
-		<div
-			class="player-avatar__controls"
-			data-wp-class--active="state.isEditing"
-		>
-			<div class="player-avatar__controls-container">
+	<div class="clanspress-player-avatar">
+		<?php echo $img_inner; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built with esc_url/esc_attr/esc_html. ?>
+		<?php if ( $show_controls ) : ?>
+		<div class="clanspress-player-avatar__toolbar">
+			<div class="clanspress-player-avatar__toolbar-inner">
 				<?php do_action( 'clanspress_player_avatar_controls_before' ); ?>
+				<button
+					type="button"
+					class="clanspress-player-avatar__toggle"
+					data-wp-on--click="actions.togglePanel"
+					data-wp-args="edit-avatar"
+					data-wp-bind--aria-expanded="state.isThisPanelActive"
+					aria-controls="<?php echo esc_attr( $panel_id ); ?>"
+				>
+					<?php esc_html_e( 'Edit', 'clanspress' ); ?>
+				</button>
 				<div
-					class="control edit-avatar"
+					id="<?php echo esc_attr( $panel_id ); ?>"
+					class="clanspress-player-avatar__panel clanspress-player-avatar__panel--edit-avatar"
+					role="region"
+					aria-label="<?php esc_attr_e( 'Avatar image', 'clanspress' ); ?>"
 				>
 					<button
 						type="button"
-						data-wp-on--click="actions.toggleControl"
-						data-wp-args="edit-avatar"
+						class="clanspress-player-avatar__panel-action"
+						data-wp-on--click="actions.selectAvatar"
 					>
-						<span class="screen-reader-text"><?php esc_html_e( 'Edit avatar', 'clanspress' ); ?></span>
+						<?php esc_html_e( 'Choose image…', 'clanspress' ); ?>
 					</button>
-					<div class="control-panel edit-avatar">
-						<div class="select-avatar">
-							<button
-								type="button"
-								class="change-media avatar"
-								data-wp-on--click="actions.selectAvatar"
-							><?php esc_html_e( 'Set avatar', 'clanspress' ); ?></button>
-							<input
-								type="file"
-								accept="image/png,image/jpeg"
-								hidden
-								data-wp-on--change="actions.updateAvatar"
-								id="<?php echo esc_attr( $avatar_file_input_id ); ?>"
-								name="profile_avatar"
-							>
-						</div>
-						<div class="save">
-							<?php wp_nonce_field( 'clanspress_profile_settings_save_action', '_clanspress_profile_settings_save_nonce', true, true ); ?>
-							<button
-								type="button"
-								data-wp-on--click="actions.save"
-							><?php esc_html_e( 'Save', 'clanspress' ); ?></button>
-						</div>
-					</div>
+					<input
+						type="file"
+						accept="image/png,image/jpeg"
+						hidden
+						data-wp-on--change="actions.updateAvatar"
+						id="<?php echo esc_attr( $avatar_file_input_id ); ?>"
+						name="profile_avatar"
+					>
+					<?php wp_nonce_field( 'clanspress_profile_settings_save_action', '_clanspress_profile_settings_save_nonce', true, true ); ?>
+					<button
+						type="button"
+						class="clanspress-player-avatar__panel-action clanspress-player-avatar__panel-action--primary"
+						data-wp-on--click="actions.save"
+					>
+						<?php esc_html_e( 'Save', 'clanspress' ); ?>
+					</button>
 				</div>
 				<?php do_action( 'clanspress_player_avatar_controls_after' ); ?>
-				<?php do_action( 'clanspress_player_cover_controls_after' ); ?>
 			</div>
 		</div>
 		<?php endif; ?>

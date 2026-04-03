@@ -8,14 +8,31 @@
 	"icon": "format-quote",
 	"description": "Displays the team motto.",
 	"textdomain": "clanspress",
-	"postTypes": [ "cp_team" ],
-	"usesContext": [ "postId", "postType" ],
+	"postTypes": [
+		"cp_team"
+	],
+	"usesContext": [
+		"postId",
+		"postType"
+	],
 	"supports": {
-		"html": false,
 		"spacing": {
 			"margin": true,
-			"padding": true
+			"padding": true,
+			"blockGap": true
 		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": true
+		},
+		"html": false,
 		"typography": {
 			"fontSize": true,
 			"fontStyle": true
@@ -24,5 +41,14 @@
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
 	"style": "file:./style-index.css",
-	"render": "file:./render.php"
+	"render": "file:./render.php",
+	"selectors": {
+		"root": ".wp-block-clanspress-team-motto",
+		"color": {
+			"text": ".wp-block-clanspress-team-motto .clanspress-team-motto__text",
+			"background": ".wp-block-clanspress-team-motto"
+		},
+		"typography": ".wp-block-clanspress-team-motto .clanspress-team-motto__text",
+		"border": ".wp-block-clanspress-team-motto"
+	}
 }

@@ -9,6 +9,23 @@
 	"description": "List published matches with optional filters.",
 	"textdomain": "clanspress",
 	"supports": {
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": true
+		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": true,
+			"link": true
+		},
 		"html": false,
 		"align": true
 	},
@@ -33,5 +50,15 @@
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
 	"style": "file:./style-index.css",
-	"render": "file:./render.php"
+	"render": "file:./render.php",
+	"selectors": {
+		"root": ".wp-block-clanspress-match-list",
+		"color": {
+			"text": ".wp-block-clanspress-match-list .clanspress-match-list, .wp-block-clanspress-match-list .clanspress-match-list__link",
+			"background": ".wp-block-clanspress-match-list",
+			"link": ".wp-block-clanspress-match-list .clanspress-match-list__link"
+		},
+		"typography": ".wp-block-clanspress-match-list .clanspress-match-list",
+		"border": ".wp-block-clanspress-match-list"
+	}
 }

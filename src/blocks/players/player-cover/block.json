@@ -8,8 +8,12 @@
 	"icon": "smiley",
 	"description": "Example block scaffolded with Create Block tool.",
 	"example": {},
-	"textdomain": "player-cover",
+	"textdomain": "clanspress",
 	"attributes": {
+		"allowFrontEndMediaEdit": {
+			"type": "boolean",
+			"default": false
+		},
 		"id": {
 			"type": "number"
 		},
@@ -23,28 +27,58 @@
 			"type": "string"
 		},
 		"templateLock": {
-			"type": [ "string", "boolean" ],
-			"enum": [ "all", "insert", "contentOnly", false ]
+			"type": [
+				"string",
+				"boolean"
+			],
+			"enum": [
+				"all",
+				"insert",
+				"contentOnly",
+				false
+			]
 		},
 		"sizeSlug": {
 			"type": "string"
 		}
 	},
-	"usesContext": [ "postId", "postType", "clanspress/playerId" ],
+	"usesContext": [
+		"postId",
+		"postType",
+		"clanspress/playerId"
+	],
 	"supports": {
-		"anchor": true,
-		"align": true,
-		"html": false,
-		"shadow": true,
 		"spacing": {
+			"margin": [
+				"top",
+				"bottom"
+			],
 			"padding": true,
-			"margin": [ "top", "bottom" ],
 			"blockGap": true,
 			"__experimentalDefaultControls": {
 				"padding": true,
 				"blockGap": true
 			}
 		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": false,
+			"heading": true,
+			"__experimentalSkipSerialization": [
+				"gradients"
+			],
+			"enableContrastChecker": false
+		},
+		"anchor": true,
+		"align": true,
+		"html": false,
 		"__experimentalBorder": {
 			"color": true,
 			"radius": true,
@@ -56,13 +90,6 @@
 				"style": true,
 				"width": true
 			}
-		},
-		"color": {
-			"heading": true,
-			"text": true,
-			"background": false,
-			"__experimentalSkipSerialization": [ "gradients" ],
-			"enableContrastChecker": false
 		},
 		"dimensions": {
 			"aspectRatio": true
@@ -90,8 +117,15 @@
 		"allowedBlocks": true
 	},
 	"selectors": {
+		"root": ".wp-block-clanspress-player-cover",
+		"color": {
+			"text": ".wp-block-clanspress-player-cover .player-cover__content-container",
+			"background": ".wp-block-clanspress-player-cover"
+		},
+		"typography": ".wp-block-clanspress-player-cover .player-cover__content-container",
+		"border": ".wp-block-clanspress-player-cover",
 		"filter": {
-			"duotone": ".wp-block-clanspress-player-cover > .player-cover__image-background, .wp-block-clanspress-player-cover > .player-cover__video-background"
+			"duotone": ".wp-block-clanspress-player-cover > .clanspress-player-cover__media, .wp-block-clanspress-player-cover > .player-cover__video-background"
 		}
 	},
 	"editorScript": "file:./index.js",

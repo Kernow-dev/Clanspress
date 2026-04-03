@@ -100,7 +100,8 @@ $context = array(
 $wrapper = get_block_wrapper_attributes(
 	array(
 		'class' => 'clanspress-team-challenge',
-	)
+	),
+	$block
 );
 ?>
 <div

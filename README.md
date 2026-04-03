@@ -125,6 +125,69 @@ For ad-hoc or third-party blocks that ship as separate compiled folders, you can
 - `clanspress_extension_{slug}_block_directories`
 - `clanspress_extension_block_directories`
 
+### Global Styles (`theme.json`) and Clanspress blocks
+
+First-party blocks declare `supports` (spacing, color, typography, border, shadow, and link color where relevant) and `selectors` in each block’s `block.json`, so **Appearance → Editor → Styles** can target the right DOM nodes. Dynamic blocks pass the `WP_Block` instance into `get_block_wrapper_attributes( …, $block )` on the front end so those styles apply there too.
+
+To set **defaults for every Clanspress block** from your theme, merge the `styles.blocks` entries below into your theme’s `theme.json` under the existing `styles` key (add `styles.blocks` if it is missing). If a block name is already present, merge objects by hand or replace with your overrides.
+
+The scaffold uses empty objects as placeholders. Fill any block with standard `theme.json` style properties, for example:
+
+```json
+"clanspress/team-name": {
+	"color": { "text": "var(--wp--preset--color--contrast)" },
+	"typography": { "fontSize": "var(--wp--preset--font-size--x-large)" },
+	"spacing": { "margin": { "bottom": "var(--wp--preset--spacing--40)" } }
+}
+```
+
+**Copy-paste scaffold** (full `theme.json` you can trim, or copy only the `styles.blocks` object into an existing file):
+
+```json
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 2,
+	"styles": {
+		"blocks": {
+			"clanspress/event-calendar": {},
+			"clanspress/event-create-form": {},
+			"clanspress/event-detail": {},
+			"clanspress/event-list": {},
+			"clanspress/event-rsvp": {},
+			"clanspress/match-card": {},
+			"clanspress/match-list": {},
+			"clanspress/notification-bell": {},
+			"clanspress/player-avatar": {},
+			"clanspress/player-country": {},
+			"clanspress/player-cover": {},
+			"clanspress/player-display-name": {},
+			"clanspress/player-profile-nav": {},
+			"clanspress/player-query": {},
+			"clanspress/player-settings": {},
+			"clanspress/player-settings-link": {},
+			"clanspress/player-template": {},
+			"clanspress/team-avatar": {},
+			"clanspress/team-card": {},
+			"clanspress/team-challenge-button": {},
+			"clanspress/team-code": {},
+			"clanspress/team-country": {},
+			"clanspress/team-cover": {},
+			"clanspress/team-create-form": {},
+			"clanspress/team-description": {},
+			"clanspress/team-draws": {},
+			"clanspress/team-losses": {},
+			"clanspress/team-manage-link": {},
+			"clanspress/team-members-count": {},
+			"clanspress/team-motto": {},
+			"clanspress/team-name": {},
+			"clanspress/team-profile-nav": {},
+			"clanspress/team-wins": {},
+			"clanspress/user-nav": {}
+		}
+	}
+}
+```
+
 ### Extension-Owned FSE Template Registration
 Extensions can and should register their own FSE templates, so template availability follows extension activation.
 

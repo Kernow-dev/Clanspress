@@ -15,7 +15,8 @@ if ( $team_id < 1 ) {
 	$wrapper = get_block_wrapper_attributes(
 		array(
 			'class' => 'clanspress-team-name clanspress-team-name--placeholder',
-		)
+		),
+		$block
 	);
 	echo '<div ' . $wrapper . '><span>' . esc_html__( 'Team name', 'clanspress' ) . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;

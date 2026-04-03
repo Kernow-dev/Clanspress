@@ -8,8 +8,13 @@
 	"icon": "yes-alt",
 	"description": "Displays the team’s win count with optional prefix and postfix text.",
 	"textdomain": "clanspress",
-	"postTypes": [ "cp_team" ],
-	"usesContext": [ "postId", "postType" ],
+	"postTypes": [
+		"cp_team"
+	],
+	"usesContext": [
+		"postId",
+		"postType"
+	],
 	"attributes": {
 		"prefix": {
 			"type": "string",
@@ -21,6 +26,25 @@
 		}
 	},
 	"supports": {
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": true,
+			"__experimentalDefaultControls": {
+				"blockGap": true
+			}
+		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": true
+		},
 		"html": false,
 		"layout": {
 			"allowSwitching": false,
@@ -29,18 +53,16 @@
 				"type": "flex",
 				"flexWrap": "wrap"
 			}
-		},
-		"spacing": {
-			"margin": true,
-			"padding": true,
-			"blockGap": true,
-			"__experimentalDefaultControls": {
-				"blockGap": true
-			}
 		}
 	},
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
 	"style": "file:./style-index.css",
-	"render": "file:./render.php"
+	"render": "file:./render.php",
+	"selectors": {
+		"root": ".wp-block-clanspress-team-wins",
+		"color": ".wp-block-clanspress-team-wins",
+		"typography": ".wp-block-clanspress-team-wins",
+		"border": ".wp-block-clanspress-team-wins"
+	}
 }

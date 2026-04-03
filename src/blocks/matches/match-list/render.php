@@ -22,4 +22,6 @@ if ( ! $extension instanceof \Kernowdev\Clanspress\Extensions\Matches ) {
 	return;
 }
 
-echo $extension->render_list_block_markup( is_array( $attributes ) ? $attributes : array() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- HTML is escaped in Matches::render_list_block_markup().
+$markup  = $extension->render_list_block_markup( is_array( $attributes ) ? $attributes : array() );
+$wrapper = get_block_wrapper_attributes( array(), $block );
+echo '<div ' . $wrapper . '>' . $markup . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $wrapper from get_block_wrapper_attributes(); inner HTML escaped in Matches::render_list_block_markup().

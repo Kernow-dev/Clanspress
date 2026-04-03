@@ -142,6 +142,7 @@ class Teams extends Skeleton {
 		add_action( 'admin_post_nopriv_clanspress_delete_team', array( $this, 'handle_delete_team_nopriv' ) );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_team_editor_assets' ) );
 		add_action( 'wp_ajax_clanspress_team_invite_search', array( $this, 'ajax_team_invite_search' ) );
+		add_action( 'wp_ajax_clanspress_save_team_media', array( $this, 'ajax_save_team_media' ) );
 
 		// Register notification action handlers for team invites.
 		add_filter( 'clanspress_notification_action_handler', array( $this, 'handle_notification_actions' ), 10, 5 );
@@ -3666,6 +3667,94 @@ class Teams extends Skeleton {
 		);
 
 		wp_send_json_success( $results );
+	}
+
+	/**
+	 * Ajax: save team avatar and/or cover from front-end blocks (multipart POST).
+	 *
+	 * Expects `clanspress_team_id`, `_clanspress_team_media_nonce`, and optional `team_avatar` / `team_cover` files.
+	 *
+	 * @return void
+	 */
+	public function ajax_save_team_media(): void {
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error(
+				array( 'message' => __( 'You must be logged in.', 'clanspress' ) ),
+				403
+			);
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified below via check_ajax_referer().
+		$team_id = isset( $_POST['clanspress_team_id'] ) ? absint( wp_unslash( $_POST['clanspress_team_id'] ) ) : 0;
+		if ( $team_id < 1 ) {
+			wp_send_json_error(
+				array( 'message' => __( 'Invalid team.', 'clanspress' ) ),
+				400
+			);
+		}
+
+		check_ajax_referer( 'clanspress_team_media_' . $team_id, '_clanspress_team_media_nonce' );
+
+		$user_id = get_current_user_id();
+		if ( ! $this->user_can_manage_team_on_frontend( $team_id, $user_id ) ) {
+			wp_send_json_error(
+				array( 'message' => __( 'You cannot edit this team.', 'clanspress' ) ),
+				403
+			);
+		}
+
+		$post = get_post( $team_id );
+		if ( ! $post instanceof \WP_Post || 'cp_team' !== $post->post_type ) {
+			wp_send_json_error(
+				array( 'message' => __( 'Invalid team.', 'clanspress' ) ),
+				400
+			);
+		}
+
+		$had_avatar = $this->team_manage_form_has_image_upload( 'team_avatar' );
+		$had_cover  = $this->team_manage_form_has_image_upload( 'team_cover' );
+
+		if ( ! $had_avatar && ! $had_cover ) {
+			wp_send_json_error(
+				array( 'message' => __( 'No image was uploaded.', 'clanspress' ) ),
+				400
+			);
+		}
+
+		if ( $had_avatar ) {
+			$this->maybe_handle_team_media_upload( $team_id, 'team_avatar', 'cp_team_avatar_id' );
+		}
+		if ( $had_cover ) {
+			$this->maybe_handle_team_media_upload( $team_id, 'team_cover', 'cp_team_cover_id' );
+		}
+
+		/**
+		 * Fires after team avatar/cover media was saved via Ajax from front-end blocks.
+		 *
+		 * @param int   $team_id   Team post ID.
+		 * @param Teams $extension Teams extension instance.
+		 */
+		do_action( 'clanspress_team_media_ajax_saved', $team_id, $this );
+
+		$avatar_id = (int) get_post_meta( $team_id, 'cp_team_avatar_id', true );
+		$cover_id  = (int) get_post_meta( $team_id, 'cp_team_cover_id', true );
+
+		$avatar_url = $avatar_id ? (string) wp_get_attachment_image_url( $avatar_id, 'medium' ) : '';
+		if ( '' === $avatar_url && function_exists( 'clanspress_teams_get_default_avatar_url' ) ) {
+			$avatar_url = clanspress_teams_get_default_avatar_url( $team_id );
+		}
+
+		$cover_url = $cover_id ? (string) wp_get_attachment_image_url( $cover_id, 'full' ) : '';
+		if ( '' === $cover_url && function_exists( 'clanspress_teams_get_default_cover_url' ) ) {
+			$cover_url = clanspress_teams_get_default_cover_url( $team_id );
+		}
+
+		wp_send_json_success(
+			array(
+				'avatarUrl' => $avatar_url,
+				'coverUrl'  => $cover_url,
+			)
+		);
 	}
 
 	/**

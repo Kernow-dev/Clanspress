@@ -9,6 +9,22 @@
 	"description": "Block for outputting player settings for their profile.",
 	"example": {},
 	"supports": {
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": true
+		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": true
+		},
 		"html": false,
 		"interactivity": true
 	},
@@ -17,5 +33,11 @@
 	"editorStyle": "file:./index.css",
 	"style": "file:./style-index.css",
 	"render": "file:./render.php",
-	"viewScriptModule": "file:./view.js"
+	"viewScriptModule": "file:./view.js",
+	"selectors": {
+		"root": ".wp-block-clanspress-player-settings",
+		"color": ".wp-block-clanspress-player-settings",
+		"typography": ".wp-block-clanspress-player-settings",
+		"border": ".wp-block-clanspress-player-settings"
+	}
 }

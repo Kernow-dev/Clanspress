@@ -43,7 +43,8 @@ $context = array(
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
 		'class' => 'clanspress-user-nav' . ( $is_logged_in ? ' is-logged-in' : ' is-guest' ),
-	)
+	),
+	$block
 );
 ?>
 <div

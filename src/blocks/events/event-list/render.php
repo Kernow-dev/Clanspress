@@ -25,13 +25,13 @@ if ( $group_id < 1 ) {
 }
 
 if ( 'team' === $scope && $team_id < 1 ) {
-	$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-list clanspress-event-list--placeholder' ) );
+	$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-list clanspress-event-list--placeholder' ), $block );
 	echo '<div ' . $wrapper . '><p>' . esc_html__( 'No team context for events.', 'clanspress' ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
 }
 
 if ( 'group' === $scope && $group_id < 1 ) {
-	$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-list clanspress-event-list--placeholder' ) );
+	$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-list clanspress-event-list--placeholder' ), $block );
 	echo '<div ' . $wrapper . '><p>' . esc_html__( 'No group context for events.', 'clanspress' ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
 }
@@ -68,7 +68,8 @@ $config = array(
 $wrapper = get_block_wrapper_attributes(
 	array(
 		'class' => 'clanspress-event-list-wrap clanspress-event-list-wrap--interactive',
-	)
+	),
+	$block
 );
 ?>
 <div

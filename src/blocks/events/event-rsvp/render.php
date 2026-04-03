@@ -39,7 +39,8 @@ if ( $event_id < 1 ) {
 	$wrapper = get_block_wrapper_attributes(
 		array(
 			'class' => 'clanspress-event-rsvp clanspress-event-rsvp--placeholder',
-		)
+		),
+		$block
 	);
 	echo '<div ' . $wrapper . '><p>' . esc_html__( 'Select an event or place this block on a match or group template.', 'clanspress' ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
@@ -51,7 +52,8 @@ if ( ! $can_view ) {
 	$wrapper = get_block_wrapper_attributes(
 		array(
 			'class' => 'clanspress-event-rsvp clanspress-event-rsvp--forbidden',
-		)
+		),
+		$block
 	);
 	echo '<div ' . $wrapper . '><p>' . esc_html__( 'This event is not available.', 'clanspress' ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
@@ -87,7 +89,8 @@ $config = array(
 $wrapper = get_block_wrapper_attributes(
 	array(
 		'class' => 'clanspress-event-rsvp',
-	)
+	),
+	$block
 );
 ?>
 <div

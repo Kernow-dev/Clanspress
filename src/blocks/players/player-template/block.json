@@ -8,7 +8,9 @@
 	"icon": "list-view",
 	"description": "Layout repeated for each team member. Use only inside a Player query block.",
 	"textdomain": "clanspress",
-	"ancestor": [ "clanspress/player-query" ],
+	"ancestor": [
+		"clanspress/player-query"
+	],
 	"usesContext": [
 		"clanspress/teamId",
 		"clanspress/inheritTeamContext",
@@ -27,12 +29,28 @@
 		"postType"
 	],
 	"supports": {
-		"anchor": true,
-		"reusable": false,
-		"html": false,
-		"align": [ "wide", "full" ],
-		"layout": true,
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": {
+				"__experimentalDefault": "1.25em"
+			},
+			"__experimentalDefaultControls": {
+				"blockGap": true,
+				"padding": false,
+				"margin": false
+			}
+		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
 		"color": {
+			"text": true,
+			"background": true,
 			"gradients": true,
 			"link": true,
 			"__experimentalDefaultControls": {
@@ -40,6 +58,14 @@
 				"text": true
 			}
 		},
+		"anchor": true,
+		"reusable": false,
+		"html": false,
+		"align": [
+			"wide",
+			"full"
+		],
+		"layout": true,
 		"typography": {
 			"fontSize": true,
 			"lineHeight": true,
@@ -53,18 +79,6 @@
 				"fontSize": true
 			}
 		},
-		"spacing": {
-			"margin": true,
-			"padding": true,
-			"blockGap": {
-				"__experimentalDefault": "1.25em"
-			},
-			"__experimentalDefaultControls": {
-				"blockGap": true,
-				"padding": false,
-				"margin": false
-			}
-		},
 		"__experimentalBorder": {
 			"radius": true,
 			"color": true,
@@ -75,5 +89,15 @@
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
 	"style": "file:./style-index.css",
-	"render": "file:./render.php"
+	"render": "file:./render.php",
+	"selectors": {
+		"root": ".wp-block-clanspress-player-template",
+		"color": {
+			"text": ".wp-block-clanspress-player-template",
+			"background": ".wp-block-clanspress-player-template",
+			"link": ".wp-block-clanspress-player-template a"
+		},
+		"typography": ".wp-block-clanspress-player-template",
+		"border": ".wp-block-clanspress-player-template"
+	}
 }

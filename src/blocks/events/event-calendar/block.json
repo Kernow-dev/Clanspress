@@ -31,16 +31,37 @@
 		}
 	},
 	"supports": {
-		"html": false,
-		"interactivity": true,
-		"align": [ "wide", "full" ],
 		"spacing": {
 			"margin": true,
-			"padding": true
-		}
+			"padding": true,
+			"blockGap": true
+		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": true
+		},
+		"html": false,
+		"interactivity": true,
+		"align": [
+			"wide",
+			"full"
+		]
 	},
 	"editorScript": "file:./index.js",
 	"viewScriptModule": "file:./view.js",
 	"style": "file:./style-index.css",
-	"render": "file:./render.php"
+	"render": "file:./render.php",
+	"selectors": {
+		"root": ".wp-block-clanspress-event-calendar",
+		"color": ".wp-block-clanspress-event-calendar",
+		"typography": ".wp-block-clanspress-event-calendar",
+		"border": ".wp-block-clanspress-event-calendar"
+	}
 }

@@ -25,20 +25,20 @@ if ( $event_id < 1 ) {
 $viewer_id = is_user_logged_in() ? (int) get_current_user_id() : 0;
 
 if ( $event_id < 1 ) {
-	$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-detail clanspress-event-detail--placeholder' ) );
+	$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-detail clanspress-event-detail--placeholder' ), $block );
 	echo '<div ' . $wrapper . '><p>' . esc_html__( 'No event selected.', 'clanspress' ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
 }
 
 $post = get_post( $event_id );
 if ( ! ( $post instanceof \WP_Post ) || Event_Post_Type::POST_TYPE !== $post->post_type ) {
-	$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-detail clanspress-event-detail--placeholder' ) );
+	$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-detail clanspress-event-detail--placeholder' ), $block );
 	echo '<div ' . $wrapper . '><p>' . esc_html__( 'Event not found.', 'clanspress' ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
 }
 
 if ( ! Event_Permissions::viewer_can_see( $post, $viewer_id ) ) {
-	$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-detail clanspress-event-detail--forbidden' ) );
+	$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-detail clanspress-event-detail--forbidden' ), $block );
 	echo '<div ' . $wrapper . '><p>' . esc_html__( 'This event is not available.', 'clanspress' ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	return;
 }
@@ -80,7 +80,7 @@ if ( $ends ) {
 	$end_label = $ts ? wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $ts ) : '';
 }
 
-$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-detail' ) );
+$wrapper = get_block_wrapper_attributes( array( 'class' => 'clanspress-event-detail' ), $block );
 
 ob_start();
 ?>
