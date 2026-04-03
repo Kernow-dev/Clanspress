@@ -301,33 +301,7 @@ class Players extends Skeleton {
 	 * @return string
 	 */
 	protected function get_canonical_request_path(): string {
-		$raw = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( (string) $_SERVER['REQUEST_URI'] ) : '';
-		if ( '' === $raw ) {
-			return '';
-		}
-
-		$uri = sanitize_text_field( $raw );
-		$path = wp_parse_url( $uri, PHP_URL_PATH );
-		if ( ! is_string( $path ) ) {
-			return '';
-		}
-
-		$path = rawurldecode( $path );
-
-		$home_path = wp_parse_url( home_url( '/' ), PHP_URL_PATH );
-		$home_path = is_string( $home_path ) ? $home_path : '';
-
-		if ( '' !== $home_path && '/' !== $home_path ) {
-			$home_trim = untrailingslashit( $home_path );
-			if ( str_starts_with( $path, $home_trim ) ) {
-				$path = substr( $path, strlen( $home_trim ) );
-			}
-		}
-
-		$path = ltrim( $path, '/' );
-		$path = preg_replace( '#^index\.php/?#i', '', $path );
-
-		return trim( (string) $path, '/' );
+		return clanspress_get_canonical_request_path();
 	}
 
 	/**

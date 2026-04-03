@@ -37,6 +37,7 @@ require_once __DIR__ . '/inc/class-block-patterns.php';
 require_once __DIR__ . '/inc/clanspress-private-media.php';
 require_once __DIR__ . '/inc/clanspress-team-challenge-uploads.php';
 require_once __DIR__ . '/inc/functions-block-templates.php';
+require_once __DIR__ . '/inc/functions-request-input.php';
 require_once __DIR__ . '/inc/functions-country-flags.php';
 require_once __DIR__ . '/inc/functions-block-entity-link.php';
 require_once __DIR__ . '/shortcut-function.php';

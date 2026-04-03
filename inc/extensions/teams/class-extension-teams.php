@@ -600,33 +600,7 @@ class Teams extends Skeleton {
 	 * @return string
 	 */
 	protected function get_canonical_request_path(): string {
-		$raw = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( (string) $_SERVER['REQUEST_URI'] ) : '';
-		if ( '' === $raw ) {
-			return '';
-		}
-
-		$uri = sanitize_text_field( $raw );
-		$path = wp_parse_url( $uri, PHP_URL_PATH );
-		if ( ! is_string( $path ) ) {
-			return '';
-		}
-
-		$path = rawurldecode( $path );
-
-		$home_path = wp_parse_url( home_url( '/' ), PHP_URL_PATH );
-		$home_path = is_string( $home_path ) ? $home_path : '';
-
-		if ( '' !== $home_path && '/' !== $home_path ) {
-			$home_trim = untrailingslashit( $home_path );
-			if ( str_starts_with( $path, $home_trim ) ) {
-				$path = substr( $path, strlen( $home_trim ) );
-			}
-		}
-
-		$path = ltrim( $path, '/' );
-		$path = preg_replace( '#^index\.php/?#i', '', $path );
-
-		return trim( (string) $path, '/' );
+		return clanspress_get_canonical_request_path();
 	}
 
 	/**
@@ -1219,7 +1193,7 @@ class Teams extends Skeleton {
 
 		$scheme = is_ssl() ? 'https' : 'http';
 		$host   = sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) );
-		$uri    = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( (string) $_SERVER['REQUEST_URI'] ) ) : '/';
+		$uri    = clanspress_sanitize_request_uri( '/' );
 
 		return esc_url_raw( $scheme . '://' . $host . $uri );
 	}
@@ -2592,7 +2566,7 @@ class Teams extends Skeleton {
 			exit;
 		}
 
-		$team_id = isset( $_POST['clanspress_team_id'] ) ? absint( wp_unslash( $_POST['clanspress_team_id'] ) ) : 0;
+		$team_id = clanspress_request_post_absint( 'clanspress_team_id', 0 );
 		if ( $team_id < 1 ) {
 			wp_die( esc_html__( 'Invalid team.', 'clanspress' ), '', array( 'response' => 400 ) );
 		}
@@ -2609,10 +2583,10 @@ class Teams extends Skeleton {
 			wp_die( esc_html__( 'Invalid team.', 'clanspress' ), '', array( 'response' => 400 ) );
 		}
 
-		$team_name        = sanitize_text_field( wp_unslash( $_POST['team_name'] ?? '' ) );
-		$team_code        = sanitize_text_field( wp_unslash( $_POST['team_code'] ?? '' ) );
-		$team_motto       = sanitize_text_field( wp_unslash( $_POST['team_motto'] ?? '' ) );
-		$team_description = wp_kses_post( wp_unslash( $_POST['team_description'] ?? '' ) );
+		$team_name        = clanspress_request_post_text( 'team_name' );
+		$team_code        = clanspress_request_post_text( 'team_code' );
+		$team_motto       = clanspress_request_post_text( 'team_motto' );
+		$team_description = clanspress_request_post_html( 'team_description' );
 
 		if ( '' === $team_name ) {
 			wp_safe_redirect(
@@ -2634,24 +2608,16 @@ class Teams extends Skeleton {
 		$team_entity->set_description( $team_description );
 		$team_entity->set_code( $team_code );
 		$team_entity->set_motto( $team_motto );
-		$team_entity->set_country( $this->sanitize_team_country_input( sanitize_text_field( wp_unslash( $_POST['team_country'] ?? '' ) ) ) );
-		$team_entity->set_wins( absint( wp_unslash( $_POST['team_wins'] ?? 0 ) ) );
-		$team_entity->set_losses( absint( wp_unslash( $_POST['team_losses'] ?? 0 ) ) );
-		$team_entity->set_draws( absint( wp_unslash( $_POST['team_draws'] ?? 0 ) ) );
+		$team_entity->set_country( $this->sanitize_team_country_input( clanspress_request_post_text( 'team_country' ) ) );
+		$team_entity->set_wins( clanspress_request_post_absint( 'team_wins', 0 ) );
+		$team_entity->set_losses( clanspress_request_post_absint( 'team_losses', 0 ) );
+		$team_entity->set_draws( clanspress_request_post_absint( 'team_draws', 0 ) );
 
-		$team_entity->set_join_mode( $this->sanitize_team_join_mode( sanitize_text_field( wp_unslash( $_POST['team_join_mode'] ?? 'open_join' ) ) ) );
-		$team_entity->set_allow_invites(
-			isset( $_POST['team_allow_invites'] ) && '1' === sanitize_text_field( wp_unslash( (string) $_POST['team_allow_invites'] ) )
-		);
-		$team_entity->set_allow_frontend_edit(
-			isset( $_POST['team_allow_frontend_edit'] ) && '1' === sanitize_text_field( wp_unslash( (string) $_POST['team_allow_frontend_edit'] ) )
-		);
-		$team_entity->set_allow_ban_players(
-			isset( $_POST['team_allow_ban_players'] ) && '1' === sanitize_text_field( wp_unslash( (string) $_POST['team_allow_ban_players'] ) )
-		);
-		$team_entity->set_accept_challenges(
-			isset( $_POST['team_accept_challenges'] ) && '1' === sanitize_text_field( wp_unslash( (string) $_POST['team_accept_challenges'] ) )
-		);
+		$team_entity->set_join_mode( $this->sanitize_team_join_mode( clanspress_request_post_text( 'team_join_mode', 'open_join' ) ) );
+		$team_entity->set_allow_invites( clanspress_request_post_flag( 'team_allow_invites' ) );
+		$team_entity->set_allow_frontend_edit( clanspress_request_post_flag( 'team_allow_frontend_edit' ) );
+		$team_entity->set_allow_ban_players( clanspress_request_post_flag( 'team_allow_ban_players' ) );
+		$team_entity->set_accept_challenges( clanspress_request_post_flag( 'team_accept_challenges' ) );
 
 		/**
 		 * Fires after the manage form has populated the team entity and before it is saved.
@@ -2667,10 +2633,10 @@ class Teams extends Skeleton {
 		$has_avatar_upload = $this->team_manage_form_has_image_upload( 'team_avatar' );
 		$has_cover_upload    = $this->team_manage_form_has_image_upload( 'team_cover' );
 
-		if ( ! $has_avatar_upload && ! empty( $_POST['team_avatar_remove'] ) && '1' === sanitize_text_field( wp_unslash( (string) $_POST['team_avatar_remove'] ) ) ) {
+		if ( ! $has_avatar_upload && clanspress_request_post_flag( 'team_avatar_remove' ) ) {
 			$this->maybe_remove_team_manage_image( $team_id, 'cp_team_avatar_id' );
 		}
-		if ( ! $has_cover_upload && ! empty( $_POST['team_cover_remove'] ) && '1' === sanitize_text_field( wp_unslash( (string) $_POST['team_cover_remove'] ) ) ) {
+		if ( ! $has_cover_upload && clanspress_request_post_flag( 'team_cover_remove' ) ) {
 			$this->maybe_remove_team_manage_image( $team_id, 'cp_team_cover_id' );
 		}
 
@@ -2728,7 +2694,7 @@ class Teams extends Skeleton {
 			exit;
 		}
 
-		$team_id = isset( $_POST['clanspress_team_id'] ) ? absint( wp_unslash( $_POST['clanspress_team_id'] ) ) : 0;
+		$team_id = clanspress_request_post_absint( 'clanspress_team_id', 0 );
 		if ( $team_id < 1 ) {
 			wp_die( esc_html__( 'Invalid team.', 'clanspress' ), '', array( 'response' => 400 ) );
 		}
@@ -3123,8 +3089,7 @@ class Teams extends Skeleton {
 			return;
 		}
 
-		$enabled_raw = isset( $_POST['cp_team_events_enabled'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['cp_team_events_enabled'] ) ) : '';
-		$enabled     = ( '1' === $enabled_raw );
+		$enabled = clanspress_request_post_flag( 'cp_team_events_enabled' );
 		update_post_meta( $post_id, 'cp_team_events_enabled', $enabled );
 	}
 
@@ -3539,12 +3504,12 @@ class Teams extends Skeleton {
 		check_admin_referer( 'clanspress_create_team_action', '_clanspress_create_team_nonce' );
 
 		$user_id          = get_current_user_id();
-		$team_name        = sanitize_text_field( wp_unslash( $_POST['team_name'] ?? '' ) );
-		$team_code        = sanitize_text_field( wp_unslash( $_POST['team_code'] ?? '' ) );
-		$team_motto       = sanitize_text_field( wp_unslash( $_POST['team_motto'] ?? '' ) );
-		$team_description = wp_kses_post( wp_unslash( $_POST['team_description'] ?? '' ) );
-		$team_invites_raw = sanitize_text_field( wp_unslash( $_POST['team_invites'] ?? '' ) );
-		$team_country     = $this->sanitize_team_country_input( sanitize_text_field( wp_unslash( $_POST['team_country'] ?? '' ) ) );
+		$team_name        = clanspress_request_post_text( 'team_name' );
+		$team_code        = clanspress_request_post_text( 'team_code' );
+		$team_motto       = clanspress_request_post_text( 'team_motto' );
+		$team_description = clanspress_request_post_html( 'team_description' );
+		$team_invites_raw = clanspress_request_post_text( 'team_invites' );
+		$team_country     = $this->sanitize_team_country_input( clanspress_request_post_text( 'team_country' ) );
 
 		if ( '' === $team_name ) {
 			$this->redirect_after_team_create( false, 'missing_name' );
@@ -3569,8 +3534,8 @@ class Teams extends Skeleton {
 		$team->set_draws( 0 );
 
 		if ( function_exists( 'clanspress_matches' ) && clanspress_matches() ) {
-			if ( array_key_exists( 'team_accept_challenges', $_POST ) ) {
-				$team->set_accept_challenges( '1' === sanitize_text_field( wp_unslash( (string) $_POST['team_accept_challenges'] ) ) );
+			if ( clanspress_request_post_has_key( 'team_accept_challenges' ) ) {
+				$team->set_accept_challenges( clanspress_request_post_flag( 'team_accept_challenges' ) );
 			} else {
 				$team->set_accept_challenges( true );
 			}
