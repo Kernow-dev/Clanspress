@@ -45,14 +45,16 @@ class Rest_Controller {
 				'permission_callback' => array( $this, 'read_permission' ),
 				'args'                => array(
 					'team'     => array(
-						'description' => __( 'Filter matches involving this team (post ID).', 'clanspress' ),
-						'type'        => 'integer',
-						'default'     => 0,
+						'description'       => __( 'Filter matches involving this team (post ID).', 'clanspress' ),
+						'type'              => 'integer',
+						'default'           => 0,
+						'sanitize_callback' => 'absint',
 					),
 					'status'   => array(
-						'description' => __( 'Filter by match status slug.', 'clanspress' ),
-						'type'        => 'string',
-						'default'     => '',
+						'description'       => __( 'Filter by match status slug.', 'clanspress' ),
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_key',
 					),
 					'per_page' => array(
 						'type'    => 'integer',
@@ -93,7 +95,12 @@ class Rest_Controller {
 	}
 
 	/**
-	 * Public read access; individual callbacks still enforce visibility per post status.
+	 * Public read access for route registration.
+	 *
+	 * The list callback only queries non-published `cp_match` posts for logged-in users and
+	 * applies `WP_Query` `perm` => `readable` so results respect `read_post` capabilities.
+	 * Each row is still filtered by `Matches::viewer_can_see_match()`. Single-item responses
+	 * return 403 when visibility rules deny the viewer.
 	 *
 	 * @return bool
 	 */
@@ -119,14 +126,9 @@ class Rest_Controller {
 			$status = '';
 		}
 
-		$statuses = array( 'publish' );
-		if ( current_user_can( 'edit_posts' ) ) {
-			$statuses = array( 'publish', 'future', 'draft', 'pending', 'private' );
-		}
-
 		$args = array(
 			'post_type'      => 'cp_match',
-			'post_status'    => $statuses,
+			'post_status'    => array( 'publish' ),
 			'posts_per_page' => $per_page,
 			'paged'          => $page,
 			'orderby'        => 'meta_value',
@@ -135,6 +137,17 @@ class Rest_Controller {
 			'order'          => $order,
 		);
 
+		if ( is_user_logged_in() ) {
+			$args['post_status'] = array(
+				'publish',
+				'future',
+				'draft',
+				'pending',
+				'private',
+			);
+			$args['perm']       = 'readable';
+		}
+
 		$meta_query = $this->build_list_meta_query( $team_id, $status );
 		if ( ! empty( $meta_query ) ) {
 			$args['meta_query'] = $meta_query;
@@ -142,8 +155,12 @@ class Rest_Controller {
 
 		$query = new \WP_Query( $args );
 		$items = array();
+		$viewer_id = is_user_logged_in() ? (int) get_current_user_id() : 0;
 		foreach ( $query->posts as $post ) {
 			if ( $post instanceof WP_Post ) {
+				if ( ! $this->extension->viewer_can_see_match( $post, $viewer_id ) ) {
+					continue;
+				}
 				$items[] = $this->extension->match_to_rest_array( $post );
 			}
 		}
@@ -216,7 +233,8 @@ class Rest_Controller {
 			);
 		}
 
-		if ( 'publish' !== $post->post_status && ! current_user_can( 'read_post', $id ) ) {
+		$viewer_id = is_user_logged_in() ? (int) get_current_user_id() : 0;
+		if ( ! $this->extension->viewer_can_see_match( $post, $viewer_id ) ) {
 			return new \WP_Error(
 				'clanspress_match_forbidden',
 				__( 'You cannot view this match.', 'clanspress' ),

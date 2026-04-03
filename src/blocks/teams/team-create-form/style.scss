@@ -209,6 +209,55 @@
 .clanspress-team-create-form__actions {
 	display: flex;
 	gap: 0.5rem;
+	align-items: center;
+}
+
+.clanspress-team-create-form__actions--split {
+	justify-content: space-between;
+	flex-wrap: wrap;
+	width: 100%;
+	max-width: 42rem;
+}
+
+.clanspress-team-create-form__actions-end {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-left: auto;
+	flex-wrap: wrap;
+}
+
+.clanspress-team-create-form__nav-btn {
+	appearance: none;
+	margin: 0;
+	padding: 0.5rem 0.75rem;
+	font: inherit;
+	cursor: pointer;
+	text-align: center;
+	border-radius: 4px;
+	border: 1px solid #dcdcde;
+	background: #fff;
+	color: #1d2327;
+
+	&:hover {
+		background: #f6f7f7;
+	}
+
+	&:focus-visible {
+		outline: 2px solid #2271b1;
+		outline-offset: 1px;
+	}
+}
+
+.clanspress-team-create-form__nav-btn--primary {
+	background: #2271b1;
+	border-color: #2271b1;
+	color: #fff;
+
+	&:hover {
+		background: #135e96;
+		border-color: #135e96;
+	}
 }
 
 .clanspress-team-create-form__notice {

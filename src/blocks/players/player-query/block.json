@@ -1,0 +1,85 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/player-query",
+	"version": "0.1.0",
+	"title": "Player query",
+	"category": "clanspress-players",
+	"icon": "groups",
+	"description": "Loops members of a team. Add a Player template inside, then place player blocks (avatar, display name, …) within the template.",
+	"textdomain": "clanspress",
+	"attributes": {
+		"teamId": {
+			"type": "number",
+			"default": 0
+		},
+		"inheritTeamContext": {
+			"type": "boolean",
+			"default": true
+		},
+		"excludeBannedMembers": {
+			"type": "boolean",
+			"default": true
+		},
+		"queryOrderby": {
+			"type": "string",
+			"default": "default"
+		},
+		"queryOrder": {
+			"type": "string",
+			"default": "ASC"
+		},
+		"queryMetaKey": {
+			"type": "string",
+			"default": ""
+		},
+		"queryPerPage": {
+			"type": "number",
+			"default": 0
+		},
+		"queryOffset": {
+			"type": "number",
+			"default": 0
+		},
+		"queryMetaQueryJson": {
+			"type": "string",
+			"default": ""
+		},
+		"queryExcludeUsers": {
+			"type": "string",
+			"default": ""
+		},
+		"queryExcludeCurrentUser": {
+			"type": "boolean",
+			"default": false
+		},
+		"queryExcludeRoles": {
+			"type": "string",
+			"default": ""
+		},
+		"queryExcludeMetaQueryJson": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"providesContext": {
+		"clanspress/teamId": "teamId",
+		"clanspress/inheritTeamContext": "inheritTeamContext",
+		"clanspress/excludeBannedMembers": "excludeBannedMembers",
+		"clanspress/queryOrderby": "queryOrderby",
+		"clanspress/queryOrder": "queryOrder",
+		"clanspress/queryMetaKey": "queryMetaKey",
+		"clanspress/queryPerPage": "queryPerPage",
+		"clanspress/queryOffset": "queryOffset",
+		"clanspress/queryMetaQueryJson": "queryMetaQueryJson",
+		"clanspress/queryExcludeUsers": "queryExcludeUsers",
+		"clanspress/queryExcludeCurrentUser": "queryExcludeCurrentUser",
+		"clanspress/queryExcludeRoles": "queryExcludeRoles",
+		"clanspress/queryExcludeMetaQueryJson": "queryExcludeMetaQueryJson"
+	},
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ]
+	},
+	"editorScript": "file:./index.js"
+}

@@ -63,8 +63,11 @@ package-lock.json
 **/package-lock.json
 !package-lock.json
 
-# Block sources may contain local `build/` folders; production blocks live in /build at plugin root.
+# Block sources may contain local `build/` folders.
 src/**/build/
+
+# Compiled blocks and match editor output (regenerate with `npm run build:production` or `npm run plugin-zip`).
+/build/
 
 # Staging directory for the match editor script before it is copied into /build.
 .cp-match-editor-build/

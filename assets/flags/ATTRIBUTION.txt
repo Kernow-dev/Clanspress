@@ -1,0 +1,1 @@
+Flag SVGs are from Flagpack (https://flagpack.xyz / https://github.com/Yummygum/flagpack-core), used under the MIT License.

@@ -286,7 +286,20 @@ const { state, actions } = store( 'clanspress-player-cover', {
 
 			// Only allow image files
 			if ( ! [ 'image/png', 'image/jpeg' ].includes( file.type ) ) {
-				alert( 'Only PNG or JPEG allowed.' );
+				const msg = 'Only PNG or JPEG images are allowed.';
+				if ( window.wp?.a11y?.speak ) {
+					window.wp.a11y.speak( msg, 'assertive' );
+				}
+				if ( state.toast.timeout ) {
+					clearTimeout( state.toast.timeout );
+				}
+				state.toast.type = 'error';
+				state.toast.heading = '';
+				state.toast.message = msg;
+				state.toast.visible = true;
+				state.toast.timeout = setTimeout( () => {
+					state.toast.visible = false;
+				}, 6000 );
 				return;
 			}
 

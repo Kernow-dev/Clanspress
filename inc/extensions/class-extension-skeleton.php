@@ -356,6 +356,8 @@ class Skeleton {
 	 * The path must be the **parent directory** of each block folder (manifest keys = subfolder names), e.g.
 	 * `build/matches` for `match-list/` and `match-card/`, not `build/matches/match-list`.
 	 * Falls back to per-folder `register_block_type_from_metadata` on older WordPress versions.
+	 * If `blocks-manifest.php` is missing (e.g. webpack was run without `build-blocks-manifest`),
+	 * registers each first-level subdirectory that contains `block.json` so blocks still load.
 	 *
 	 * @param string $relative_path Path relative to the plugin root, e.g. `build/matches`.
 	 * @return void
@@ -366,10 +368,24 @@ class Skeleton {
 			return;
 		}
 
-		$base = clanspress()->path . $relative_path;
+		$base     = clanspress()->path . $relative_path;
 		$manifest = $base . '/blocks-manifest.php';
 
-		if ( ! is_dir( $base ) || ! is_readable( $manifest ) ) {
+		if ( ! is_dir( $base ) ) {
+			return;
+		}
+
+		if ( ! is_readable( $manifest ) ) {
+			$paths = glob( $base . '/*/block.json' );
+			if ( ! is_array( $paths ) ) {
+				return;
+			}
+			foreach ( $paths as $block_json_path ) {
+				$block_dir = dirname( (string) $block_json_path );
+				if ( is_dir( $block_dir ) ) {
+					register_block_type_from_metadata( $block_dir );
+				}
+			}
 			return;
 		}
 

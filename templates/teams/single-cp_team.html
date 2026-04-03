@@ -1,0 +1,33 @@
+<!-- wp:template-part {"slug":"header","area":"header","tagName":"header"} /-->
+
+<!-- wp:template-part {"slug":"clanspress-team-profile-header","tagName":"div"} /-->
+
+<!-- wp:group {"tagName":"main","layout":{"type":"constrained"}} -->
+<main class="wp-block-group">
+	<!-- wp:clanspress/player-query {"teamId":0,"inheritTeamContext":true,"excludeBannedMembers":true} -->
+	<div class="wp-block-clanspress-player-query">
+		<!-- wp:clanspress/player-template {"layout":{"type":"grid","columnCount":null,"minimumColumnWidth":"15rem"}} -->
+		<!-- wp:group {"style":{"color":{"background":"#f8f8f8"},"border":{"radius":{"topLeft":"16px","topRight":"16px","bottomLeft":"16px","bottomRight":"16px"}}},"layout":{"type":"constrained"}} -->
+		<div class="wp-block-group has-background" style="border-top-left-radius:16px;border-top-right-radius:16px;border-bottom-left-radius:16px;border-bottom-right-radius:16px;background-color:#f8f8f8">
+			<!-- wp:clanspress/player-cover {"style":{"border":{"radius":{"topLeft":"12px","topRight":"12px","bottomLeft":"0px","bottomRight":"0px"}}}} -->
+			<!-- wp:clanspress/player-avatar /-->
+			<!-- /wp:clanspress/player-cover -->
+
+			<!-- wp:group {"style":{"spacing":{"padding":{"top":"var:preset|spacing|20","bottom":"var:preset|spacing|20","left":"var:preset|spacing|20","right":"var:preset|spacing|20"}}},"layout":{"type":"constrained"}} -->
+			<div class="wp-block-group" style="padding-top:var(--wp--preset--spacing--20);padding-right:var(--wp--preset--spacing--20);padding-bottom:var(--wp--preset--spacing--20);padding-left:var(--wp--preset--spacing--20)">
+				<!-- wp:clanspress/player-display-name {"fontSize":"medium"} /-->
+
+				<!-- wp:paragraph -->
+				<p></p>
+				<!-- /wp:paragraph -->
+			</div>
+			<!-- /wp:group -->
+		</div>
+		<!-- /wp:group -->
+		<!-- /wp:clanspress/player-template -->
+	</div>
+	<!-- /wp:clanspress/player-query -->
+</main>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer","area":"footer","tagName":"footer"} /-->

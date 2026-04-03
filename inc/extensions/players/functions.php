@@ -327,6 +327,157 @@ function clanspress_players_get_default_cover( $player_id ) {
 }
 
 /**
+ * Register a player profile subpage (tab) for the front-end player profile.
+ *
+ * Third-party plugins should call this on `init`.
+ *
+ * @param string $slug Unique slug (used in the URL).
+ * @param array  $args {
+ *     @type string $label        Human-readable label for navigation.
+ *     @type string $template_id  FSE template identifier (defaults to "clanspress-player-{$slug}").
+ *     @type string $default_blocks Optional default block markup to seed the template.
+ *     @type string $capability   Capability required to view (default "read").
+ *     @type int    $position     Sort order in navigation (lower first).
+ * }
+ * @return void
+ */
+function clanspress_register_player_subpage( string $slug, array $args = array() ): void {
+	static $registry = array();
+
+	$slug     = sanitize_key( $slug );
+	$defaults = array(
+		'label'         => ucfirst( $slug ),
+		'template_id'   => "clanspress-player-{$slug}",
+		'default_blocks'=> '',
+		'capability'    => 'read',
+		'position'      => 10,
+	);
+
+	$registry[ $slug ] = array_merge( $defaults, $args );
+
+	/**
+	 * Expose in a filterable global store.
+	 *
+	 * Callers should prefer clanspress_get_player_subpages().
+	 */
+	$GLOBALS['clanspress_player_subpages_registry'] = $registry;
+}
+
+/**
+ * All registered player profile subpages.
+ *
+ * @return array<string,array>
+ */
+function clanspress_get_player_subpages(): array {
+	$registry = isset( $GLOBALS['clanspress_player_subpages_registry'] ) && is_array( $GLOBALS['clanspress_player_subpages_registry'] )
+		? $GLOBALS['clanspress_player_subpages_registry']
+		: array();
+
+	/**
+	 * Filter player subpages registry for navigation and routing.
+	 *
+	 * @param array<string,array> $registry Raw registry keyed by slug.
+	 */
+	$subpages = (array) apply_filters( 'clanspress_player_subpages', $registry );
+
+	// Stable sort by position then slug.
+	uasort(
+		$subpages,
+		static function ( $a, $b ) {
+			$pa = (int) ( $a['position'] ?? 10 );
+			$pb = (int) ( $b['position'] ?? 10 );
+			if ( $pa === $pb ) {
+				return strcmp( (string) ( $a['label'] ?? '' ), (string) ( $b['label'] ?? '' ) );
+			}
+			return $pa <=> $pb;
+		}
+	);
+
+	return $subpages;
+}
+
+/**
+ * Resolve a single player subpage config by slug.
+ *
+ * @param string $slug Subpage slug.
+ * @return array<string,mixed>|null
+ */
+function clanspress_get_player_subpage( string $slug ): ?array {
+	$slug     = sanitize_key( $slug );
+	$subpages = clanspress_get_player_subpages();
+
+	return isset( $subpages[ $slug ] ) ? $subpages[ $slug ] : null;
+}
+
+/**
+ * User ID for player profile header/nav (author archive or `/players/settings/`).
+ *
+ * @return int
+ */
+function clanspress_player_profile_context_user_id(): int {
+	if ( (int) get_query_var( 'players_settings' ) ) {
+		$uid = get_current_user_id();
+
+		return $uid > 0 ? $uid : 0;
+	}
+
+	if ( get_queried_object() instanceof \WP_User ) {
+		return (int) get_queried_object()->ID;
+	}
+
+	return 0;
+}
+
+/**
+ * Resolves the subject user ID for Clanspress player blocks on the front end.
+ *
+ * Uses {@see clanspress_player_profile_context_user_id()} first (author archive, player settings),
+ * then the block `postId` context author, then the logged-in user.
+ *
+ * @param \WP_Block|null $block Optional block instance for post context.
+ * @return int User ID or 0 if none resolved.
+ */
+function clanspress_player_blocks_resolve_subject_user_id( $block = null ): int {
+	if ( $block instanceof \WP_Block && ! empty( $block->context['clanspress/playerId'] ) ) {
+		$loop_uid = (int) $block->context['clanspress/playerId'];
+		if ( $loop_uid > 0 ) {
+			return $loop_uid;
+		}
+	}
+
+	$uid = (int) clanspress_player_profile_context_user_id();
+	if ( $uid > 0 ) {
+		return $uid;
+	}
+
+	if ( $block instanceof \WP_Block && ! empty( $block->context['postId'] ) ) {
+		$author_id = (int) get_post_field( 'post_author', (int) $block->context['postId'] );
+		if ( $author_id > 0 ) {
+			return $author_id;
+		}
+	}
+
+	if ( is_user_logged_in() ) {
+		return (int) get_current_user_id();
+	}
+
+	return 0;
+}
+
+/**
+ * Active player profile sub-route (`settings` or `cp_player_subpage`).
+ *
+ * @return string
+ */
+function clanspress_player_profile_route_current_slug(): string {
+	if ( (int) get_query_var( 'players_settings' ) ) {
+		return 'settings';
+	}
+
+	return sanitize_key( (string) get_query_var( 'cp_player_subpage' ) );
+}
+
+/**
  * Returns the players display avatar.
  *
  * @param int          $player_id The Player/User unique identifier.
@@ -801,4 +952,226 @@ function clanspress_players_get_account_fullname( int $player_id = 0, bool $supp
 	 * to true.
 	 */
 	return apply_filters( 'clanspress_players_get_account_fullname', $full_name, $player_id, $first_name, $last_name );
+}
+
+/**
+ * Get user navigation menu items for logged-in users.
+ *
+ * Returns an array of menu items that appear in the user nav dropdown.
+ * Third-party plugins can filter this to add, remove, or modify items.
+ *
+ * @param int $user_id User ID.
+ * @return array<int, array{
+ *     id: string,
+ *     label: string,
+ *     url: string,
+ *     icon?: string,
+ *     group?: string,
+ *     class?: string,
+ *     target?: string,
+ *     priority?: int
+ * }> Array of menu items sorted by group and priority.
+ */
+function clanspress_get_user_nav_menu_items( int $user_id = 0 ): array {
+	if ( ! $user_id ) {
+		$user_id = get_current_user_id();
+	}
+
+	if ( ! $user_id ) {
+		return array();
+	}
+
+	$profile_url  = function_exists( 'clanspress_get_player_profile_url' )
+		? clanspress_get_player_profile_url( $user_id )
+		: get_author_posts_url( $user_id );
+	$settings_url = home_url( '/players/settings/' );
+
+	$items = array(
+		array(
+			'id'       => 'profile',
+			'label'    => __( 'My Profile', 'clanspress' ),
+			'url'      => $profile_url,
+			'icon'     => 'admin-users',
+			'group'    => 'profile',
+			'priority' => 10,
+		),
+		array(
+			'id'       => 'settings',
+			'label'    => __( 'Settings', 'clanspress' ),
+			'url'      => $settings_url,
+			'icon'     => 'admin-generic',
+			'group'    => 'profile',
+			'priority' => 20,
+		),
+	);
+
+	if ( function_exists( 'clanspress_get_notifications_url' ) ) {
+		$items[] = array(
+			'id'       => 'notifications',
+			'label'    => __( 'Notifications', 'clanspress' ),
+			'url'      => clanspress_get_notifications_url( $user_id ),
+			'icon'     => 'bell',
+			'group'    => 'profile',
+			'priority' => 30,
+		);
+	}
+
+	if ( current_user_can( 'edit_posts' ) ) {
+		$items[] = array(
+			'id'       => 'dashboard',
+			'label'    => __( 'Dashboard', 'clanspress' ),
+			'url'      => admin_url(),
+			'icon'     => 'dashboard',
+			'group'    => 'admin',
+			'priority' => 10,
+		);
+	}
+
+	$items[] = array(
+		'id'       => 'logout',
+		'label'    => __( 'Log Out', 'clanspress' ),
+		'url'      => wp_logout_url( home_url() ),
+		'icon'     => 'exit',
+		'group'    => 'logout',
+		'class'    => 'clanspress-user-nav__menu-item--danger',
+		'priority' => 100,
+	);
+
+	/**
+	 * Filter user navigation menu items.
+	 *
+	 * Allows third-party plugins to add, remove, or modify menu items
+	 * in the user navigation dropdown.
+	 *
+	 * @param array $items   Array of menu items.
+	 * @param int   $user_id Current user ID.
+	 */
+	$items = (array) apply_filters( 'clanspress_user_nav_menu_items', $items, $user_id );
+
+	usort(
+		$items,
+		static function ( $a, $b ) {
+			$group_order = array(
+				'profile' => 1,
+				'teams'   => 2,
+				'groups'  => 3,
+				'admin'   => 4,
+				'logout'  => 99,
+			);
+
+			$group_a = $a['group'] ?? 'other';
+			$group_b = $b['group'] ?? 'other';
+
+			$order_a = $group_order[ $group_a ] ?? 50;
+			$order_b = $group_order[ $group_b ] ?? 50;
+
+			if ( $order_a !== $order_b ) {
+				return $order_a <=> $order_b;
+			}
+
+			$priority_a = $a['priority'] ?? 10;
+			$priority_b = $b['priority'] ?? 10;
+
+			return $priority_a <=> $priority_b;
+		}
+	);
+
+	return $items;
+}
+
+/**
+ * Get guest links for the user navigation block.
+ *
+ * Returns an array of links shown to non-logged-in users (typically Login and Register).
+ *
+ * @return array<int, array{
+ *     id: string,
+ *     label: string,
+ *     url: string,
+ *     style?: string,
+ *     target?: string,
+ *     priority?: int
+ * }> Array of guest links sorted by priority.
+ */
+function clanspress_get_user_nav_guest_links(): array {
+	$links = array(
+		array(
+			'id'       => 'login',
+			'label'    => __( 'Log In', 'clanspress' ),
+			'url'      => wp_login_url( get_permalink() ),
+			'style'    => 'secondary',
+			'priority' => 10,
+		),
+	);
+
+	if ( get_option( 'users_can_register' ) ) {
+		$links[] = array(
+			'id'       => 'register',
+			'label'    => __( 'Register', 'clanspress' ),
+			'url'      => wp_registration_url(),
+			'style'    => 'primary',
+			'priority' => 20,
+		);
+	}
+
+	/**
+	 * Filter guest navigation links.
+	 *
+	 * Allows third-party plugins to add, remove, or modify links
+	 * shown to non-logged-in users.
+	 *
+	 * @param array $links Array of guest links.
+	 */
+	$links = (array) apply_filters( 'clanspress_user_nav_guest_links', $links );
+
+	usort(
+		$links,
+		static function ( $a, $b ) {
+			$priority_a = $a['priority'] ?? 10;
+			$priority_b = $b['priority'] ?? 10;
+			return $priority_a <=> $priority_b;
+		}
+	);
+
+	return $links;
+}
+
+/**
+ * Add a menu item to the user navigation.
+ *
+ * Helper function for third-party plugins to easily add items.
+ *
+ * @param array $item Menu item configuration.
+ * @return void
+ */
+function clanspress_add_user_nav_menu_item( array $item ): void {
+	add_filter(
+		'clanspress_user_nav_menu_items',
+		static function ( $items ) use ( $item ) {
+			$items[] = $item;
+			return $items;
+		}
+	);
+}
+
+/**
+ * Remove a menu item from the user navigation by ID.
+ *
+ * Helper function for third-party plugins to easily remove items.
+ *
+ * @param string $item_id The ID of the item to remove.
+ * @return void
+ */
+function clanspress_remove_user_nav_menu_item( string $item_id ): void {
+	add_filter(
+		'clanspress_user_nav_menu_items',
+		static function ( $items ) use ( $item_id ) {
+			return array_filter(
+				$items,
+				static function ( $item ) use ( $item_id ) {
+					return ( $item['id'] ?? '' ) !== $item_id;
+				}
+			);
+		}
+	);
 }

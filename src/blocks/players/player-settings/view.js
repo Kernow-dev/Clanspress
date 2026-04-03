@@ -8,6 +8,65 @@ const parseArg = ( value ) => {
 	}
 };
 
+const parseMaybeJson = ( value, fallback = {} ) => {
+	if ( ! value || typeof value !== 'string' ) {
+		return fallback;
+	}
+	try {
+		return JSON.parse( value );
+	} catch ( e ) {
+		return fallback;
+	}
+};
+
+const getPlayerSettingsConfig = () =>
+	typeof window !== 'undefined' ? window.CLANSPRESSPLAYERSETTINGS || {} : {};
+
+/**
+ * @param {HTMLElement|null} root Block root.
+ * @param {string}           nav   Parent nav slug (e.g. profile).
+ * @param {string}           panel Panel slug (e.g. profile-info).
+ * @return {boolean} Whether both controls exist in the DOM.
+ */
+const playerSettingsRouteExistsInDom = ( root, nav, panel ) => {
+	if ( ! root || ! nav || ! panel ) {
+		return false;
+	}
+	const navHeader = root.querySelector(
+		`.nav-item-header[aria-controls="${ nav }"]`
+	);
+	const panelBtn = root.querySelector(
+		`.nav-sub-item[aria-controls="panel-${ panel }"]`
+	);
+	return Boolean( navHeader && panelBtn );
+};
+
+const parsePlayerSettingsRouteFromWindow = () => {
+	const cfg = getPlayerSettingsConfig();
+	const base = ( cfg.settings_url_base || '' ).replace( /\/$/, '' );
+	if ( ! base || typeof window === 'undefined' ) {
+		return { nav: null, panel: null };
+	}
+	try {
+		const baseUrl = new URL( base, window.location.origin );
+		const prefix = baseUrl.pathname.replace( /\/$/, '' );
+		const path = window.location.pathname.replace( /\/$/, '' );
+		if ( ! path.startsWith( prefix ) ) {
+			return { nav: null, panel: null };
+		}
+		const rest = path.slice( prefix.length ).replace( /^\//, '' );
+		if ( ! rest ) {
+			return { nav: null, panel: null };
+		}
+		const parts = rest.split( '/' ).filter( Boolean );
+		return { nav: parts[ 0 ] || null, panel: parts[ 1 ] || null };
+	} catch {
+		return { nav: null, panel: null };
+	}
+};
+
+let playerSettingsPopstateBound = false;
+
 const { state, actions } = store( 'clanspress-player-settings', {
 	state: {
 		root: null,
@@ -128,7 +187,21 @@ const { state, actions } = store( 'clanspress-player-settings', {
 				return;
 			}
 
-			state.activeNav = state.activeNav === navId ? null : navId;
+			if ( state.activeNav === navId ) {
+				state.activeNav = null;
+				return;
+			}
+
+			state.activeNav = navId;
+			const navItem = ref.closest( '.nav-item' );
+			const firstSub = navItem?.querySelector( '.nav-sub-item' );
+			const firstPanel = firstSub
+				?.getAttribute( 'aria-controls' )
+				?.replace( /^panel-/, '' );
+			if ( firstPanel ) {
+				state.activePanel = firstPanel;
+			}
+			pushPlayerSettingsUrl();
 		},
 
 		showPanel() {
@@ -141,7 +214,14 @@ const { state, actions } = store( 'clanspress-player-settings', {
 				return;
 			}
 
+			const navItem = ref.closest( '.nav-item' );
+			const navHeader = navItem?.querySelector( '.nav-item-header' );
+			const navId = navHeader?.getAttribute( 'aria-controls' );
+			if ( navId ) {
+				state.activeNav = navId;
+			}
 			state.activePanel = panelId;
+			pushPlayerSettingsUrl();
 		},
 
 		selectAvatar() {
@@ -356,6 +436,95 @@ const { state, actions } = store( 'clanspress-player-settings', {
 				state.isSaving = false;
 			}
 		},
+
+		/**
+		 * Generic action endpoint for plugin-provided controls inside player settings.
+		 *
+		 * Supported data attributes on the clicked element:
+		 * - data-cp-action-url (required)
+		 * - data-cp-action-method (default POST)
+		 * - data-cp-action-body (JSON string, optional)
+		 * - data-cp-action-confirm (optional confirmation text)
+		 * - data-cp-action-remove-closest (CSS selector to remove on success)
+		 * - data-cp-action-success-message / data-cp-action-error-message
+		 */
+		async runPluginAction( event ) {
+			event.preventDefault();
+			const { ref } = getElement();
+			if ( ! ref ) {
+				return;
+			}
+
+			const actionUrl = ref.getAttribute( 'data-cp-action-url' );
+			if ( ! actionUrl ) {
+				return;
+			}
+
+			const confirmMsg = ref.getAttribute( 'data-cp-action-confirm' );
+			if ( confirmMsg && ! window.confirm( confirmMsg ) ) {
+				return;
+			}
+
+			const method =
+				( ref.getAttribute( 'data-cp-action-method' ) || 'POST' )
+					.toUpperCase()
+					.trim() || 'POST';
+			const bodyRaw = ref.getAttribute( 'data-cp-action-body' ) || '';
+			const bodyObj = parseMaybeJson( bodyRaw, {} );
+			const successMsg =
+				ref.getAttribute( 'data-cp-action-success-message' ) ||
+				'Action completed.';
+			const errorMsg =
+				ref.getAttribute( 'data-cp-action-error-message' ) ||
+				'Could not complete this action.';
+			const removeSelector =
+				ref.getAttribute( 'data-cp-action-remove-closest' ) || '';
+
+			const restNonce = window.CLANSPRESSPLAYERSETTINGS?.rest_nonce || '';
+			ref.disabled = true;
+			try {
+				const response = await fetch( actionUrl, {
+					method,
+					credentials: 'same-origin',
+					headers: {
+						'Content-Type': 'application/json',
+						...( restNonce ? { 'X-WP-Nonce': restNonce } : {} ),
+					},
+					body:
+						method === 'GET' || method === 'HEAD'
+							? undefined
+							: JSON.stringify( bodyObj ),
+				} );
+				if ( ! response.ok ) {
+					actions.showToast( {
+						type: 'error',
+						heading: 'Error',
+						message: errorMsg,
+					} );
+					ref.disabled = false;
+					return;
+				}
+
+				if ( removeSelector ) {
+					const row = ref.closest( removeSelector );
+					if ( row ) {
+						row.remove();
+					}
+				}
+				actions.showToast( {
+					type: 'success',
+					heading: 'Success',
+					message: successMsg,
+				} );
+			} catch ( err ) {
+				actions.showToast( {
+					type: 'error',
+					heading: 'Error',
+					message: errorMsg,
+				} );
+				ref.disabled = false;
+			}
+		},
 	},
 
 	callbacks: {
@@ -368,7 +537,64 @@ const { state, actions } = store( 'clanspress-player-settings', {
 
 			state.root = ref;
 
-			// First nav item
+			if ( ! playerSettingsPopstateBound ) {
+				playerSettingsPopstateBound = true;
+				window.addEventListener( 'popstate', () => {
+					if ( ! state.root ) {
+						return;
+					}
+					const cfg = getPlayerSettingsConfig();
+					if ( ! cfg.settings_url_base ) {
+						return;
+					}
+					const { nav, panel } = parsePlayerSettingsRouteFromWindow();
+					if (
+						nav &&
+						panel &&
+						playerSettingsRouteExistsInDom( state.root, nav, panel )
+					) {
+						state.activeNav = nav;
+						state.activePanel = panel;
+						return;
+					}
+					const firstNav = state.root.querySelector( '.nav-item' );
+					const navButton =
+						firstNav?.querySelector( '.nav-item-header' );
+					const subItem = firstNav?.querySelector( '.nav-sub-item' );
+					const navId = navButton?.getAttribute( 'aria-controls' );
+					const panelId = subItem
+						?.getAttribute( 'aria-controls' )
+						?.replace( /^panel-/, '' );
+					if ( navId && panelId ) {
+						state.activeNav = navId;
+						state.activePanel = panelId;
+					}
+				} );
+			}
+
+			const cfg = getPlayerSettingsConfig();
+			let nav = cfg.settings_initial_nav || '';
+			let panel = cfg.settings_initial_panel || '';
+
+			if ( ! nav || ! panel ) {
+				const parsed = parsePlayerSettingsRouteFromWindow();
+				if ( parsed.nav && parsed.panel ) {
+					nav = parsed.nav;
+					panel = parsed.panel;
+				}
+			}
+
+			if (
+				nav &&
+				panel &&
+				playerSettingsRouteExistsInDom( ref, nav, panel )
+			) {
+				state.activeNav = nav;
+				state.activePanel = panel;
+				replacePlayerSettingsUrl();
+				return;
+			}
+
 			const firstNav = ref.querySelector( '.nav-item' );
 
 			if ( ! firstNav ) {
@@ -379,7 +605,6 @@ const { state, actions } = store( 'clanspress-player-settings', {
 			const subItem = firstNav.querySelector( '.nav-sub-item' );
 
 			if ( ! navButton || ! subItem ) {
-				console.log( 'no nav item/sub item' );
 				return;
 			}
 
@@ -391,7 +616,44 @@ const { state, actions } = store( 'clanspress-player-settings', {
 			if ( navId && panelId ) {
 				state.activeNav = navId;
 				state.activePanel = panelId;
+				replacePlayerSettingsUrl();
 			}
 		},
 	},
 } );
+
+const replacePlayerSettingsUrl = () => {
+	const cfg = getPlayerSettingsConfig();
+	const base = ( cfg.settings_url_base || '' ).replace( /\/$/, '' );
+	if ( ! base || ! state.activeNav || ! state.activePanel ) {
+		return;
+	}
+	const path = `${ base }/${ state.activeNav }/${ state.activePanel }/`;
+	const url = new URL( path, window.location.origin );
+	if (
+		window.location.pathname.replace( /\/$/, '' ) !==
+		url.pathname.replace( /\/$/, '' )
+	) {
+		window.history.replaceState(
+			{ clanspressPlayerSettings: true },
+			'',
+			url
+		);
+	}
+};
+
+const pushPlayerSettingsUrl = () => {
+	const cfg = getPlayerSettingsConfig();
+	const base = ( cfg.settings_url_base || '' ).replace( /\/$/, '' );
+	if ( ! base || ! state.activeNav || ! state.activePanel ) {
+		return;
+	}
+	const path = `${ base }/${ state.activeNav }/${ state.activePanel }/`;
+	const url = new URL( path, window.location.origin );
+	if (
+		window.location.pathname.replace( /\/$/, '' ) !==
+		url.pathname.replace( /\/$/, '' )
+	) {
+		window.history.pushState( { clanspressPlayerSettings: true }, '', url );
+	}
+};

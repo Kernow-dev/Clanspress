@@ -31,6 +31,8 @@ export default function Edit( { attributes, setAttributes } ) {
 						onChange={ ( v ) =>
 							setAttributes( { teamId: parseInt( v, 10 ) || 0 } )
 						}
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
 					/>
 					<TextControl
 						label={ __( 'Max matches', 'clanspress' ) }
@@ -43,6 +45,8 @@ export default function Edit( { attributes, setAttributes } ) {
 						onChange={ ( v ) =>
 							setAttributes( { limit: parseInt( v, 10 ) || 0 } )
 						}
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
 					/>
 					<SelectControl
 						label={ __( 'Status filter', 'clanspress' ) }

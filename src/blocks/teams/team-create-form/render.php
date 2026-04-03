@@ -11,7 +11,7 @@ if ( 'team_directories' !== clanspress_teams_get_team_mode() ) {
 			'class' => 'clanspress-team-create-form clanspress-team-create-form--unavailable',
 		)
 	);
-	echo '<div ' . wp_kses_post( $wrapper_attributes ) . '><p>';
+	echo '<div ' . $wrapper_attributes . '><p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.
 	echo esc_html__( 'Team creation is only available when Teams is set to "team directories" mode.', 'clanspress' );
 	echo '</p></div>';
 	return;
@@ -66,7 +66,7 @@ $context             = array(
 );
 ?>
 <div
-	<?php echo wp_kses_post( $wrapper_attributes ); ?>
+	<?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes. ?>
 	data-wp-interactive="clanspress-team-create-form"
 	data-wp-context="<?php echo esc_attr( wp_json_encode( $context ) ); ?>"
 	data-wp-init="callbacks.init"
@@ -138,6 +138,7 @@ $context             = array(
 						<label for="clanspress-team-name"><?php esc_html_e( 'Team Name', 'clanspress' ); ?></label>
 						<input type="text" id="clanspress-team-name" name="team_name" required />
 					</p>
+					<p class="description"><?php esc_html_e( 'Team slug will be generated from your team name.', 'clanspress' ); ?></p>
 					<p>
 						<label for="clanspress-team-code"><?php esc_html_e( 'Team Code', 'clanspress' ); ?></label>
 						<input type="text" id="clanspress-team-code" name="team_code" />
@@ -165,7 +166,6 @@ $context             = array(
 							?>
 						</select>
 					</p>
-					<p class="description"><?php esc_html_e( 'Team slug will be generated from your team name.', 'clanspress' ); ?></p>
 				<?php elseif ( 'branding' === $step_key ) : ?>
 					<div class="clanspress-team-create-form__media-row" aria-label="<?php esc_attr_e( 'Team avatar and cover', 'clanspress' ); ?>">
 						<div class="clanspress-team-create-form__avatar-cover-preview">
@@ -228,20 +228,22 @@ $context             = array(
 					<div class="clanspress-team-create-form__invite-list" data-team-invite-list data-wp-on--click="actions.onInviteListClick"></div>
 					<input type="hidden" name="team_invites" value="" data-team-invite-hidden />
 				<?php elseif ( 'matches' === $step_key ) : ?>
-					<p class="clanspress-team-create-form__matches-field">
-						<input type="hidden" name="team_accept_challenges" value="0" />
-						<label for="clanspress-team-accept-challenges">
-							<input
-								type="checkbox"
-								id="clanspress-team-accept-challenges"
-								name="team_accept_challenges"
-								value="1"
-								checked
-							/>
-							<?php esc_html_e( 'Allow other teams to challenge this team', 'clanspress' ); ?>
-						</label>
-					</p>
-					<p class="description"><?php esc_html_e( 'You can change this later from your team settings.', 'clanspress' ); ?></p>
+					<div class="clanspress-team-create-form__matches-field">
+						<p>
+							<input type="hidden" name="team_accept_challenges" value="0" />
+							<label for="clanspress-team-accept-challenges">
+								<input
+									type="checkbox"
+									id="clanspress-team-accept-challenges"
+									name="team_accept_challenges"
+									value="1"
+									checked
+								/>
+								<?php esc_html_e( 'Allow other teams to challenge this team', 'clanspress' ); ?>
+							</label>
+						</p>
+						<p class="description"><?php esc_html_e( 'You can change this later from your team settings.', 'clanspress' ); ?></p>
+					</div>
 				<?php else : ?>
 					<?php
 					/**
@@ -261,10 +263,12 @@ $context             = array(
 		endforeach;
 		?>
 
-		<div class="clanspress-team-create-form__actions" role="navigation" aria-label="<?php esc_attr_e( 'Step navigation', 'clanspress' ); ?>">
-			<button type="button" data-wp-on--click="actions.previousStep" data-wp-bind--hidden="!state.canGoBack"><?php esc_html_e( 'Back', 'clanspress' ); ?></button>
-			<button type="button" data-wp-on--click="actions.nextStep" data-wp-bind--hidden="!state.canGoNext"><?php esc_html_e( 'Next', 'clanspress' ); ?></button>
-			<button type="submit" data-wp-bind--hidden="state.canGoNext"><?php esc_html_e( 'Create Team', 'clanspress' ); ?></button>
+		<div class="clanspress-team-create-form__actions clanspress-team-create-form__actions--split" role="navigation" aria-label="<?php esc_attr_e( 'Step navigation', 'clanspress' ); ?>">
+			<button type="button" class="clanspress-team-create-form__nav-btn" data-wp-on--click="actions.previousStep" data-wp-bind--hidden="!state.canGoBack()"><?php esc_html_e( 'Back', 'clanspress' ); ?></button>
+			<div class="clanspress-team-create-form__actions-end">
+				<button type="button" class="clanspress-team-create-form__nav-btn" data-wp-on--click="actions.nextStep" data-wp-bind--hidden="!state.canGoNext()"><?php esc_html_e( 'Next', 'clanspress' ); ?></button>
+				<button type="submit" class="clanspress-team-create-form__nav-btn clanspress-team-create-form__nav-btn--primary" data-wp-bind--hidden="state.canGoNext()"><?php esc_html_e( 'Create team', 'clanspress' ); ?></button>
+			</div>
 		</div>
 
 		<?php wp_nonce_field( 'clanspress_create_team_action', '_clanspress_create_team_nonce' ); ?>

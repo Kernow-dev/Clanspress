@@ -1,0 +1,31 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/user-nav",
+	"version": "1.0.0",
+	"title": "User Navigation",
+	"category": "clanspress",
+	"icon": "admin-users",
+	"description": "Displays login/register links for guests, or user avatar with dropdown menu for logged-in users.",
+	"supports": {
+		"html": false,
+		"align": false,
+		"className": true,
+		"interactivity": true
+	},
+	"attributes": {
+		"avatarSize": {
+			"type": "number",
+			"default": 32
+		},
+		"showUsername": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"textdomain": "clanspress",
+	"editorScript": "file:./index.js",
+	"viewScriptModule": "file:./view.js",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}

@@ -1,0 +1,229 @@
+.clanspress-user-nav {
+	--user-nav-bg: #fff;
+	--user-nav-text: #1e1e1e;
+	--user-nav-border: rgba(0, 0, 0, 0.1);
+	--user-nav-hover-bg: rgba(0, 0, 0, 0.05);
+	--user-nav-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	--user-nav-radius: 8px;
+	--user-nav-primary: #0073aa;
+
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+}
+
+.clanspress-user-nav__trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.25rem;
+	background: transparent;
+	border: none;
+	border-radius: var(--user-nav-radius);
+	cursor: pointer;
+	color: inherit;
+	font: inherit;
+	transition: background-color 0.15s ease;
+
+	&:hover,
+	&:focus {
+		background-color: var(--user-nav-hover-bg);
+	}
+
+	&:focus {
+		outline: 2px solid var(--user-nav-primary);
+		outline-offset: 2px;
+	}
+}
+
+.clanspress-user-nav__avatar {
+	border-radius: 50%;
+	object-fit: cover;
+	flex-shrink: 0;
+
+	&--placeholder {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		display: block;
+	}
+}
+
+.clanspress-user-nav__username {
+	font-size: 0.9rem;
+	font-weight: 500;
+	max-width: 120px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.clanspress-user-nav__caret {
+	opacity: 0.6;
+	transition: transform 0.15s ease;
+	flex-shrink: 0;
+
+	.is-open & {
+		transform: rotate(180deg);
+	}
+}
+
+.clanspress-user-nav__dropdown {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	margin-top: 0.5rem;
+	min-width: 240px;
+	background: var(--user-nav-bg);
+	color: var(--user-nav-text);
+	border-radius: var(--user-nav-radius);
+	box-shadow: var(--user-nav-shadow);
+	border: 1px solid var(--user-nav-border);
+	z-index: 1000;
+	overflow: hidden;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.clanspress-user-nav__dropdown-header {
+	padding: 0.75rem;
+	border-bottom: 1px solid var(--user-nav-border);
+}
+
+.clanspress-user-nav__profile-link {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.5rem;
+	border-radius: calc(var(--user-nav-radius) - 2px);
+	text-decoration: none;
+	color: inherit;
+	transition: background-color 0.15s ease;
+
+	&:hover {
+		background-color: var(--user-nav-hover-bg);
+	}
+}
+
+.clanspress-user-nav__dropdown-avatar {
+	border-radius: 50%;
+	object-fit: cover;
+	flex-shrink: 0;
+}
+
+.clanspress-user-nav__profile-info {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.clanspress-user-nav__profile-name {
+	font-weight: 600;
+	font-size: 0.95rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.clanspress-user-nav__profile-label {
+	font-size: 0.8rem;
+	opacity: 0.7;
+}
+
+.clanspress-user-nav__menu-group {
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--user-nav-border);
+
+	&:last-child {
+		border-bottom: none;
+	}
+
+	&[data-group="logout"] {
+		padding-bottom: 0.75rem;
+	}
+}
+
+.clanspress-user-nav__menu-item {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.6rem 1rem;
+	text-decoration: none;
+	color: inherit;
+	font-size: 0.9rem;
+	transition: background-color 0.15s ease;
+
+	&:hover {
+		background-color: var(--user-nav-hover-bg);
+	}
+
+	&--danger {
+		color: #d63638;
+
+		&:hover {
+			background-color: rgba(214, 54, 56, 0.1);
+		}
+	}
+}
+
+.clanspress-user-nav__menu-icon {
+	width: 20px;
+	height: 20px;
+	font-size: 20px;
+	opacity: 0.7;
+	flex-shrink: 0;
+
+	&::before {
+		width: 20px;
+		height: 20px;
+	}
+}
+
+.clanspress-user-nav__menu-label {
+	flex: 1;
+}
+
+// Guest links (Login / Register)
+.clanspress-user-nav__guest-links {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.clanspress-user-nav__guest-link {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.5rem 1rem;
+	border-radius: var(--user-nav-radius);
+	text-decoration: none;
+	font-size: 0.9rem;
+	font-weight: 500;
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease;
+
+	&--primary {
+		background-color: var(--user-nav-primary);
+		color: #fff;
+
+		&:hover {
+			background-color: color-mix(in srgb, var(--user-nav-primary) 85%, #000);
+		}
+	}
+
+	&--secondary {
+		background-color: transparent;
+		color: inherit;
+
+		&:hover {
+			background-color: var(--user-nav-hover-bg);
+		}
+	}
+}
+
+// Editor preview styles
+.clanspress-user-nav.is-editor-preview {
+	padding: 0.5rem;
+	border: 1px dashed var(--user-nav-border);
+	border-radius: var(--user-nav-radius);
+}

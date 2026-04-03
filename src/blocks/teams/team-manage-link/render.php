@@ -28,4 +28,4 @@ $wrapper_attributes = get_block_wrapper_attributes(
 	$block
 );
 
-echo '<p ' . $wrapper_attributes . '><a href="' . esc_url( $url ) . '">' . esc_html( $label ) . '</a></p>';
+echo '<div ' . $wrapper_attributes . '><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="' . esc_url( $url ) . '">' . esc_html( $label ) . '</a></div></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes.

@@ -1,0 +1,46 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/event-calendar",
+	"version": "0.1.0",
+	"title": "Event calendar",
+	"category": "clanspress",
+	"icon": "calendar-alt",
+	"description": "Month, week, day, and list views of scheduled events for the current team, group, or (own) player profile.",
+	"textdomain": "clanspress",
+	"attributes": {
+		"scopeType": {
+			"type": "string",
+			"default": "team"
+		},
+		"teamId": {
+			"type": "number",
+			"default": 0
+		},
+		"groupId": {
+			"type": "number",
+			"default": 0
+		},
+		"playerUserId": {
+			"type": "number",
+			"default": 0
+		},
+		"defaultView": {
+			"type": "string",
+			"default": "month"
+		}
+	},
+	"supports": {
+		"html": false,
+		"interactivity": true,
+		"align": [ "wide", "full" ],
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"viewScriptModule": "file:./view.js",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}

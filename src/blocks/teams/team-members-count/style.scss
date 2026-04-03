@@ -2,9 +2,20 @@
 	margin: 0;
 }
 
-.clanspress-team-members-count__label {
-	color: #646970;
-	margin-right: 0.25rem;
+.clanspress-team-members-count {
+	font-size: 0.95rem;
+}
+
+.clanspress-team-members-count.is-layout-flex {
+	align-items: baseline;
+}
+
+.clanspress-team-members-count__prefix {
+	color: inherit;
+}
+
+.clanspress-team-members-count__postfix {
+	color: inherit;
 }
 
 .clanspress-team-members-count__value {
@@ -12,9 +23,8 @@
 }
 
 .clanspress-team-members-count--placeholder {
-	border: 1px dashed #c3c4c7;
-	padding: 0.75rem;
+	border: 1px dashed color-mix(in srgb, currentColor 42%, transparent);
 	border-radius: 4px;
-	color: #646970;
+	color: inherit;
 	font-size: 0.875rem;
 }

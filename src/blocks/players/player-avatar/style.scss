@@ -17,6 +17,14 @@
 		border-radius: 50%;
 		box-sizing: border-box;
 
+		.player-avatar__link {
+			display: block;
+			position: absolute;
+			inset: 0;
+			border-radius: inherit;
+			line-height: 0;
+		}
+
 		.player-avatar__image-background {
 			display: flex;
 			position: absolute;

@@ -149,7 +149,15 @@ class Settings {
 			true
 		);
 
+		// Ensure media frame is available for image fields in settings UI.
+		if ( function_exists( 'wp_enqueue_media' ) ) {
+			wp_enqueue_media();
+		}
+
 		wp_enqueue_style( 'wp-components' );
+
+		// CSS is emitted by wp-scripts as style-{entry}.css automatically.
+		wp_enqueue_style( 'clanspress-admin', \clanspress()->url . 'assets/dist/style-clanspress-admin.css', array( 'wp-components' ), $ver );
 
 		wp_localize_script(
 			$handle,
@@ -157,6 +165,7 @@ class Settings {
 			array(
 				'restUrl' => esc_url_raw( rest_url( 'clanspress/v1/' ) ),
 				'nonce'   => wp_create_nonce( 'wp_rest' ),
+				'logoUrl' => \clanspress()->url . 'assets/img/logos/clanspress-logo-small.svg',
 			)
 		);
 	}

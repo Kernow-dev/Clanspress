@@ -55,6 +55,24 @@ npm run build:production   # admin + blocks + manifests + match editor
 
 To restore a **standalone** PHP submenu for an extension settings class, filter `clanspress_extension_settings_register_submenu` to `true` for that `Abstract_Settings` instance.
 
+### Public REST, team challenges, and cross-site match sync
+
+These routes are **unauthenticated** (defense in depth: nonces, rate limits, and/or HMAC as documented). They exist so other Clanspress installs and the **Team challenge** block can interoperate.
+
+| Method | Route | Purpose |
+|--------|--------|---------|
+| `GET` | `/wp-json/clanspress/v1/discovery` | Returns `{ clanspress, name, version }` and, when PHP sodium is available, `match_sync` hints for cross-site match signing. |
+| `GET` | `/wp-json/clanspress/v1/site-sync-public-key` | Returns `{ clanspress, algorithm: ed25519, public_key }` (base64) so peer installs can verify signed `sync-peer-match` requests. |
+| `GET` | `/wp-json/clanspress/v1/public-team` | Query args `slug` or `url` — public metadata for a published `cp_team` (title, permalink, logo, motto, country, short description). |
+| `GET` | `/wp-json/clanspress/v1/challenge-remote-team` | Same-site proxy: `team_id`, `url`, `challenge_nonce` — server fetches discovery + `public-team` on the remote host (avoids browser CORS). |
+| `POST` | `/wp-json/clanspress/v1/team-challenges` | JSON body: `team_id`, `challenge_nonce`, contact fields, optional `opponent_team_url`, `challenger_team_id`, `challenger_team_name`, `challenger_team_logo_id`, `proposed_scheduled_at`, `message`. Creates `cp_team_challenge` and notifies challenged team admins (`team_challenge` + accept/decline handlers). Requires **Matches** + **Teams**. |
+| `POST` | `/wp-json/clanspress/v1/team-challenge-media` | `multipart/form-data`: `team_id`, `challenge_nonce`, `file` — optional logo (image, max 2MB) for manual challengers; returns `{ id, url }` attachment reference for `challenger_team_logo_id`. |
+| `POST` | `/wp-json/clanspress/v1/sync-peer-match` | Signed JSON body (see below). Creates a **mirror** `cp_match` on the **challenger’s** site when the challenged site accepts a remote Clanspress challenge. |
+
+**Cross-site mirror (two-way listings):** Each install generates an **Ed25519** keypair (PHP **sodium** extension required) stored in the `clanspress_match_sync_site_keys` option. When a challenge is accepted, if the snapshot came from another Clanspress site (`source: remote`, with `origin` + `remoteTeamId` from `public-team`), the challenged site POSTs to `{origin}/wp-json/clanspress/v1/sync-peer-match` with `X-Clanspress-Sync: v1:{timestamp}:{base64url_signature}` (detached Ed25519 over `{timestamp}\n{json body}`). The receiving site fetches the sender’s public key from `{source_site}wp-json/clanspress/v1/site-sync-public-key` (HTTPS), verifies the signature, then creates the mirror match. **No shared manual secret** — only Clanspress installs that expose the public-key route and accept verified requests participate. For legacy integrations, the `clanspress_cross_site_sync_key` filter can force the older `timestamp:hmac` header using a shared secret. Without sodium and without that filter, mirror push is skipped (the local match on the challenged site still works).
+
+**Filters / actions:** `clanspress_team_challenge_button_visible`, `clanspress_team_challenge_notify_user_ids`, `clanspress_team_challenge_created`, `clanspress_team_challenge_accepted`, `clanspress_cross_site_sync_key`, `clanspress_cross_site_sync_outbound_payload`, `clanspress_cross_site_sync_incoming_payload`, `clanspress_cross_site_sync_verify_source`, `clanspress_cross_site_sync_push_succeeded`, `clanspress_cross_site_sync_push_failed`, `clanspress_cross_site_sync_push_rejected`, `clanspress_cross_site_sync_incoming_created`. See `AGENTS.md` for the hook table.
+
 ## Extension System
 Extensions are registered through filter-based discovery and loaded by the extension loader.
 
@@ -63,6 +81,10 @@ Extensions are registered through filter-based discovery and loaded by the exten
 - Extensions may declare dependencies (`requires`) and parent-child relationships (`parent_slug`).
 - Extensions with unmet requirements must not be enabled.
 - Lifecycle methods are available for installer, updater, runtime boot, and uninstaller flows.
+- **Required** first-party slug (`cp_players` by default) stays enabled; third-party code may adjust the list via the `clanspress_required_extension_slugs` filter (use sparingly). **Notifications** (`cp_notifications`) and **Events** (`cp_events`) are official and enabled once by default via one-time loader migrations when missing; either can be disabled from **Extensions** like Teams/Matches.
+- **Official** extensions are whitelisted in `Loader::get_official_extensions()` and register on `clanspress_official_registered_extensions` with an exact class-name match. Bundled extensions and separate first-party companion plugins both use that path; see **First-party extensions in separate plugins** below (e.g. Social Kit).
+- The admin **Core** badge marks only extensions whose code ships **inside the main Clanspress plugin** (`clanspress_core_bundled_extension_slugs`: `cp_players`, `cp_notifications`, `cp_teams`, `cp_matches`, `cp_events` by default). An extension can be **Official** without being **Core** (external first-party plugin).
+- Community and third-party extensions register on `clanspress_registered_extensions` instead. Adjust the bundled list with `clanspress_core_bundled_extension_slugs` if needed.
 
 ### Extension loader bootstrap
 
@@ -116,6 +138,50 @@ Extensions can and should register their own FSE templates, so template availabi
   - `clanspress_extension_{slug}_templates`
   - `clanspress_extension_templates`
 
+### Player settings (front-end): plugin actions
+
+The **Player settings** block (`clanspress/player-settings`) uses the Interactivity API store `clanspress-player-settings`. Core exposes a generic **`actions.runPluginAction`** handler so extensions can add buttons or links inside player settings panels **without** inline scripts: the click runs `fetch()` against your URL, sends the WordPress REST nonce, and shows the block’s existing success/error toast.
+
+**Localized config** is attached as `window.CLANSPRESSPLAYERSETTINGS` when the Players extension enqueues scripts. Default keys:
+
+| Key | Purpose |
+|-----|---------|
+| `ajax_url` | Admin AJAX URL (legacy profile save). |
+| `nonce` | Nonce for `clanspress_profile_settings_save_action`. |
+| `rest_url` | Site REST root (for building route URLs in PHP). |
+| `rest_nonce` | Nonce for `wp_rest` (sent as `X-WP-Nonce` on plugin actions). |
+| `settings_url_base` | (Player settings page only.) Trailing-slash base URL, e.g. `https://example.com/players/settings/`. |
+| `settings_initial_nav` | (Player settings page only.) Resolved parent tab slug (`profile`, `account`, `teams`, …). |
+| `settings_initial_panel` | (Player settings page only.) Resolved panel slug (`profile-info`, `account-info`, …). |
+
+Extend or override the object with filter **`clanspress_player_settings_frontend_config`** (same array shape as above).
+
+**Deep links:** Each tab and sub-page has a canonical URL: `/players/settings/{nav}/{panel}/` (e.g. `/players/settings/account/account-info/`). `/players/settings/{nav}/` redirects to that nav’s first panel. Invalid slugs redirect to a valid default. The block updates the address bar when you switch tabs (history `pushState` / `replaceState`). After adding or changing rewrite rules, save **Settings → Permalinks** once (or flush rewrite rules) so WordPress routes new paths.
+
+**Markup contract** (on the clicked element, e.g. `<button type="button">`):
+
+| Attribute | Required | Description |
+|-----------|----------|-------------|
+| `data-wp-on--click="actions.runPluginAction"` | Yes | Wires the Interactivity action. |
+| `data-cp-action-url` | Yes | Full request URL (typically `rest_url( 'your-namespace/v1/...' )` from PHP). |
+| `data-cp-action-method` | No | HTTP method; default `POST`. `GET` / `HEAD` omit body. |
+| `data-cp-action-body` | No | JSON string for the request body (parsed client-side; empty object if omitted). |
+| `data-cp-action-confirm` | No | If set, `window.confirm()` must pass before the request runs. |
+| `data-cp-action-remove-closest` | No | CSS selector; on success, `closest(selector)` on the clicked element is removed (e.g. list row). |
+| `data-cp-action-success-message` / `data-cp-action-error-message` | No | Toast copy; sensible defaults if omitted. |
+
+Your REST route must validate `X-WP-Nonce`, check capabilities, and return appropriate HTTP status codes (`runPluginAction` treats non-OK responses as errors).
+
+### First-party extensions in separate plugins
+
+Official extensions that ship outside the main package register on **`clanspress_official_registered_extensions`** and must match the slug → class map in `Loader::get_official_extensions()`. Core validates the class name only; it does not `require` add-on files (the companion plugin must load before Clanspress so the class exists). Those extensions get the **Official** badge but not the **Core** badge unless their slug is also listed in `clanspress_core_bundled_extension_slugs`.
+
+**Example — Clanspress Social Kit (`cp_social_kit`):** the separate plugin registers the extension and may mirror domain events (matches, RSVPs, team actions) into an activity feed using the same hooks documented for third-party integrations (`clanspress_match_*`, `clanspress_event_rsvp_updated`, team lifecycle actions, etc.). There is no second registration API — only `clanspress_official_registered_extensions` plus the whitelist entry in `Loader::get_official_extensions()`.
+
+### Community extensions
+
+Unaffiliated or custom extensions register on **`clanspress_registered_extensions`**, own their blocks and FSE templates, and document their own hooks.
+
 ## Admin Extension Manager
 The `Clanspress > Extensions` screen should remain the source of truth for extension state.
 
@@ -131,6 +197,8 @@ The Teams extension now supports mode-based behavior through admin settings (`Cl
 - `multiple_teams`: multi-team clan setup under one community.
 - `team_directories`: directory mode where users can create and manage teams.
   - Includes block-based FSE templates `teams-create` (`/teams/create/`) and `teams-manage` (`/teams/{slug}/manage/`, BuddyPress-style actions). Legacy `/teams/manage/{slug}/` still resolves. Extend actions via `clanspress_team_front_action_rewrite_slugs` and `clanspress_team_action_dispatch`.
+  - **Template files:** Serialized block markup for the Site Editor lives in `templates/**/*.html`. Companion `*.php` files in the same folder call `get_header()` / `get_footer()` and `clanspress_render_block_markup_file()` so classic themes never print raw `<!-- wp:... -->` comments. `Skeleton::register_extension_templates()` reads the `.html` path for `register_block_template()`.
+  - **Edit Site (block themes):** Player/team virtual routes still look like author or generic archives to core’s block-template resolver, so the admin bar’s Site Editor link is aligned to the correct `clanspress//…` template via `$_wp_current_template_id` on the `wp` hook (see Players/Teams `set_plugin_block_template_id_for_site_editor`).
 
 Mode helpers available on the teams extension class:
 - `get_team_mode()`
@@ -484,6 +552,278 @@ add_action(
 - `clanspress_team_can_ban_players`
   - Filter ban capability.
   - Args: `bool $allowed`, `int $team_id`, `array $options`, `Teams $extension`
+
+## Notifications System
+
+Clanspress includes a core notifications system that supports both simple notifications and interactive notifications with action buttons. The system uses HTTP long polling for real-time updates with filters to swap in WebSocket transport.
+
+The **Notifications** extension (`cp_notifications`) must be enabled under **Clanspress → Extensions** for REST routes, the bell block, and persistence to run. Third-party code should call `clanspress_notifications_extension_active()` before assuming notifications exist, or treat a `WP_Error` from `clanspress_notify()` with code `notifications_inactive` as “extension off.”
+
+The **Events** extension (`cp_events`) gates the `cp_event` post type, RSVP database table, event REST endpoints, and event blocks. Use `clanspress_events_extension_active()` (or `function_exists( 'clanspress_events_are_globally_enabled' )` for feature flags that load with the extension) before relying on event behavior. Team virtual URLs under `/teams/{slug}/events/` are registered only when both **Teams** and **Events** are enabled.
+
+**Event REST (`POST`/`PUT` `clanspress/v1/event-posts`):** optional JSON field `member_outreach` — `none` (default), `notify` (in-app notification to each roster member), or `rsvp_tentative` (add tentative RSVP rows for members without an existing RSVP, plus notify). Team rosters use the Teams extension membership map (banned users excluded). Group rosters use the `clanspress_group_event_member_user_ids` filter (core supplies an empty list until a groups integration fills it). Adjust recipients with `clanspress_event_member_outreach_user_ids`. After a run, `clanspress_event_member_outreach_completed` fires with counts (`notified`, `rsvp_set`, `skipped`).
+
+### Notification Bell Block
+
+Add the `clanspress/notification-bell` block to display a bell icon with unread count and dropdown. Block attributes:
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `showDropdown` | boolean | `true` | Show dropdown on click |
+| `dropdownCount` | number | `10` | Number of notifications in dropdown |
+
+### Sending Notifications
+
+```php
+// Simple notification
+clanspress_notify( $user_id, 'mention', 'You were mentioned in a post', [
+    'url'      => $post_url,
+    'actor_id' => $mentioner_id,
+] );
+
+// Interactive notification with actions
+clanspress_notify( $user_id, 'team_invite', sprintf( '%s invited you to join %s', $inviter_name, $team_name ), [
+    'actor_id'    => $inviter_id,
+    'object_type' => 'team',
+    'object_id'   => $team_id,
+    'url'         => $team_url,
+    'actions'     => [
+        [
+            'key'             => 'accept',
+            'label'           => __( 'Accept', 'clanspress' ),
+            'style'           => 'primary',
+            'handler'         => 'my_team_invite_accept',
+            'status'          => 'accepted',
+            'success_message' => __( 'You have joined the team!', 'clanspress' ),
+        ],
+        [
+            'key'             => 'decline',
+            'label'           => __( 'Decline', 'clanspress' ),
+            'style'           => 'secondary',
+            'handler'         => 'my_team_invite_decline',
+            'status'          => 'declined',
+            'success_message' => __( 'Invitation declined.', 'clanspress' ),
+        ],
+    ],
+] );
+```
+
+### Action Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `key` | string | Yes | Unique action identifier (e.g., 'accept', 'decline') |
+| `label` | string | Yes | Button label |
+| `style` | string | No | 'primary', 'secondary', or 'danger'. Default 'secondary' |
+| `handler` | string | Yes | Handler identifier for the action |
+| `status` | string | No | Status to set after action ('accepted', 'declined', 'dismissed') |
+| `success_message` | string | No | Message to show on success |
+| `confirm` | string/false | No | Confirmation message, or false for no confirm |
+
+### Handling Actions
+
+Extensions register their own action handlers. For example, the Teams extension registers handlers for `team_invite_accept` and `team_invite_decline`. Third-party plugins can register handlers using filters:
+
+```php
+// Handle actions by handler identifier (recommended)
+add_filter( 'clanspress_notification_action_handler', function( $result, $handler, $notification, $action, $user_id ) {
+    // Return early if another handler already processed this
+    if ( null !== $result ) {
+        return $result;
+    }
+
+    if ( 'my_custom_handler' === $handler ) {
+        // Perform your action logic
+        $object_id = $notification->object_id;
+        
+        // Return result array
+        return [
+            'success'  => true,
+            'message'  => __( 'Action completed!', 'my-plugin' ),
+            'redirect' => get_permalink( $object_id ), // Optional redirect
+        ];
+    }
+
+    // Return null to pass to next handler
+    return null;
+}, 10, 5 );
+
+// Or handle by notification type (fires before generic handler)
+add_filter( 'clanspress_notification_action_group_invite', function( $result, $notification, $action, $user_id ) {
+    if ( 'accept' === $action['key'] ) {
+        // Add user to group
+        return [
+            'success' => true,
+            'message' => __( 'You have joined the group!', 'my-plugin' ),
+        ];
+    }
+    return $result;
+}, 10, 4 );
+```
+
+**Handler registration pattern for extensions:**
+
+```php
+class My_Extension {
+    public function run(): void {
+        // Register notification action handlers
+        add_filter( 'clanspress_notification_action_handler', [ $this, 'handle_notification_actions' ], 10, 5 );
+    }
+
+    public function handle_notification_actions( $result, $handler, $notification, $action, $user_id ) {
+        if ( null !== $result ) {
+            return $result;
+        }
+
+        switch ( $handler ) {
+            case 'my_invite_accept':
+                return $this->handle_invite_accept( $notification, $user_id );
+            case 'my_invite_decline':
+                return $this->handle_invite_decline( $notification, $user_id );
+            default:
+                return null;
+        }
+    }
+}
+```
+
+### Helper Functions
+
+| Function | Description |
+|----------|-------------|
+| `clanspress_notifications_extension_active()` | Whether `cp_notifications` is enabled (use before UI or optional features) |
+| `clanspress_notify( $user_id, $type, $title, $args )` | Send a notification |
+| `clanspress_get_notifications( $user_id, $page, $per_page, $unread_only )` | Get notifications for a user |
+| `clanspress_get_notification( $id )` | Get a single notification |
+| `clanspress_get_unread_notification_count( $user_id )` | Get unread count |
+| `clanspress_mark_notification_read( $id, $user_id )` | Mark as read |
+| `clanspress_mark_all_notifications_read( $user_id )` | Mark all as read |
+| `clanspress_delete_notification( $id, $user_id )` | Delete a notification |
+| `clanspress_delete_all_notifications( $user_id )` | Delete all for a user |
+| `clanspress_delete_notifications_for_object( $type, $id )` | Delete by object |
+| `clanspress_execute_notification_action( $id, $action_key, $user_id )` | Execute an action |
+| `clanspress_dismiss_notification( $id, $user_id )` | Dismiss a notification |
+| `clanspress_get_notifications_url( $user_id )` | Get notifications page URL |
+| `clanspress_render_notification( $notification, $compact )` | Render notification HTML |
+
+### REST API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/clanspress/v1/notifications` | List notifications |
+| `GET` | `/clanspress/v1/notifications/poll` | Long polling for real-time updates |
+| `GET` | `/clanspress/v1/notifications/count` | Get unread count |
+| `GET` | `/clanspress/v1/notifications/{id}` | Get single notification |
+| `DELETE` | `/clanspress/v1/notifications/{id}` | Delete notification |
+| `POST` | `/clanspress/v1/notifications/{id}/read` | Mark as read |
+| `POST` | `/clanspress/v1/notifications/{id}/action` | Execute action |
+| `POST` | `/clanspress/v1/notifications/read-all` | Mark all as read |
+| `GET` | `/clanspress/v1/notifications/transport` | Get transport config |
+
+### Real-Time Updates (Long Polling)
+
+The notification bell uses HTTP long polling by default. The poll endpoint (`/notifications/poll`) may block until new notifications arrive or the timeout elapses (default cap **25** seconds; overridable via `clanspress_notification_poll_timeout`). The handler does **not** flush the object cache on each iteration (that would clear the entire site cache). Hosts that need lower PHP worker occupancy can set **`clanspress_notification_poll_blocking_wait`** to `false` to perform a single read and return immediately (client still uses `next_poll` spacing).
+
+**Polling parameters:**
+- `since` - ISO timestamp to get notifications after
+- `last_id` - Get notifications with ID greater than this
+- `timeout` - Max wait time in seconds (capped by server default, typically 25)
+
+**Response includes:**
+- `notifications` - Array of new notifications
+- `unread_count` - Current unread count
+- `timestamp` - Server timestamp for next poll
+- `next_poll` - Recommended interval until next poll (ms)
+
+### WebSocket Support
+
+The system is designed for WebSocket upgrade. Use these filters to provide WebSocket transport:
+
+```js
+// JavaScript: Enable WebSocket transport
+wp.hooks.addFilter(
+    'clanspress.notifications.useWebSocket',
+    'my-plugin/websocket',
+    ( useWs, context ) => {
+        // Return true if WebSocket is available
+        return myWebSocketService.isConnected();
+    }
+);
+
+// Provide WebSocket configuration
+wp.hooks.addFilter(
+    'clanspress.notifications.webSocketConfig',
+    'my-plugin/websocket-config',
+    ( config, context ) => {
+        return {
+            url: 'wss://example.com/notifications',
+            authMessage: { token: myAuthToken },
+        };
+    }
+);
+```
+
+```php
+// PHP: Override polling transport entirely
+add_filter( 'clanspress_notification_poll_transport', function( $response, $user_id, $since, $last_id, $request ) {
+    // Return a WP_REST_Response to bypass polling
+    // Useful for WebSocket-only setups
+    return new WP_REST_Response( [
+        'transport' => 'websocket',
+        'message'   => 'Use WebSocket connection instead',
+    ] );
+}, 10, 5 );
+
+// Customize transport configuration
+add_filter( 'clanspress_notification_transport_config', function( $config, $user_id ) {
+    if ( my_websocket_available() ) {
+        $config['type'] = 'websocket';
+        $config['websocket_url'] = 'wss://example.com/notifications';
+    }
+    return $config;
+}, 10, 2 );
+```
+
+### JavaScript Hooks
+
+| Hook | Description |
+|------|-------------|
+| `clanspress.notifications.useWebSocket` | Return true to use WebSocket transport |
+| `clanspress.notifications.webSocketConfig` | Provide WebSocket URL and auth config |
+| `clanspress.notifications.received` | Fired when new notifications arrive |
+| `clanspress.notifications.showToast` | Customize toast notification display |
+
+### PHP Filters
+
+| Filter | Description |
+|--------|-------------|
+| `clanspress_notification_poll_timeout` | Modify poll timeout |
+| `clanspress_notification_poll_blocking_wait` | Set `false` to skip the sleep loop (single query per request) |
+| `clanspress_notification_poll_interval` | Modify poll check interval |
+| `clanspress_notification_poll_transport` | Override polling with custom transport |
+| `clanspress_notification_next_poll_interval` | Modify next poll interval |
+| `clanspress_notification_transport_config` | Customize transport configuration |
+| `clanspress_notification_action_{type}` | Handle actions for a notification type |
+| `clanspress_notification_action_handler` | Generic action handler |
+| `clanspress_notification_types` | Register custom notification types |
+| `clanspress_render_notification` | Customize notification HTML |
+| `clanspress_format_notification_response` | Customize API response format |
+
+### Built-in Notification Types
+
+| Type | Description |
+|------|-------------|
+| `team_invite` | Team invitation with Accept/Decline actions |
+| `team_join` | User joined a team |
+| `team_role` | Team role changed |
+| `team_removed` | Removed from team |
+| `team_challenge` | Match challenge with Accept/Decline |
+| `team_match_event` | Match-related scheduled event (e.g. after accept) |
+| `team_event` / `group_event` | Roster outreach for manual `cp_event` posts |
+| `mention` | Mentioned in content |
+| `system` | System notifications |
+
+Third-party plugins can register additional types via the `clanspress_notification_types` filter.
 
 ## Maintenance Notes
 - Keep this README updated when extension architecture, hooks, or setup requirements change.

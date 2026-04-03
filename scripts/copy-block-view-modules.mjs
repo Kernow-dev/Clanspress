@@ -9,6 +9,14 @@ const __dirname = path.dirname( fileURLToPath( import.meta.url ) );
 const root = path.join( __dirname, '..' );
 const srcBlocks = path.join( root, 'src/blocks' );
 
+/**
+ * Paths to skip when copying `view.js` from `src/blocks` → `build/`, so a webpack-emitted
+ * `viewScript` bundle is not overwritten. Interactivity `viewScriptModule` sources are
+ * copied as-is (wp-scripts does not emit them); add an entry here only if webpack builds
+ * that block’s `view.js`.
+ */
+const skipCopyViewRel = new Set( [] );
+
 function walk( dir ) {
 	if ( ! fs.existsSync( dir ) ) {
 		return;
@@ -19,6 +27,9 @@ function walk( dir ) {
 			walk( p );
 		} else if ( ent.name === 'view.js' ) {
 			const rel = path.relative( srcBlocks, p );
+			if ( skipCopyViewRel.has( rel.replace( /\\/g, '/' ) ) ) {
+				continue;
+			}
 			const out = path.join( root, 'build', rel );
 			fs.mkdirSync( path.dirname( out ), { recursive: true } );
 			fs.copyFileSync( p, out );

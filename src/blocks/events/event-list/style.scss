@@ -1,0 +1,81 @@
+.clanspress-event-list-wrap--interactive {
+	.clanspress-event-list__toolbar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		align-items: center;
+		margin-bottom: 1rem;
+	}
+
+	.clanspress-event-list__time {
+		padding: 0.4rem 0.6rem;
+		border-radius: 4px;
+		border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+	}
+
+	.clanspress-event-list__loading {
+		margin: 0 0 0.75rem;
+		font-size: 0.9rem;
+		opacity: 0.85;
+	}
+
+	.clanspress-event-list__error {
+		margin: 0 0 0.75rem;
+		color: #b32d2e;
+	}
+
+	.clanspress-event-list__pagination {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem;
+		margin-top: 1rem;
+	}
+
+	.clanspress-event-list__page-btn {
+		cursor: pointer;
+		padding: 0.35rem 0.75rem;
+		border-radius: 4px;
+		border: 1px solid currentColor;
+		background: transparent;
+	}
+
+	.clanspress-event-list__page-status {
+		font-size: 0.9rem;
+		opacity: 0.9;
+	}
+}
+
+.clanspress-event-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+
+	&__item {
+	 padding: 0.75rem 0;
+	 border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+	}
+
+	&__title {
+		margin: 0 0 0.25rem;
+		font-size: 1.1rem;
+	}
+
+	&__meta {
+		margin: 0;
+		font-size: 0.9rem;
+		opacity: 0.85;
+	}
+
+	&__empty {
+		padding: 0.5rem 0;
+		opacity: 0.85;
+	}
+
+	&--placeholder,
+	&--empty {
+		padding: 0.75rem;
+		border-radius: 4px;
+		background: color-mix(in srgb, currentColor 6%, transparent);
+	}
+}

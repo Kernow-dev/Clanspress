@@ -1,0 +1,19 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/team-profile-nav",
+	"title": "Team Profile Navigation",
+	"category": "clanspress-teams",
+	"icon": "groups",
+	"description": "Displays the team profile subpage navigation.",
+	"supports": {
+		"html": false,
+		"spacing": {
+			"blockGap": true
+		}
+	},
+	"textdomain": "clanspress",
+	"editorScript": "file:./index.js",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}

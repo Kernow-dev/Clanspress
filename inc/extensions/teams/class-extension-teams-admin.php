@@ -61,17 +61,23 @@ class Admin extends Abstract_Settings {
 					'title'  => __( 'Branding defaults', 'clanspress' ),
 					'fields' => array(
 						'default_team_avatar' => array(
-							'label'       => __( 'Default team avatar image URL', 'clanspress' ),
-							'type'        => 'text',
-							'description' => __( 'Used when a team has no avatar set. Leave empty to use the plugin bundled image.', 'clanspress' ),
+							'label'       => __( 'Default team avatar image', 'clanspress' ),
+							'type'        => 'image',
+							'description' => __( 'Shown when a team has no avatar set. Leave empty to use the plugin bundled image.', 'clanspress' ),
 							'default'     => '',
+							'fallback_url' => function_exists( 'clanspress_teams_get_default_avatar_url' )
+								? \clanspress_teams_get_default_avatar_url( 0 )
+								: \clanspress()->url . 'assets/img/avatars/default-avatar.png',
 							'sanitize'    => 'esc_url_raw',
 						),
 						'default_team_cover'  => array(
-							'label'       => __( 'Default team cover image URL', 'clanspress' ),
-							'type'        => 'text',
-							'description' => __( 'Used when a team has no cover image set. Leave empty to use the plugin bundled image.', 'clanspress' ),
+							'label'       => __( 'Default team cover image', 'clanspress' ),
+							'type'        => 'image',
+							'description' => __( 'Shown when a team has no cover image set. Leave empty to use the plugin bundled image.', 'clanspress' ),
 							'default'     => '',
+							'fallback_url' => function_exists( 'clanspress_teams_get_default_cover_url' )
+								? \clanspress_teams_get_default_cover_url( 0 )
+								: \clanspress()->url . 'assets/img/covers/default-cover.png',
 							'sanitize'    => 'esc_url_raw',
 						),
 					),

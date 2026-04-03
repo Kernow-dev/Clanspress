@@ -35,32 +35,34 @@ class General_Settings extends Abstract_Settings {
 	}
 
 	protected function get_defaults(): array {
-		return (array) apply_filters(
-			'clanspress_general_settings_defaults',
-			array(
-				'admin_notes' => '',
-			)
+		// Filters run once in {@see Abstract_Settings::register_settings()} as `clanspress_general_settings_defaults`.
+		return array(
+			'admin_notes'    => '',
+			'events_enabled' => true,
 		);
 	}
 
 	protected function get_sections(): array {
-		return (array) apply_filters(
-			'clanspress_general_settings_sections',
-			array(
-				'overview' => array(
-					'title'  => __( 'Overview', 'clanspress' ),
-					'fields' => array(
-						'admin_notes' => array(
-							'label'       => __( 'Internal notes', 'clanspress' ),
-							'type'        => 'textarea',
-							'description' => __( 'Optional notes for other site administrators (not shown on the front end).', 'clanspress' ),
-							'default'     => '',
-							'sanitize'    => 'sanitize_textarea_field',
-						),
+		// Filters run once in {@see Abstract_Settings::register_settings()} as `clanspress_general_settings_sections`.
+		return array(
+			'overview' => array(
+				'title'  => __( 'Overview', 'clanspress' ),
+				'fields' => array(
+					'admin_notes'    => array(
+						'label'       => __( 'Internal notes', 'clanspress' ),
+						'type'        => 'textarea',
+						'description' => __( 'Optional notes for other site administrators (not shown on the front end).', 'clanspress' ),
+						'default'     => '',
+						'sanitize'    => 'sanitize_textarea_field',
+					),
+					'events_enabled' => array(
+						'label'       => __( 'Enable scheduled events', 'clanspress' ),
+						'type'        => 'checkbox',
+						'description' => __( 'When off, team and group events, REST endpoints, and front-end event routes are disabled site-wide. Individual teams and groups can still turn events off when this is on.', 'clanspress' ),
+						'default'     => true,
 					),
 				),
 			),
-			$this
 		);
 	}
 

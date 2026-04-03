@@ -20,6 +20,4 @@ if ( ! $extension instanceof \Kernowdev\Clanspress\Extensions\Matches ) {
 	return;
 }
 
-echo wp_kses_post(
-	$extension->render_card_block_markup( is_array( $attributes ) ? $attributes : array() )
-);
+echo $extension->render_card_block_markup( is_array( $attributes ) ? $attributes : array() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- HTML is escaped in Matches::render_card_block_markup().

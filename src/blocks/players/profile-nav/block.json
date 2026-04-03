@@ -1,0 +1,19 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/player-profile-nav",
+	"title": "Player Profile Navigation",
+	"category": "clanspress-players",
+	"icon": "groups",
+	"description": "Displays the player profile subpage navigation.",
+	"supports": {
+		"html": false,
+		"spacing": {
+			"blockGap": true
+		}
+	},
+	"textdomain": "clanspress",
+	"editorScript": "file:./index.js",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}

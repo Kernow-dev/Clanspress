@@ -1,0 +1,410 @@
+.clanspress-admin-shell {
+	background-color: #1f2128;
+	color: #f5f5f7;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+		Roboto, Helvetica, Arial, sans-serif;
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+.clanspress-admin-header {
+	background-color: #292b31;
+	padding: 16px 24px;
+	border-radius: 12px;
+	margin-bottom: 16px;
+	position: relative;
+}
+
+.clanspress-admin-header-inner {
+	display: flex;
+	align-items: stretch;
+	justify-content: space-between;
+}
+
+.clanspress-admin-header-brand {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	justify-content: space-between;
+	position: relative;
+}
+
+.clanspress-admin-logo-wrap {
+	display: inline-flex;
+	align-items: center;
+}
+
+.clanspress-admin-logo {
+	height: 60px;
+	width: auto;
+	display: block;
+}
+
+.clanspress-admin-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.clanspress-admin-header-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 4px 10px;
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.16);
+	background: transparent;
+	color: #f5f5f7;
+	font-size: 11px;
+	text-decoration: none;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	transition: background-color 0.15s ease, color 0.15s ease,
+		border-color 0.15s ease;
+}
+
+.clanspress-admin-header-btn:hover,
+.clanspress-admin-header-btn:focus-visible {
+	background-color: #1f2128;
+	color: #ffffff;
+	border-color: rgba(255, 255, 255, 0.3);
+}
+
+.clanspress-field-image-preview {
+	margin-bottom: 8px;
+	border-radius: 8px;
+	overflow: hidden;
+	border: 1px solid rgba(0, 0, 0, 0.08);
+	max-width: 320px;
+}
+
+.clanspress-field-image-preview img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.clanspress-field-image-actions {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-bottom: 4px;
+}
+
+.clanspress-settings-section {
+	margin-bottom: 2rem;
+}
+
+.clanspress-settings-fields {
+	max-width: 640px;
+	margin-top: 1rem;
+}
+
+.clanspress-settings-field-row {
+	margin-bottom: 1rem;
+}
+
+.clanspress-extension-requires {
+	margin: 0;
+	padding-left: 1.25rem;
+	color: #ffffff !important;
+}
+
+.clanspress-extension-requires .description {
+	margin-left: 4px;
+	color: #d0d2da;
+}
+
+.clanspress-admin-global-notice {
+	margin-bottom: 1rem;
+}
+
+.clanspress-admin-section-inner {
+	padding-top: 1rem;
+}
+
+.clanspress-extensions-table-wrap {
+	width: 100%;
+	max-width: 100%;
+	margin-top: 1rem;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.clanspress-extensions-table {
+	width: 100%;
+	max-width: none;
+	table-layout: auto;
+	background-color: transparent !important;
+	border-collapse: collapse;
+	color: #ffffff;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.clanspress-extensions-table thead th {
+	background-color: #25272c;
+	color: #ffffff !important;
+}
+
+.clanspress-extensions-table tbody tr:nth-child(odd) {
+	background-color: #1f2128;
+}
+
+.clanspress-extensions-table tbody tr:nth-child(even) {
+	background-color: #1f2128;
+}
+
+.clanspress-extensions-table tbody tr:hover {
+	background-color: #25272c;
+}
+
+.clanspress-extensions-table th,
+.clanspress-extensions-table td {
+	color: #ffffff;
+	border: none !important;
+	vertical-align: top;
+	padding: 12px 14px;
+	line-height: 1.45;
+}
+
+.clanspress-extensions-table th.clanspress-extensions-table__badges-col,
+.clanspress-extensions-table td.clanspress-extensions-table__badges-col {
+	width: 8.5rem;
+	min-width: 8.5rem;
+	max-width: 11rem;
+	text-align: left;
+	vertical-align: middle;
+}
+
+.clanspress-extension-badges {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	justify-content: flex-start;
+	align-items: center;
+	min-height: 1.5rem;
+}
+
+.clanspress-extensions-table td:nth-child(1) {
+	min-width: 10rem;
+	white-space: normal;
+}
+
+.clanspress-extensions-table td:nth-child(3) {
+	min-width: 14rem;
+}
+
+.clanspress-extensions-table td:nth-child(4) {
+	min-width: 10rem;
+}
+
+.clanspress-extensions-table td:nth-child(5) {
+	min-width: 13rem;
+}
+
+.clanspress-extensions-table.widefat {
+	border: none !important;
+	box-shadow: none;
+}
+
+.clanspress-extensions-table .description {
+	color: #d0d2da;
+}
+
+.clanspress-extension-name {
+	margin-left: 0;
+}
+
+.clanspress-extension-name--child {
+	margin-left: 16px;
+}
+
+.clanspress-extension-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background-color: rgba(117, 182, 220, 0.15);
+	color: #75b6dc;
+	font-size: 10px;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	border: 1px solid rgba(117, 182, 220, 0.5);
+}
+
+.clanspress-extension-badge--core {
+	background-color: rgba(196, 165, 116, 0.18);
+	color: #d4b896;
+	border-color: rgba(212, 184, 150, 0.55);
+}
+
+.clanspress-extension-badge-placeholder {
+	display: inline-block;
+	color: rgba(255, 255, 255, 0.28);
+	font-size: 12px;
+	line-height: 1;
+}
+
+.clanspress-extensions-save {
+	margin-top: 1rem;
+}
+
+.clanspress-extension-save {
+	margin-top: 0.5rem;
+}
+
+.clanspress-admin-version {
+	position: absolute;
+	left: 50%;
+	bottom: -26px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 4px 12px;
+	border-radius: 0 0 8px 8px;
+	background-color: #292b31;
+	color: #d4d7e0;
+	font-size: 11px;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+	transform: translateX(-50%);
+}
+
+.clanspress-admin-main {
+background-color: #1f2128;
+padding: 26px 0;
+margin: 0;
+border-radius: 0;
+}
+
+.clanspress-admin-app {
+	margin-top: 0;
+}
+
+.clanspress-admin-tabs {
+	margin-top: 0;
+}
+
+.clanspress-admin-tabs .components-tab-panel__tabs {
+	background-color: transparent;
+	border-bottom: 1px solid #343741;
+	padding: 0 24px;
+}
+
+.clanspress-admin-tabs .components-tab-panel__tabs-item {
+	border-radius: 8px 8px 0 0;
+	margin-right: 8px;
+	color: #d4d7e0;
+	background-color: #25272c;
+	border: none;
+	box-shadow: none;
+}
+
+.clanspress-admin-tabs .components-tab-panel__tabs-item.is-active {
+	background-color: #292b31;
+	color: #ffffff;
+	border-bottom: 2px solid #75b6dc;
+}
+
+.clanspress-admin-main .components-tab-panel__tab-content {
+	background-color: #292b31;
+	padding: 24px;
+}
+
+.clanspress-admin-main .components-tab-panel__tab-content h1,
+.clanspress-admin-main .components-tab-panel__tab-content h2,
+.clanspress-admin-main .components-tab-panel__tab-content h3,
+.clanspress-admin-main .components-tab-panel__tab-content h4,
+.clanspress-admin-main .components-tab-panel__tab-content h5,
+.clanspress-admin-main .components-tab-panel__tab-content h6 {
+	color: #ffffff;
+}
+
+.clanspress-admin-main .components-tab-panel__tab-content label,
+.clanspress-admin-main
+	.components-tab-panel__tab-content
+	.components-base-control__label {
+	color: #ffffff;
+}
+
+.clanspress-admin-main .components-tab-panel__tab-content input[type='text'],
+.clanspress-admin-main .components-tab-panel__tab-content input[type='number'],
+.clanspress-admin-main .components-tab-panel__tab-content input[type='email'],
+.clanspress-admin-main .components-tab-panel__tab-content input[type='url'],
+.clanspress-admin-main .components-tab-panel__tab-content input[type='password'],
+.clanspress-admin-main .components-tab-panel__tab-content select,
+.clanspress-admin-main .components-tab-panel__tab-content textarea,
+.clanspress-admin-main
+	.components-tab-panel__tab-content
+	.components-text-control__input,
+.clanspress-admin-main
+	.components-tab-panel__tab-content
+	.components-textarea-control__input,
+.clanspress-admin-main
+	.components-tab-panel__tab-content
+	.components-select-control__input {
+	border-radius: 8px;
+}
+
+.clanspress-admin-main
+	.components-tab-panel__tab-content
+	.components-form-toggle__track {
+	background-color: #3b3e46;
+}
+
+.clanspress-admin-main
+	.components-tab-panel__tab-content
+	.components-form-toggle__input:checked
+	+ .components-form-toggle__track {
+	background-color: #75b6dc;
+}
+
+.clanspress-admin-main .components-button.is-primary {
+	background-color: #75b6dc;
+	border-color: #75b6dc;
+	color: #020204;
+	border-radius: 8px;
+}
+
+.clanspress-admin-main .components-button.is-primary:focus-visible {
+	box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #75b6dc;
+}
+
+.clanspress-admin-main .components-button.is-primary:hover {
+	background-color: #67a8d0;
+	border-color: #67a8d0;
+	color: #020204;
+}
+
+.clanspress-admin-main .components-button.is-secondary {
+	border-radius: 8px;
+	border-color: #75b6dc;
+	color: #75b6dc;
+}
+
+.clanspress-admin-main .components-button.is-secondary:hover,
+.clanspress-admin-main .components-button.is-secondary:focus-visible {
+	border-color: #75b6dc;
+	color: #75b6dc;
+}
+
+.clanspress-admin-main .components-button.is-tertiary.is-destructive {
+	color: #d63638;
+}
+
+.clanspress-admin-main
+	.components-button.is-tertiary.is-destructive:hover,
+.clanspress-admin-main
+	.components-button.is-tertiary.is-destructive:focus-visible {
+	color: #a60000;
+}
+
+.clanspress-admin-main .components-card,
+.clanspress-admin-main .components-panel,
+.clanspress-admin-main .clanspress-settings-section {
+	background-color: #292b31;
+	border-radius: 16px;
+}
+

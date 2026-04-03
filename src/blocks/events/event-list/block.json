@@ -1,0 +1,41 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/event-list",
+	"version": "0.1.0",
+	"title": "Event list",
+	"category": "clanspress",
+	"icon": "list-view",
+	"description": "List scheduled events for the current team or group context.",
+	"textdomain": "clanspress",
+	"attributes": {
+		"scopeType": {
+			"type": "string",
+			"default": "team"
+		},
+		"teamId": {
+			"type": "number",
+			"default": 0
+		},
+		"groupId": {
+			"type": "number",
+			"default": 0
+		},
+		"limit": {
+			"type": "number",
+			"default": 20
+		}
+	},
+	"supports": {
+		"html": false,
+		"interactivity": true,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"viewScriptModule": "file:./view.js",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}

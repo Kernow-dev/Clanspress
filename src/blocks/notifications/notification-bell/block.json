@@ -1,0 +1,31 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/notification-bell",
+	"version": "1.0.0",
+	"title": "Notification Bell",
+	"category": "clanspress",
+	"icon": "bell",
+	"description": "Displays a notification bell with unread count and dropdown.",
+	"supports": {
+		"html": false,
+		"align": false,
+		"className": true,
+		"interactivity": true
+	},
+	"attributes": {
+		"showDropdown": {
+			"type": "boolean",
+			"default": true
+		},
+		"dropdownCount": {
+			"type": "number",
+			"default": 10
+		}
+	},
+	"textdomain": "clanspress",
+	"editorScript": "file:./index.js",
+	"viewScriptModule": "file:./view.js",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}

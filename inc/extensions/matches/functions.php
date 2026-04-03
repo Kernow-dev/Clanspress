@@ -42,6 +42,21 @@ function clanspress_matches_team_title( int $team_id ): string {
 }
 
 /**
+ * Away-side label for a match, using a local `cp_team` or external challenge metadata.
+ *
+ * @param int $match_id Match post ID.
+ * @return string
+ */
+function clanspress_matches_resolve_away_team_title( int $match_id ): string {
+	$away = (int) get_post_meta( $match_id, 'cp_match_away_team_id', true );
+	if ( $away > 0 ) {
+		return clanspress_matches_team_title( $away );
+	}
+
+	return sanitize_text_field( (string) get_post_meta( $match_id, 'cp_match_away_external_label', true ) );
+}
+
+/**
  * Format a stored GMT datetime string for display using the site timezone.
  *
  * @param string $mysql_gmt Datetime in GMT (MySQL-compatible string).

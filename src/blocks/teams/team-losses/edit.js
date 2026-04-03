@@ -1,41 +1,40 @@
 import { __ } from '@wordpress/i18n';
-import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { PanelBody, TextControl } from '@wordpress/components';
+import { RichText, useBlockProps } from '@wordpress/block-editor';
 import './editor.scss';
 
 export default function Edit( { attributes, setAttributes } ) {
 	const { prefix, postfix } = attributes;
+	const blockProps = useBlockProps( {
+		className:
+			'clanspress-team-stat-edit clanspress-team-stat-edit--losses',
+	} );
 
 	return (
-		<>
-			<InspectorControls>
-				<PanelBody title={ __( 'Text', 'clanspress' ) }>
-					<TextControl
-						label={ __( 'Prefix', 'clanspress' ) }
-						help={ __(
-							'Shown before the number. Leave empty for the default “Losses”.',
-							'clanspress'
-						) }
-						value={ prefix }
-						onChange={ ( v ) =>
-							setAttributes( { prefix: v ?? '' } )
-						}
-					/>
-					<TextControl
-						label={ __( 'Postfix', 'clanspress' ) }
-						help={ __( 'Shown after the number.', 'clanspress' ) }
-						value={ postfix }
-						onChange={ ( v ) =>
-							setAttributes( { postfix: v ?? '' } )
-						}
-					/>
-				</PanelBody>
-			</InspectorControls>
-			<div { ...useBlockProps() }>
-				<p className="clanspress-team-block-placeholder">
-					{ __( 'Team losses', 'clanspress' ) }
-				</p>
-			</div>
-		</>
+		<div { ...blockProps }>
+			<RichText
+				key="clanspress-team-losses-prefix"
+				tagName="span"
+				className="clanspress-team-stat__prefix"
+				value={ prefix }
+				onChange={ ( v ) => setAttributes( { prefix: v ?? '' } ) }
+				placeholder={ __( 'Losses', 'clanspress' ) }
+				allowedFormats={ [ 'core/bold', 'core/italic', 'core/link' ] }
+			/>
+			<span
+				className="clanspress-team-stat__value clanspress-team-stat__value--editor-placeholder"
+				aria-hidden="true"
+			>
+				0
+			</span>
+			<RichText
+				key="clanspress-team-losses-postfix"
+				tagName="span"
+				className="clanspress-team-stat__postfix"
+				value={ postfix }
+				onChange={ ( v ) => setAttributes( { postfix: v ?? '' } ) }
+				placeholder={ __( 'Postfix…', 'clanspress' ) }
+				allowedFormats={ [ 'core/bold', 'core/italic', 'core/link' ] }
+			/>
+		</div>
 	);
 }

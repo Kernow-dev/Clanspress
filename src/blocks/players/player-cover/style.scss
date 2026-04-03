@@ -10,6 +10,14 @@
 	width: 100%;
 	height: 280px;
 
+	&.clanspress-player-cover--placeholder {
+		height: auto;
+	}
+
+	.player-cover__image-background--placeholder {
+		background-color: #e8e8e8;
+	}
+
 	// Position: Top
 	&.is-position-top-left {
 		align-items: flex-start;

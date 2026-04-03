@@ -30,7 +30,7 @@
 			"type": "string"
 		}
 	},
-	"usesContext": [ "postId", "postType" ],
+	"usesContext": [ "postId", "postType", "clanspress/playerId" ],
 	"supports": {
 		"anchor": true,
 		"align": true,

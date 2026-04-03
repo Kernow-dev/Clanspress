@@ -1,0 +1,445 @@
+/**
+ * Notification Bell block styles.
+ */
+
+.clanspress-notification-bell {
+	--bell-size: 24px;
+	--badge-size: 18px;
+	--dropdown-width: 380px;
+	--notification-bg: #fff;
+	--notification-border: rgba(0, 0, 0, 0.1);
+	--notification-hover: rgba(0, 0, 0, 0.03);
+	--notification-unread-bg: rgba(0, 115, 170, 0.05);
+	--notification-text: #1e1e1e;
+	--notification-muted: #757575;
+	--notification-accent: #0073aa;
+	--notification-success: #00a32a;
+	--notification-danger: #d63638;
+
+	position: relative;
+	display: inline-block;
+}
+
+.clanspress-notification-bell__trigger {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	background: transparent;
+	border: none;
+	border-radius: 50%;
+	cursor: pointer;
+	color: inherit;
+	transition: background-color 0.15s ease;
+
+	&:hover,
+	&:focus {
+		background: var(--notification-hover);
+		outline: none;
+	}
+
+	&:focus-visible {
+		box-shadow: 0 0 0 2px var(--notification-accent);
+	}
+}
+
+.clanspress-notification-bell__icon {
+	width: var(--bell-size);
+	height: var(--bell-size);
+}
+
+.clanspress-notification-bell__badge {
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	min-width: var(--badge-size);
+	height: var(--badge-size);
+	padding: 0 5px;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: var(--badge-size);
+	text-align: center;
+	color: #fff;
+	background: var(--notification-danger);
+	border-radius: calc(var(--badge-size) / 2);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.clanspress-notification-bell__dropdown {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	width: var(--dropdown-width);
+	max-width: calc(100vw - 32px);
+	background: var(--notification-bg);
+	border: 1px solid var(--notification-border);
+	border-radius: 8px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+	z-index: 100000;
+	overflow: hidden;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.clanspress-notification-bell__dropdown-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--notification-border);
+}
+
+.clanspress-notification-bell__dropdown-title {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--notification-text);
+}
+
+.clanspress-notification-bell__mark-all-read {
+	padding: 4px 8px;
+	font-size: 12px;
+	color: var(--notification-accent);
+	background: transparent;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+
+	&:hover:not(:disabled) {
+		background: var(--notification-hover);
+	}
+
+	&:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+}
+
+.clanspress-notification-bell__dropdown-content {
+	max-height: 400px;
+	overflow-y: auto;
+
+	&.is-loading {
+		min-height: 100px;
+	}
+}
+
+.clanspress-notification-bell__list {
+	display: flex;
+	flex-direction: column;
+}
+
+.clanspress-notification-bell__empty {
+	padding: 32px 16px;
+	text-align: center;
+	color: var(--notification-muted);
+	font-size: 14px;
+	margin: 0;
+}
+
+.clanspress-notification-bell__loading {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 32px;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.clanspress-notification-bell__spinner {
+	width: 24px;
+	height: 24px;
+	border: 2px solid var(--notification-border);
+	border-top-color: var(--notification-accent);
+	border-radius: 50%;
+	animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.clanspress-notification-bell__dropdown-footer {
+	padding: 12px 16px;
+	border-top: 1px solid var(--notification-border);
+	text-align: center;
+}
+
+.clanspress-notification-bell__view-all {
+	font-size: 13px;
+	color: var(--notification-accent);
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+// Individual notification styles.
+.clanspress-notification {
+	display: flex;
+	gap: 12px;
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--notification-border);
+	transition: background-color 0.15s ease;
+
+	&:last-child {
+		border-bottom: none;
+	}
+
+	&:hover {
+		background: var(--notification-hover);
+	}
+
+	&.is-unread {
+		background: var(--notification-unread-bg);
+
+		&:hover {
+			background: color-mix(in srgb, var(--notification-unread-bg) 80%, var(--notification-hover));
+		}
+	}
+
+	&.is-compact {
+		padding: 10px 16px;
+	}
+}
+
+.clanspress-notification__avatar,
+.clanspress-notification__icon {
+	flex-shrink: 0;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	overflow: hidden;
+
+	img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+}
+
+.clanspress-notification__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--notification-hover);
+	color: var(--notification-muted);
+
+	.dashicons {
+		font-size: 20px;
+		width: 20px;
+		height: 20px;
+	}
+}
+
+.clanspress-notification__content {
+	flex: 1;
+	min-width: 0;
+}
+
+.clanspress-notification__header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.clanspress-notification__title {
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--notification-text);
+	line-height: 1.4;
+}
+
+.clanspress-notification__link {
+	color: inherit;
+	text-decoration: none;
+
+	&:hover .clanspress-notification__title {
+		color: var(--notification-accent);
+	}
+}
+
+.clanspress-notification__time {
+	flex-shrink: 0;
+	font-size: 11px;
+	color: var(--notification-muted);
+	white-space: nowrap;
+}
+
+.clanspress-notification__message {
+	margin: 4px 0 0;
+	font-size: 12px;
+	color: var(--notification-muted);
+	line-height: 1.4;
+}
+
+.clanspress-notification__actions {
+	display: flex;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.clanspress-notification__action {
+	padding: 6px 12px;
+	font-size: 12px;
+	font-weight: 500;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.15s ease;
+
+	&--primary {
+		background: var(--notification-accent);
+		color: #fff;
+		border: none;
+
+		&:hover:not(:disabled) {
+			background: color-mix(in srgb, var(--notification-accent) 85%, #000);
+		}
+	}
+
+	&--secondary {
+		background: transparent;
+		color: var(--notification-text);
+		border: 1px solid var(--notification-border);
+
+		&:hover:not(:disabled) {
+			background: var(--notification-hover);
+		}
+	}
+
+	&--danger {
+		background: transparent;
+		color: var(--notification-danger);
+		border: 1px solid var(--notification-danger);
+
+		&:hover:not(:disabled) {
+			background: var(--notification-danger);
+			color: #fff;
+		}
+	}
+
+	&:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+}
+
+.clanspress-notification__status {
+	margin-top: 6px;
+	font-size: 11px;
+	color: var(--notification-muted);
+	font-style: italic;
+}
+
+.clanspress-notification__unread-dot {
+	flex-shrink: 0;
+	width: 8px;
+	height: 8px;
+	background: var(--notification-accent);
+	border-radius: 50%;
+	margin-top: 6px;
+}
+
+// Actioned states.
+.clanspress-notification.is-accepted {
+	.clanspress-notification__status {
+		color: var(--notification-success);
+	}
+}
+
+.clanspress-notification.is-declined {
+	.clanspress-notification__status {
+		color: var(--notification-danger);
+	}
+}
+
+// Accessible confirm dialog (notification action confirmations).
+.clanspress-notification-bell__confirm-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100001;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	background: rgba(0, 0, 0, 0.45);
+}
+
+.clanspress-notification-bell__confirm {
+	max-width: 420px;
+	width: 100%;
+	padding: 20px 24px;
+	background: var(--notification-bg);
+	color: var(--notification-text);
+	border-radius: 8px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.clanspress-notification-bell__confirm-title {
+	margin: 0 0 12px;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+.clanspress-notification-bell__confirm-message {
+	margin: 0 0 20px;
+	font-size: 14px;
+	line-height: 1.5;
+	color: var(--notification-text);
+}
+
+.clanspress-notification-bell__confirm-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 10px;
+}
+
+.clanspress-notification-bell__confirm-btn {
+	padding: 8px 16px;
+	font-size: 13px;
+	font-weight: 500;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.15s ease, border-color 0.15s ease;
+
+	&:focus-visible {
+		outline: 2px solid var(--notification-accent);
+		outline-offset: 2px;
+	}
+}
+
+.clanspress-notification-bell__confirm-btn--cancel {
+	color: var(--notification-text);
+	background: transparent;
+	border: 1px solid var(--notification-border);
+
+	&:hover {
+		background: var(--notification-hover);
+	}
+}
+
+.clanspress-notification-bell__confirm-btn--ok {
+	color: #fff;
+	background: var(--notification-accent);
+	border: 1px solid var(--notification-accent);
+
+	&:hover {
+		background: color-mix(in srgb, var(--notification-accent) 85%, #000);
+		border-color: color-mix(in srgb, var(--notification-accent) 85%, #000);
+	}
+}

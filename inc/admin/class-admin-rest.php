@@ -94,6 +94,9 @@ class Admin_Rest {
 				'optionSchemas'    => $schemas,
 				'extensions'       => $this->build_extensions_payload( $loader, $extensions ),
 				'generalOptionKey' => General_Settings::OPTION_KEY,
+				'plugin'           => array(
+					'version' => (string) \clanspress()->get_version(),
+				),
 			)
 		);
 	}
@@ -248,29 +251,34 @@ class Admin_Rest {
 
 	/**
 	 * @param array<string, Skeleton> $extensions
-	 * @return array<int, array<string, mixed>>
+	 * @return array<int, array<string, mixed>> Each item includes `isCoreBundled` (main-package extensions only).
 	 */
 	protected function build_extensions_payload( Loader $loader, array $extensions ): array {
 		$installed   = $loader->get_installed_extensions();
 		$official    = $loader->get_official_extensions();
-		$extensions  = $this->sort_extensions_grouped( $extensions );
+		$extensions  = $this->sort_extensions_by_dependencies( $extensions );
 		$out         = array();
+
+		$required    = Loader::get_required_extension_slugs();
+		$core_bundle = Loader::get_core_bundled_extension_slugs();
 
 		foreach ( $extensions as $slug => $ext ) {
 			if ( ! $ext instanceof Skeleton ) {
 				continue;
 			}
 			$out[] = array(
-				'slug'          => $slug,
-				'name'          => $ext->name,
-				'description'   => $ext->description,
-				'version'       => $ext->version,
-				'type'          => $ext->type,
-				'parentSlug'    => (string) ( $ext->parent_slug ?? '' ),
-				'requires'      => array_values( $ext->requires ),
-				'isOfficial'    => isset( $official[ $slug ] ),
-				'isInstalled'   => isset( $installed[ $slug ] ),
-				'canInstall'    => $ext->can_install(),
+				'slug'           => $slug,
+				'name'           => $ext->name,
+				'description'    => $ext->description,
+				'version'        => $ext->version,
+				'type'           => $ext->type,
+				'parentSlug'     => (string) ( $ext->parent_slug ?? '' ),
+				'requires'       => array_values( $ext->requires ),
+				'isOfficial'     => isset( $official[ $slug ] ),
+				'isCoreBundled'  => in_array( $slug, $core_bundle, true ),
+				'isInstalled'    => isset( $installed[ $slug ] ),
+				'canInstall'     => $ext->can_install(),
+				'isRequired'     => in_array( $slug, $required, true ),
 			);
 		}
 
@@ -278,46 +286,94 @@ class Admin_Rest {
 	}
 
 	/**
-	 * Parents first, then their children (same order as the legacy extensions table).
+	 * Topological order by `requires` (dependencies before dependents), then slug.
+	 *
+	 * Extensions listed in {@see Loader::get_required_extension_slugs()} are ordered first among
+	 * nodes with the same readiness (e.g. `cp_players` stays at the top).
 	 *
 	 * @param array<string, Skeleton> $extensions Registered extensions.
 	 * @return array<string, Skeleton>
 	 */
-	protected function sort_extensions_grouped( array $extensions ): array {
-		$parents  = array();
-		$children = array();
-		$sorted   = array();
-
+	protected function sort_extensions_by_dependencies( array $extensions ): array {
+		$valid = array();
 		foreach ( $extensions as $slug => $extension ) {
-			if ( ! $extension instanceof Skeleton ) {
-				continue;
-			}
-			if ( empty( $extension->parent_slug ) ) {
-				$parents[ $slug ] = $extension;
-				continue;
-			}
-			$children[ $extension->parent_slug ][ $slug ] = $extension;
-		}
-
-		ksort( $parents );
-
-		foreach ( $parents as $parent_slug => $parent_extension ) {
-			$sorted[ $parent_slug ] = $parent_extension;
-			if ( empty( $children[ $parent_slug ] ) ) {
-				continue;
-			}
-			ksort( $children[ $parent_slug ] );
-			foreach ( $children[ $parent_slug ] as $child_slug => $child_extension ) {
-				$sorted[ $child_slug ] = $child_extension;
+			if ( $extension instanceof Skeleton ) {
+				$valid[ sanitize_key( (string) $slug ) ] = $extension;
 			}
 		}
 
-		foreach ( $children as $parent_slug => $orphans ) {
-			if ( isset( $parents[ $parent_slug ] ) ) {
-				continue;
+		if ( $valid === array() ) {
+			return array();
+		}
+
+		$slugs        = array_keys( $valid );
+		$in_degree    = array_fill_keys( $slugs, 0 );
+		$dependents   = array();
+		$required     = Loader::get_required_extension_slugs();
+		$required_rank = array_flip( $required );
+
+		foreach ( $valid as $slug => $extension ) {
+			foreach ( $extension->requires as $req ) {
+				$req = sanitize_key( (string) $req );
+				if ( '' === $req || $req === $slug || ! isset( $valid[ $req ] ) ) {
+					continue;
+				}
+				if ( ! isset( $dependents[ $req ] ) ) {
+					$dependents[ $req ] = array();
+				}
+				$dependents[ $req ][] = $slug;
+				++$in_degree[ $slug ];
 			}
-			foreach ( $orphans as $child_slug => $child_extension ) {
-				$sorted[ $child_slug ] = $child_extension;
+		}
+
+		$queue = array_values(
+			array_filter(
+				$slugs,
+				static function ( string $s ) use ( $in_degree ): bool {
+					return 0 === ( $in_degree[ $s ] ?? 1 );
+				}
+			)
+		);
+
+		$sorted = array();
+		while ( $queue !== array() ) {
+			usort(
+				$queue,
+				static function ( string $a, string $b ) use ( $required_rank ): int {
+					$ra = array_key_exists( $a, $required_rank ) ? (int) $required_rank[ $a ] : 1000;
+					$rb = array_key_exists( $b, $required_rank ) ? (int) $required_rank[ $b ] : 1000;
+					if ( $ra !== $rb ) {
+						return $ra <=> $rb;
+					}
+					return strcmp( $a, $b );
+				}
+			);
+
+			while ( $queue !== array() && isset( $sorted[ $queue[0] ] ) ) {
+				array_shift( $queue );
+			}
+			if ( $queue === array() ) {
+				break;
+			}
+
+			$slug = array_shift( $queue );
+			if ( null === $slug ) {
+				break;
+			}
+			$sorted[ $slug ] = $valid[ $slug ];
+
+			foreach ( $dependents[ $slug ] ?? array() as $dep ) {
+				--$in_degree[ $dep ];
+				if ( 0 === $in_degree[ $dep ] && ! in_array( $dep, $queue, true ) ) {
+					$queue[] = $dep;
+				}
+			}
+		}
+
+		// Cycle or missing edges: append remaining in stable slug order.
+		foreach ( $slugs as $slug ) {
+			if ( ! isset( $sorted[ $slug ] ) ) {
+				$sorted[ $slug ] = $valid[ $slug ];
 			}
 		}
 
@@ -413,13 +469,23 @@ class Admin_Rest {
 			return new WP_Error( 'clanspress_bad_payload', __( 'Invalid extensions payload.', 'clanspress' ), array( 'status' => 400 ) );
 		}
 
-		$requested = array_values( array_unique( array_map( 'sanitize_key', $body['installed'] ) ) );
+		$requested_raw = array_map( 'sanitize_key', $body['installed'] );
+		$required      = Loader::get_required_extension_slugs();
 
 		$loader    = Loader::instance();
 		$available = $loader->get_extensions();
 
+		$requested = array_values(
+			array_unique(
+				array_merge( $required, $requested_raw )
+			)
+		);
+
 		$prev_slugs = array_keys( $loader->get_installed_extensions() );
 		foreach ( array_diff( $prev_slugs, $requested ) as $removed_slug ) {
+			if ( in_array( (string) $removed_slug, $required, true ) ) {
+				continue;
+			}
 			$loader->uninstall_extension( (string) $removed_slug );
 		}
 
@@ -441,11 +507,22 @@ class Admin_Rest {
 
 		$new = (array) apply_filters( 'clanspress_validate_installed_extensions', $new, $requested, $available );
 
+		foreach ( $required as $req_slug ) {
+			if ( isset( $available[ $req_slug ] ) && $available[ $req_slug ] instanceof Skeleton ) {
+				$new[ $req_slug ] = array(
+					'version' => (string) ( $available[ $req_slug ]->version ?? '1.0.0' ),
+				);
+			}
+		}
+
 		if ( is_multisite() && is_network_admin() ) {
 			update_site_option( 'clanspress_installed_extensions', $new );
 		} else {
 			update_option( 'clanspress_installed_extensions', $new );
 		}
+
+		// Defer regeneration to the next request so `init` runs with the new install list (rewrite rules match registered routes).
+		delete_option( 'rewrite_rules' );
 
 		return rest_ensure_response( array( 'installed' => $new ) );
 	}

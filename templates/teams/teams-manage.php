@@ -1,9 +1,18 @@
-<!-- wp:template-part {"slug":"header","area":"header","tagName":"header"} /-->
+<?php
+/**
+ * Front template: manage team (classic / hybrid themes).
+ *
+ * Block markup: `teams-manage.html` (also registered for FSE as `clanspress//teams-manage`).
+ *
+ * @package clanspress
+ */
 
-<!-- wp:group {"tagName":"main","layout":{"type":"constrained"}} -->
-<main class="wp-block-group"><!-- wp:heading -->
-	<h2 class="wp-block-heading">Manage team</h2>
-	<!-- /wp:heading --><!-- wp:clanspress/team-manage /--></main>
-<!-- /wp:group -->
+defined( 'ABSPATH' ) || exit;
 
-<!-- wp:template-part {"slug":"footer","area":"footer","tagName":"footer"} /-->
+get_header();
+
+if ( function_exists( 'clanspress_render_block_markup_file' ) ) {
+	clanspress_render_block_markup_file( __DIR__ . '/teams-manage.html' );
+}
+
+get_footer();
