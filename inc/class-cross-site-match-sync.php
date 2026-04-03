@@ -655,7 +655,6 @@ final class Cross_Site_Match_Sync {
 			);
 		}
 
-		// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Single `posts_per_page => 1` duplicate check on indexed sync meta keys.
 		$existing = get_posts(
 			array(
 				'post_type'              => 'cp_match',
@@ -664,6 +663,7 @@ final class Cross_Site_Match_Sync {
 				'fields'                 => 'ids',
 				'no_found_rows'          => true,
 				'update_post_meta_cache' => false,
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Single `posts_per_page => 1` duplicate check on indexed sync meta keys.
 				'meta_query'             => array(
 					'relation' => 'AND',
 					array(
