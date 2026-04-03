@@ -82,6 +82,7 @@ function clanspress_private_media_filter_rest_attachment_query( array $args, $re
 	if ( empty( $args['meta_query'] ) || ! is_array( $args['meta_query'] ) ) {
 		$args['meta_query'] = array();
 	}
+	// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Narrow attachment queries to exclude Clanspress-private uploads.
 	$args['meta_query'][] = array(
 		'key'     => CLANSPRESS_ATTACHMENT_HIDE_FROM_LIBRARY,
 		'compare' => 'NOT EXISTS',
@@ -99,6 +100,7 @@ function clanspress_private_media_filter_ajax_attachments( array $query ): array
 	if ( empty( $query['meta_query'] ) || ! is_array( $query['meta_query'] ) ) {
 		$query['meta_query'] = array();
 	}
+	// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Media modal query augmented with a single NOT EXISTS meta clause.
 	$query['meta_query'][] = array(
 		'key'     => CLANSPRESS_ATTACHMENT_HIDE_FROM_LIBRARY,
 		'compare' => 'NOT EXISTS',

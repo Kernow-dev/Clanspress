@@ -902,6 +902,7 @@ class Matches extends Skeleton {
 		$show_scores = (bool) $this->admin->get( 'show_scores', true );
 		$fmt         = (string) $this->admin->get( 'datetime_format', 'M j, Y g:i a' );
 
+		// phpcs:disable WordPress.DB.SlowDBQuery -- Block list sorts by `cp_match_scheduled_at`; optional `meta_query` scopes by team/status.
 		$args = array(
 			'post_type'              => 'cp_match',
 			'post_status'            => 'publish',
@@ -920,6 +921,7 @@ class Matches extends Skeleton {
 		}
 
 		$q = new \WP_Query( $args );
+		// phpcs:enable WordPress.DB.SlowDBQuery
 		$viewer_id = is_user_logged_in() ? (int) get_current_user_id() : 0;
 
 		ob_start();

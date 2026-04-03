@@ -129,6 +129,7 @@ class Rest_Controller {
 			$status = '';
 		}
 
+		// phpcs:disable WordPress.DB.SlowDBQuery -- REST list sorts by scheduled datetime; `meta_query` filters by team/status.
 		$args = array(
 			'post_type'      => 'cp_match',
 			'post_status'    => array( 'publish' ),
@@ -157,6 +158,7 @@ class Rest_Controller {
 		}
 
 		$query = new \WP_Query( $args );
+		// phpcs:enable WordPress.DB.SlowDBQuery
 		$items = array();
 		$viewer_id = is_user_logged_in() ? (int) get_current_user_id() : 0;
 		foreach ( $query->posts as $post ) {

@@ -10,6 +10,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Classic template locals in the loop scope.
+
 get_header();
 
 while ( have_posts() ) {
@@ -30,5 +32,7 @@ while ( have_posts() ) {
 	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	echo do_blocks( $markup );
 }
+
+// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals
 
 get_footer();

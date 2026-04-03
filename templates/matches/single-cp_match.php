@@ -2,6 +2,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Classic template locals in the loop scope.
+
 /**
  * Single match template (Clanspress Matches extension).
  *
@@ -72,5 +74,7 @@ while ( have_posts() ) {
 	</article>
 	<?php
 }
+
+// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals
 
 get_footer();

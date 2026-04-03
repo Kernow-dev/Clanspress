@@ -109,7 +109,7 @@ abstract class WP_Post_Meta_Data_Store {
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- $sql is the return value of $wpdb->prepare() above.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter -- $sql is from $wpdb->prepare(); meta table has no dedicated WP API for bulk raw rows.
 		$rows = $wpdb->get_results( $sql );
 		if ( ! is_array( $rows ) ) {
 			return array();

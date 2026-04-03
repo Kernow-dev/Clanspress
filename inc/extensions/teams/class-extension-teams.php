@@ -2647,6 +2647,7 @@ class Teams extends Skeleton {
 			&& isset( $_POST['member_roles'] )
 			&& is_array( $_POST['member_roles'] ) ) {
 			$new_map       = array();
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Unslashed map; each role string is sanitized in the loop.
 			$member_roles = wp_unslash( $_POST['member_roles'] );
 			foreach ( $member_roles as $mid => $role ) {
 				$new_map[ absint( $mid ) ] = $this->sanitize_team_member_role( sanitize_text_field( (string) $role ) );

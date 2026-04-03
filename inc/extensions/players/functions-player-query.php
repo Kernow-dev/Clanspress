@@ -2,6 +2,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.DB.SlowDBQuery -- `meta_key` / `meta_query` / `meta_value` are required for player directory filters; keep queries scoped and paginated.
+
 /**
  * Player Query block: roster subset, ordering, meta filters, and exclusions.
  *
@@ -490,3 +492,5 @@ function clanspress_player_query_resolve_member_user_ids( int $team_id, bool $ex
 		)
 	);
 }
+
+// phpcs:enable WordPress.DB.SlowDBQuery

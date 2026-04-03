@@ -2,6 +2,9 @@
 /**
  * Shared sanitization for superglobals used across extensions (POST, request URI).
  *
+ * POST helpers assume the caller has already verified a nonce or equivalent capability
+ * (e.g. `check_admin_referer`, `save_post` hooks). Do not call them on unauthenticated input.
+ *
  * @package clanspress
  */
 
@@ -68,12 +71,13 @@ function clanspress_get_canonical_request_path(): string {
  * @return string
  */
 function clanspress_request_post_text( string $key, string $default = '' ): string {
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Caller must verify a nonce before reading POST.
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- Caller verified nonce/caps; see file header.
 	if ( ! isset( $_POST[ $key ] ) ) {
 		return $default;
 	}
 
 	return sanitize_text_field( wp_unslash( (string) $_POST[ $key ] ) );
+	// phpcs:enable WordPress.Security.NonceVerification.Missing
 }
 
 /**
@@ -84,12 +88,13 @@ function clanspress_request_post_text( string $key, string $default = '' ): stri
  * @return string
  */
 function clanspress_request_post_html( string $key, string $default = '' ): string {
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Caller must verify a nonce before reading POST.
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- Caller verified nonce/caps; see file header.
 	if ( ! isset( $_POST[ $key ] ) ) {
 		return $default;
 	}
 
 	return wp_kses_post( wp_unslash( (string) $_POST[ $key ] ) );
+	// phpcs:enable WordPress.Security.NonceVerification.Missing
 }
 
 /**
@@ -100,12 +105,13 @@ function clanspress_request_post_html( string $key, string $default = '' ): stri
  * @return int
  */
 function clanspress_request_post_absint( string $key, int $default = 0 ): int {
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Caller must verify a nonce before reading POST.
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- Caller verified nonce/caps; see file header.
 	if ( ! isset( $_POST[ $key ] ) ) {
 		return $default;
 	}
 
 	return absint( wp_unslash( $_POST[ $key ] ) );
+	// phpcs:enable WordPress.Security.NonceVerification.Missing
 }
 
 /**
@@ -115,8 +121,9 @@ function clanspress_request_post_absint( string $key, int $default = 0 ): int {
  * @return bool
  */
 function clanspress_request_post_has_key( string $key ): bool {
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Caller must verify a nonce before reading POST.
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- Caller verified nonce/caps; see file header.
 	return array_key_exists( $key, $_POST );
+	// phpcs:enable WordPress.Security.NonceVerification.Missing
 }
 
 /**
@@ -128,16 +135,16 @@ function clanspress_request_post_has_key( string $key ): bool {
  * @return bool
  */
 function clanspress_request_post_flag( string $key ): bool {
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Caller must verify a nonce before reading POST.
+	// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- Caller verified nonce/caps; loose truthy check for checkbox/removal fields.
 	if ( ! isset( $_POST[ $key ] ) ) {
 		return false;
 	}
 
-	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- Intentional loose truthy check for checkbox/removal fields.
 	$raw = wp_unslash( $_POST[ $key ] );
 	if ( is_array( $raw ) ) {
 		return false;
 	}
 
 	return ! empty( $raw );
+	// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 }

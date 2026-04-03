@@ -456,6 +456,7 @@ final class Event_Entity_Rest_Controller extends WP_REST_Controller {
 			$page     = max( 1, (int) $request->get_param( 'page' ) );
 		}
 
+		// phpcs:disable WordPress.DB.SlowDBQuery -- Event list requires `meta_query` / `meta_key` for scope, range, and start-time ordering.
 		$query_args = array(
 			'post_type'      => Event_Post_Type::POST_TYPE,
 			'post_status'    => array( 'publish', 'draft', 'pending' ),
@@ -479,6 +480,7 @@ final class Event_Entity_Rest_Controller extends WP_REST_Controller {
 		}
 
 		$q = new \WP_Query( $query_args );
+		// phpcs:enable WordPress.DB.SlowDBQuery
 
 		$viewer_id = is_user_logged_in() ? (int) get_current_user_id() : 0;
 		$items     = array();
