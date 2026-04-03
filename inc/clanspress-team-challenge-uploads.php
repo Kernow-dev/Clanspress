@@ -175,13 +175,14 @@ function clanspress_relocate_team_challenge_logo_to_match_dir( int $attachment_i
 		}
 	} else {
 		// When credentials are not configured, direct PHP IO often still works on the same host.
-		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Intentional: probe OS rename before copy+delete.
+		// phpcs:disable WordPress.PHP.NoSilencedErrors.Discouraged,WordPress.WP.AlternativeFunctions.rename_rename,WordPress.WP.AlternativeFunctions.file_system_operations_copy -- Fallback only when WP_Filesystem cannot initialize; prefer $wp_filesystem->move() above.
 		if ( @rename( $old_path, $dest_path ) ) {
 			$moved = true;
 		} elseif ( @copy( $old_path, $dest_path ) ) {
 			wp_delete_file( $old_path );
 			$moved = true;
 		}
+		// phpcs:enable
 	}
 
 	if ( ! $moved ) {
