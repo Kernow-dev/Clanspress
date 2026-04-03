@@ -106,6 +106,7 @@ abstract class WP_Post_Meta_Data_Store {
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
+		// phpcs:ignore PluginCheck.Security.DirectDB.UnescapedDBParameter -- Query built with $wpdb->prepare() above.
 		$rows = $wpdb->get_results( $sql );
 		if ( ! is_array( $rows ) ) {
 			return array();

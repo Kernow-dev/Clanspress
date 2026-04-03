@@ -341,10 +341,8 @@ class Loader {
 				_doing_it_wrong(
 					__METHOD__,
 					sprintf(
-						__(
-							'Clanspress: Extension "%1$s" attempted to use a prohibited slug.',
-							'clanspress'
-						),
+						/* translators: %s: Extension slug. */
+						__( 'Clanspress: Extension "%s" attempted to use a prohibited slug.', 'clanspress' ),
 						$slug
 					),
 					'1.0.0'
@@ -358,10 +356,8 @@ class Loader {
 				_doing_it_wrong(
 					__METHOD__,
 					sprintf(
-						__(
-							'Clanspress: Extension "%1$s" must register an extension object, got "%2$s".',
-							'clanspress'
-						),
+						/* translators: 1: Extension slug, 2: PHP type of the registered value. */
+						__( 'Clanspress: Extension "%1$s" must register an extension object, got "%2$s".', 'clanspress' ),
 						$slug,
 						gettype( $extension )
 					),
@@ -377,10 +373,8 @@ class Loader {
 				_doing_it_wrong(
 					__METHOD__,
 					sprintf(
-						__(
-							'Clanspress: Extension "%1$s" class "%2$s" must extend %3$s.',
-							'clanspress'
-						),
+						/* translators: 1: Extension slug, 2: Registered class name, 3: Required base class name. */
+						__( 'Clanspress: Extension "%1$s" class "%2$s" must extend %3$s.', 'clanspress' ),
 						$slug,
 						get_class( $extension ),
 						Skeleton::class
@@ -397,10 +391,8 @@ class Loader {
 				_doing_it_wrong(
 					__METHOD__,
 					sprintf(
-						__(
-							'Clanspress: Extension registry key "%1$s" does not match extension slug "%2$s".',
-							'clanspress'
-						),
+						/* translators: 1: Registry array key (slug), 2: Slug declared on the extension object. */
+						__( 'Clanspress: Extension registry key "%1$s" does not match extension slug "%2$s".', 'clanspress' ),
 						$slug,
 						$extension->slug
 					),
@@ -461,7 +453,8 @@ class Loader {
 				_doing_it_wrong(
 					__METHOD__,
 					sprintf(
-						'Clanspress: Official extension "%1$s" registered an unexpected class. Expected "%2$s", got "%3$s".',
+						/* translators: 1: Extension slug, 2: Expected PHP class name, 3: Registered class name. */
+						__( 'Clanspress: Official extension "%1$s" registered an unexpected class. Expected "%2$s", got "%3$s".', 'clanspress' ),
 						$slug,
 						$expected_class,
 						$registered_class
@@ -477,7 +470,8 @@ class Loader {
 				_doing_it_wrong(
 					__METHOD__,
 					sprintf(
-						'Clanspress: Official extension "%1$s" attempted to register class "%2$s", but the class does not exist.',
+						/* translators: 1: Extension slug, 2: PHP class name. */
+						__( 'Clanspress: Official extension "%1$s" attempted to register class "%2$s", but the class does not exist.', 'clanspress' ),
 						$slug,
 						$registered_class
 					),

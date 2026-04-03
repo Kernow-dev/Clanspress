@@ -21,8 +21,9 @@ jobs:
                   tools: composer:v2
                   coverage: none
 
+            # Production vendor/ only (matches WordPress.org and local `plugin-zip` expectations).
             - name: Install Composer dependencies
-              run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+              run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist
 
             - name: Setup Node
               uses: actions/setup-node@v4

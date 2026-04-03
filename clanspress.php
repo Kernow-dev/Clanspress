@@ -3,9 +3,9 @@
  * Plugin Name: Clanspress
  * Plugin URI: https://clanspress.com
  * Description: Community management system for Gamers and Sports teams
- * Version: 0.1.0
+ * Version: 1.0.0
  * Requires at least: 6.7
- * Tested up to: 6.8
+ * Tested up to: 6.9
  * Requires PHP: 8.2
  * Author: kernow.dev
  * Author URI: https://kernow.dev
@@ -49,7 +49,7 @@ final class Main {
 	 *
 	 * @var string
 	 */
-	public const VERSION = '0.1.0';
+	public const VERSION = '1.0.0';
 
 	/**
 	 * Maintenance upgrade counter (single step for 1.0.0 public release).
@@ -202,11 +202,12 @@ final class Main {
 	public function requirements_not_met_notice(): void {
 		// Compile default message.
 		$default_message = sprintf(
+			/* translators: %s: URL to the Plugins admin screen. */
 			__(
 				'Clanspress Plugin is missing requirements and has been <a href="%s">deactivated</a>. Please make sure all requirements are available.',
 				'clanspress'
 			),
-			admin_url( 'plugins.php' )
+			esc_url( admin_url( 'plugins.php' ) )
 		);
 
 		// Default details to null.
@@ -252,6 +253,8 @@ final class Main {
 	public function hooks(): void {
 		add_action( 'init', array( $this, 'init' ), 0 );
 
+		add_filter( 'plugin_action_links_' . $this->basename, array( $this, 'filter_plugin_action_links' ) );
+
 		add_filter( 'block_categories_all', array( $this, 'register_block_categories' ), 5, 2 );
 
 		// Scripts and styles.
@@ -289,6 +292,36 @@ final class Main {
 		);
 
 		return array_merge( $ours, $categories );
+	}
+
+	/**
+	 * Prepend Settings and website links on the Plugins list screen.
+	 *
+	 * @param array<int, string> $links Existing action link HTML.
+	 * @return array<int, string>
+	 */
+	public function filter_plugin_action_links( array $links ): array {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			return $links;
+		}
+
+		$prepend = array();
+
+		if ( current_user_can( 'manage_options' ) ) {
+			$prepend[] = sprintf(
+				'<a href="%1$s">%2$s</a>',
+				esc_url( admin_url( 'admin.php?page=clanspress' ) ),
+				esc_html__( 'Settings', 'clanspress' )
+			);
+		}
+
+		$prepend[] = sprintf(
+			'<a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a>',
+			esc_url( 'https://clanspress.com/' ),
+			esc_html__( 'Website', 'clanspress' )
+		);
+
+		return array_merge( $prepend, $links );
 	}
 
 	/**

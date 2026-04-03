@@ -570,8 +570,8 @@ function clanspress_render_player_notifications_page_markup(): string {
 						printf(
 							/* translators: 1: current page, 2: total pages */
 							esc_html__( 'Page %1$d of %2$d', 'clanspress' ),
-							$current_page,
-							$total_pages
+							absint( $current_page ),
+							absint( $total_pages )
 						);
 						?>
 					</span>

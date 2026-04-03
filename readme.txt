@@ -1,8 +1,8 @@
 === Clanspress ===
 Contributors: kernowdev
-Tags: community, teams, esports, gaming, members, blocks
+Tags: community, teams, esports, gaming
 Requires at least: 6.7
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 8.2
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -38,7 +38,14 @@ Yes. Clanspress registers block types and plugin block templates for full-site e
 
 = Where are the settings? =
 
-Use the **Clanspress** top-level admin menu for core options and extension toggles.
+Use the **Clanspress** top-level admin menu for core options and extension toggles. On the **Plugins** screen, use the **Settings** link (administrators) or **Website** to open clanspress.com.
+
+== Support ==
+
+* Documentation: see the bundled `README.md` for developers (hooks, extensions, REST).
+* Plugin site: https://clanspress.com
+* Help and bug reports: https://github.com/Kernow-dev/Clanspress/issues
+* WordPress.org: after the plugin is listed on the directory, use the support forum at https://wordpress.org/support/plugin/clanspress/ for site-owner questions.
 
 == Screenshots ==
 

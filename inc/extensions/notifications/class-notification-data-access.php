@@ -147,30 +147,52 @@ final class Notification_Data_Access {
 		$per_page = min( 50, max( 1, absint( $per_page ) ) );
 		$offset   = ( max( 1, $page ) - 1 ) * $per_page;
 
-		$where = $wpdb->prepare( 'WHERE user_id = %d', $user_id );
 		if ( $unread_only ) {
-			$where .= ' AND is_read = 0';
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from schema helper.
+			$total = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$table} WHERE user_id = %d AND is_read = 0",
+					$user_id
+				)
+			);
+			$unread_count = $total;
+		} else {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from schema helper.
+			$total = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$table} WHERE user_id = %d",
+					$user_id
+				)
+			);
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from schema helper.
+			$unread_count = (int) $wpdb->get_var(
+				$wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE user_id = %d AND is_read = 0", $user_id )
+			);
 		}
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} {$where}" );
+		$limit  = (int) $per_page;
+		$offset = (int) $offset;
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$unread_count = (int) $wpdb->get_var(
-			$wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE user_id = %d AND is_read = 0", $user_id )
-		);
+		if ( $unread_only ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from schema helper.
+			$sql_base = $wpdb->prepare(
+				"SELECT * FROM {$table} WHERE user_id = %d AND is_read = 0 ORDER BY created_at DESC",
+				$user_id
+			);
+		} else {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from schema helper.
+			$sql_base = $wpdb->prepare(
+				"SELECT * FROM {$table} WHERE user_id = %d ORDER BY created_at DESC",
+				$user_id
+			);
+		}
 
-		// Integer LIMIT/OFFSET avoids wpdb::prepare edge cases with LIMIT placeholders on some environments.
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$rows = $wpdb->get_results(
-			sprintf(
-				'SELECT * FROM %s %s ORDER BY created_at DESC LIMIT %d OFFSET %d',
-				$table,
-				$where,
-				$per_page,
-				$offset
-			)
-		);
+		// Append LIMIT/OFFSET as integers only (no placeholders): some DB drivers / wpdb::prepare combinations mishandle %d in LIMIT.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql_base is from $wpdb->prepare(); LIMIT/OFFSET are non-negative ints.
+		$sql = $sql_base . sprintf( ' LIMIT %d OFFSET %d', $limit, $offset );
+
+		// phpcs:ignore PluginCheck.Security.DirectDB.UnescapedDBParameter -- Hybrid query: prepared WHERE + integer-cast LIMIT/OFFSET.
+		$rows = $wpdb->get_results( $sql );
 
 		$notifications = array_map( array( self::class, 'hydrate_row' ), $rows ?: array() );
 

@@ -1334,7 +1334,7 @@ class Players extends Skeleton {
 			'clanspress-player-settings-localize',
 			'',
 			array(),
-			false,
+			\Kernowdev\Clanspress\Main::VERSION,
 			true
 		);
 

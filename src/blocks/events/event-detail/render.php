@@ -131,6 +131,7 @@ ob_start();
 			<summary class="clanspress-event-detail__edit-summary"><?php esc_html_e( 'Edit this event', 'clanspress' ); ?></summary>
 			<div class="clanspress-event-detail__edit-panel-inner">
 				<?php
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Block HTML from core render_block(); inner dynamic block escapes in its render callback.
 				echo render_block(
 					array(
 						'blockName' => 'clanspress/event-create-form',
@@ -167,4 +168,5 @@ $rsvp_markup = sprintf(
 	'<!-- wp:clanspress/event-rsvp {"eventType":"clanspress_event","eventId":%d,"showAttendees":true} /-->',
 	$event_id
 );
+// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Serialized block markup; do_blocks runs registered render callbacks which escape output.
 echo do_blocks( $rsvp_markup );

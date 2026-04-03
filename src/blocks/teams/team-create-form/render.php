@@ -91,7 +91,11 @@ $context             = array(
 			foreach ( $steps as $tab_step ) :
 				$tab_title = isset( $tab_step['title'] ) && $tab_step['title'] !== ''
 					? $tab_step['title']
-					: ( $tab_step['label'] ?? sprintf( __( 'Step %d', 'clanspress' ), $tab_index ) );
+					: ( $tab_step['label'] ?? sprintf(
+						/* translators: %d: Step number (1-based) in the create-team flow. */
+						__( 'Step %d', 'clanspress' ),
+						$tab_index
+					) );
 				$tab_description = isset( $tab_step['description'] ) ? (string) $tab_step['description'] : '';
 				$is_first_tab    = 1 === $tab_index;
 				$tab_class       = 'clanspress-team-create-form__tab' . ( $is_first_tab ? ' is-active' : ' is-upcoming' );
