@@ -135,15 +135,19 @@ function clanspress_relocate_team_challenge_logo_to_match_dir( int $attachment_i
 	if ( ! function_exists( 'WP_Filesystem' ) ) {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 	}
-	$moved = false;
-	if ( WP_Filesystem() && $wp_filesystem && $wp_filesystem->move( $old_path, $dest_path ) ) {
-		$moved = true;
+	if ( ! WP_Filesystem() || ! $wp_filesystem ) {
+		return false;
 	}
+
+	// Third argument true: mirror PHP rename() overwrite when the destination already exists.
+	$moved = $wp_filesystem->move( $old_path, $dest_path, true );
 	if ( ! $moved ) {
-		if ( ! @copy( $old_path, $dest_path ) ) {
+		if ( ! $wp_filesystem->copy( $old_path, $dest_path, true ) ) {
 			return false;
 		}
-		wp_delete_file( $old_path );
+		if ( ! $wp_filesystem->delete( $old_path, false ) ) {
+			return false;
+		}
 	}
 
 	$relative_file = $relative_dir . '/' . wp_basename( $dest_path );

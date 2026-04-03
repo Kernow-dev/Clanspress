@@ -39,10 +39,10 @@
 	],
 	"scripts": {
 		"build": "npm run build:blocks",
-		"build:admin": "wp-scripts build --config webpack.config.cjs",
+		"build:admin": "wp-scripts build --config webpack.config.cjs && node scripts/wrap-asset-php-guard.mjs",
 		"build:blocks:manifests": "wp-scripts build-blocks-manifest --input=build/matches --output=build/matches/blocks-manifest.php && wp-scripts build-blocks-manifest --input=build/players --output=build/players/blocks-manifest.php && wp-scripts build-blocks-manifest --input=build/teams --output=build/teams/blocks-manifest.php",
 		"copy:flags": "node scripts/copy-flagpack-flags.mjs",
-		"build:blocks": "wp-scripts build --source-path=src/blocks --output-path=build --webpack-copy-php && node scripts/copy-block-view-modules.mjs && npm run copy:flags && npm run build:blocks:manifests && npm run build:cp-match-editor:integrate",
+		"build:blocks": "wp-scripts build --source-path=src/blocks --output-path=build --webpack-copy-php && node scripts/copy-block-view-modules.mjs && npm run copy:flags && npm run build:blocks:manifests && npm run build:cp-match-editor:integrate && node scripts/wrap-asset-php-guard.mjs",
 		"build:cp-match-editor:integrate": "wp-scripts build index.js --output-path=.cp-match-editor-build --source-path=src/cp-match-editor/src && rm -rf build/cp-match-editor && mkdir -p build/cp-match-editor && cp -R .cp-match-editor-build/. build/cp-match-editor/ && rm -rf .cp-match-editor-build",
 		"build:production": "npm run build:admin && npm run build:blocks",
 		"check-engines": "wp-scripts check-engines",
