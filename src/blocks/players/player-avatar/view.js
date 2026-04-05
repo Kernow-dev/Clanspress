@@ -7,7 +7,7 @@ import {
 	createClanspressHideToast,
 	createClanspressShowToast,
 	createClanspressToolbarPanelToggler,
-	getClanspressDataWpArgs,
+	getClanspressToolbarPanelId,
 	getClanspressInteractivityStateGetter,
 	rejectClanspressInvalidImageFile,
 	setClanspressPreviewObjectUrlFromFile,
@@ -35,7 +35,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 
 		isThisPanelActive() {
 			const { ref, attributes } = getElement();
-			return this.activePanel === getClanspressDataWpArgs( attributes, ref );
+			return this.activePanel === getClanspressToolbarPanelId( attributes, ref );
 		},
 
 		isToastSuccess() {

@@ -35,6 +35,14 @@ export const CLANSPRESS_INLINE_IMAGE_MIME_TYPES = Object.freeze( [
 ] );
 
 /**
+ * Toolbar inner wrappers for front media blocks; used to scope panel open/close to the correct island.
+ *
+ * @type {string}
+ */
+export const CLANSPRESS_MEDIA_TOOLBAR_INNER_SELECTOR =
+	'.clanspress-player-cover__toolbar-inner, .clanspress-team-cover__toolbar-inner, .clanspress-player-avatar__toolbar-inner, .clanspress-team-avatar__toolbar-inner';
+
+/**
  * @param {File|undefined|null} file
  * @return {boolean}
  */
@@ -221,16 +229,16 @@ export function setClanspressPreviewObjectUrlFromFile( state, file ) {
 }
 
 /**
- * Resolves the toolbar panel id for the current interactivity element.
+ * Resolves the toolbar panel id from `data-cp-panel` (preferred) or legacy `data-wp-args`.
  *
- * Uses `data-cp-panel` because `data-wp-*` attributes are Interactivity directives; unknown
- * names (e.g. `data-wp-args`) are not rendered onto the live DOM after hydration.
+ * Uses `data-cp-panel` because `data-wp-*` values are Interactivity directives; unknown names are
+ * not kept as normal DOM attributes after hydration.
  *
  * @param {Record<string, unknown>|undefined} attributes From `getElement().attributes`.
- * @param {Element|null|undefined}            ref         From `getElement().ref`.
- * @return {string|null}
+ * @param {Element|null|undefined}            ref         From `getElement().ref` (Element when available).
+ * @return {string|null} Panel suffix matching the BEM modifier (e.g. `edit-cover`, `edit-avatar`).
  */
-export function getClanspressDataWpArgs( attributes, ref ) {
+export function getClanspressToolbarPanelId( attributes, ref ) {
 	const fromProps =
 		attributes?.[ 'data-cp-panel' ] ??
 		attributes?.dataCpPanel ??
@@ -262,14 +270,16 @@ export function createClanspressToolbarPanelToggler( getState, config ) {
 		if ( ! ref ) {
 			return;
 		}
+		const scopeRoot =
+			typeof ref.closest === 'function'
+				? ref.closest( CLANSPRESS_MEDIA_TOOLBAR_INNER_SELECTOR )
+				: null;
 		const scope =
-			ref.closest(
-				'.clanspress-player-cover__toolbar-inner, .clanspress-team-cover__toolbar-inner, .clanspress-player-avatar__toolbar-inner, .clanspress-team-avatar__toolbar-inner'
-			) || ref.parentElement;
-		if ( ! scope ) {
+			scopeRoot || ref.parentElement || ref.parentNode;
+		if ( ! scope || typeof scope.querySelector !== 'function' ) {
 			return;
 		}
-		const panelName = getClanspressDataWpArgs( attributes, ref );
+		const panelName = getClanspressToolbarPanelId( attributes, ref );
 		if ( ! panelName ) {
 			return;
 		}
