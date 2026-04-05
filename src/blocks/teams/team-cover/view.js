@@ -46,6 +46,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 
 	actions: {
 		togglePanel: createClanspressToolbarPanelToggler( getTeamCoverState, {
+			islandRootSelector: '.clanspress-team-cover-block',
 			panelSelectorPrefix: '.clanspress-team-cover__panel--',
 			allPanelsSelector: '.clanspress-team-cover__panel',
 		} ),

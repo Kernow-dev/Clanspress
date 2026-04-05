@@ -51,6 +51,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 		togglePanel: createClanspressToolbarPanelToggler( getPlayerCoverState, {
 			panelSelectorPrefix: '.clanspress-player-cover__panel--',
 			allPanelsSelector: '.clanspress-player-cover__panel',
+			islandRootSelector: '.clanspress-player-cover-block',
 		} ),
 
 		startDrag( event ) {

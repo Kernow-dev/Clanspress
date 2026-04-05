@@ -77,7 +77,8 @@
 		position: absolute;
 		top: 0;
 		right: 0;
-		z-index: 10;
+		// Above `.player-cover__content-container` (z-index: 2) so nested blocks (e.g. avatar) do not steal clicks from Edit.
+		z-index: 35;
 		padding: 0.5rem;
 		pointer-events: none;
 		opacity: 0;

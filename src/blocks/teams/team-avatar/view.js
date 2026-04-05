@@ -48,6 +48,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 		togglePanel: createClanspressToolbarPanelToggler( getTeamAvatarState, {
 			panelSelectorPrefix: '.clanspress-team-avatar__panel--',
 			allPanelsSelector: '.clanspress-team-avatar__panel',
+			islandRootSelector: '.clanspress-team-avatar-block',
 		} ),
 
 		selectFile() {
