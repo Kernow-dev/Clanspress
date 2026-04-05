@@ -8,7 +8,8 @@ store( 'clanspress/user-nav', {
 
 	actions: {
 		toggleDropdown( event ) {
-			event.stopPropagation();
+			// Do not stopPropagation: document click handlers on other header UI (e.g. notification
+			// bell) must see the bubble so they can close their popovers when this one opens.
 			const ctx = getContext();
 			ctx.isOpen = ! ctx.isOpen;
 		},

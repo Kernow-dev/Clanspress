@@ -112,7 +112,11 @@ export function clearClanspressPreviewObjectUrl( state ) {
  * }} config
  * @return {boolean} True when at least one `urlKey` was applied to a matching element.
  */
-export function applyClanspressInlineMediaSavePayload( state, payload, config ) {
+export function applyClanspressInlineMediaSavePayload(
+	state,
+	payload,
+	config
+) {
 	const root = config.root ?? state.root;
 	if ( ! root || ! payload || ! Array.isArray( config.items ) ) {
 		return false;
@@ -154,12 +158,21 @@ export function applyClanspressInlineMediaSavePayload( state, payload, config ) 
 		}
 
 		if ( item.clearInputName ) {
-			root.querySelector( `input[name="${ item.clearInputName }"]` )?.value =
-				'';
+			const clearInput = root.querySelector(
+				`input[name="${ item.clearInputName }"]`
+			);
+			if ( clearInput ) {
+				clearInput.value = '';
+			}
 		}
 		if ( item.clearInputNames?.length ) {
 			for ( const name of item.clearInputNames ) {
-				root.querySelector( `input[name="${ name }"]` )?.value = '';
+				const namedInput = root.querySelector(
+					`input[name="${ name }"]`
+				);
+				if ( namedInput ) {
+					namedInput.value = '';
+				}
 			}
 		}
 
@@ -222,7 +235,10 @@ export function createClanspressToolbarPanelToggler( state, config ) {
  * @param {{ includeHeading?: boolean }} options
  * @return {(payload: { type?: string, heading?: string, message?: string, duration?: number }) => void}
  */
-export function createClanspressShowToast( state, { includeHeading = false } = {} ) {
+export function createClanspressShowToast(
+	state,
+	{ includeHeading = false } = {}
+) {
 	return function showToast( {
 		type = 'success',
 		heading = '',

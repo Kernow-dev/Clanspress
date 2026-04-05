@@ -107,15 +107,17 @@ registerBlockType( metadata.name, {
 		} );
 
 		const needsMetaKey =
-			queryOrderby === 'meta_value' ||
-			queryOrderby === 'meta_value_num';
+			queryOrderby === 'meta_value' || queryOrderby === 'meta_value_num';
 
 		return (
 			<>
 				<InspectorControls>
 					<PanelBody title={ __( 'Team roster', 'clanspress' ) }>
 						<ToggleControl
-							label={ __( 'Inherit team from template', 'clanspress' ) }
+							label={ __(
+								'Inherit team from template',
+								'clanspress'
+							) }
 							checked={ inheritTeamContext }
 							onChange={ ( v ) =>
 								setAttributes( { inheritTeamContext: v } )
@@ -131,7 +133,9 @@ registerBlockType( metadata.name, {
 								label={ __( 'Team post ID', 'clanspress' ) }
 								value={ teamId ? String( teamId ) : '' }
 								onChange={ ( v ) =>
-									setAttributes( { teamId: parseInt( v, 10 ) || 0 } )
+									setAttributes( {
+										teamId: parseInt( v, 10 ) || 0,
+									} )
 								}
 								type="number"
 								min={ 0 }
@@ -140,7 +144,10 @@ registerBlockType( metadata.name, {
 							/>
 						) }
 						<ToggleControl
-							label={ __( 'Exclude banned members', 'clanspress' ) }
+							label={ __(
+								'Exclude banned members',
+								'clanspress'
+							) }
 							checked={ excludeBannedMembers }
 							onChange={ ( v ) =>
 								setAttributes( { excludeBannedMembers: v } )
@@ -157,7 +164,9 @@ registerBlockType( metadata.name, {
 							value={ queryOrderby || 'default' }
 							options={ ORDERBY_OPTIONS }
 							onChange={ ( v ) =>
-								setAttributes( { queryOrderby: v || 'default' } )
+								setAttributes( {
+									queryOrderby: v || 'default',
+								} )
 							}
 							__next40pxDefaultSize
 							__nextHasNoMarginBottom
@@ -183,7 +192,10 @@ registerBlockType( metadata.name, {
 						/>
 						{ needsMetaKey && (
 							<TextControl
-								label={ __( 'Meta key (for sort)', 'clanspress' ) }
+								label={ __(
+									'Meta key (for sort)',
+									'clanspress'
+								) }
 								value={ queryMetaKey || '' }
 								onChange={ ( v ) =>
 									setAttributes( { queryMetaKey: v ?? '' } )
@@ -197,12 +209,17 @@ registerBlockType( metadata.name, {
 							/>
 						) }
 						<TextControl
-							label={ __( 'Max members (0 = all)', 'clanspress' ) }
+							label={ __(
+								'Max members (0 = all)',
+								'clanspress'
+							) }
 							type="number"
 							min={ 0 }
 							value={ queryPerPage ? String( queryPerPage ) : '' }
 							onChange={ ( v ) =>
-								setAttributes( { queryPerPage: parseInt( v, 10 ) || 0 } )
+								setAttributes( {
+									queryPerPage: parseInt( v, 10 ) || 0,
+								} )
 							}
 							__next40pxDefaultSize
 							__nextHasNoMarginBottom
@@ -213,7 +230,9 @@ registerBlockType( metadata.name, {
 							min={ 0 }
 							value={ queryOffset ? String( queryOffset ) : '' }
 							onChange={ ( v ) =>
-								setAttributes( { queryOffset: parseInt( v, 10 ) || 0 } )
+								setAttributes( {
+									queryOffset: parseInt( v, 10 ) || 0,
+								} )
 							}
 							help={ __(
 								'Skip this many members after filters (ordering applies first when using Order by).',
@@ -223,7 +242,10 @@ registerBlockType( metadata.name, {
 							__nextHasNoMarginBottom
 						/>
 						<TextareaControl
-							label={ __( 'Filter by meta (JSON)', 'clanspress' ) }
+							label={ __(
+								'Filter by meta (JSON)',
+								'clanspress'
+							) }
 							value={ queryMetaQueryJson || '' }
 							onChange={ ( v ) =>
 								setAttributes( { queryMetaQueryJson: v ?? '' } )
@@ -254,10 +276,15 @@ registerBlockType( metadata.name, {
 							__nextHasNoMarginBottom
 						/>
 						<ToggleControl
-							label={ __( 'Exclude the current user', 'clanspress' ) }
+							label={ __(
+								'Exclude the current user',
+								'clanspress'
+							) }
 							checked={ !! queryExcludeCurrentUser }
 							onChange={ ( v ) =>
-								setAttributes( { queryExcludeCurrentUser: !! v } )
+								setAttributes( {
+									queryExcludeCurrentUser: !! v,
+								} )
 							}
 							help={ __(
 								'When someone is logged in, they are omitted from the list.',
@@ -279,7 +306,10 @@ registerBlockType( metadata.name, {
 							__nextHasNoMarginBottom
 						/>
 						<TextareaControl
-							label={ __( 'Exclude by meta (JSON)', 'clanspress' ) }
+							label={ __(
+								'Exclude by meta (JSON)',
+								'clanspress'
+							) }
 							value={ queryExcludeMetaQueryJson || '' }
 							onChange={ ( v ) =>
 								setAttributes( {

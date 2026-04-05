@@ -22,10 +22,7 @@
 			"default": true
 		}
 	},
-	"usesContext": [
-		"postId",
-		"postType"
-	],
+	"usesContext": [ "postId", "postType" ],
 	"supports": {
 		"spacing": {
 			"margin": true,

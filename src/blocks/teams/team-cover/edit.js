@@ -59,10 +59,7 @@ export default function Edit( { attributes, clientId, setAttributes } ) {
 					initialOpen={ false }
 				>
 					<ToggleControl
-						label={ __(
-							'Allow front-end editing',
-							'clanspress'
-						) }
+						label={ __( 'Allow front-end editing', 'clanspress' ) }
 						help={ __(
 							'When enabled, team managers can change the cover from this block on the front end.',
 							'clanspress'

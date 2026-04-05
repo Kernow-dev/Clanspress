@@ -70,7 +70,8 @@ export default function PlayerTemplateEdit( {
 	}, [] );
 
 	const previewContext = useMemo( () => {
-		const base = context && typeof context === 'object' ? { ...context } : {};
+		const base =
+			context && typeof context === 'object' ? { ...context } : {};
 		if ( previewUserId > 0 ) {
 			base[ 'clanspress/playerId' ] = previewUserId;
 		}
@@ -122,7 +123,9 @@ export default function PlayerTemplateEdit( {
 						icon={ ListLayoutIcon }
 						label={ listLabel }
 						isPressed={ listActive }
-						onClick={ () => setDisplayLayout( { type: 'default' } ) }
+						onClick={ () =>
+							setDisplayLayout( { type: 'default' } )
+						}
 					/>
 					<ToolbarButton
 						icon={ GridLayoutIcon }

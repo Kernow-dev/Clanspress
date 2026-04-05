@@ -47,9 +47,9 @@ const { state, actions } = store( 'clanspress-player-avatar', {
 		} ),
 
 		selectAvatar() {
-			state.root?.querySelector(
-				'input[name="profile_avatar"]'
-			)?.click();
+			state.root
+				?.querySelector( 'input[name="profile_avatar"]' )
+				?.click();
 		},
 
 		updateAvatar( event ) {
@@ -71,7 +71,9 @@ const { state, actions } = store( 'clanspress-player-avatar', {
 				'.clanspress-player-avatar__img'
 			);
 			if ( preview && preview.tagName === 'IMG' ) {
-				preview.classList.remove( 'clanspress-player-avatar__img--empty' );
+				preview.classList.remove(
+					'clanspress-player-avatar__img--empty'
+				);
 				preview.src = url;
 			}
 		},
@@ -155,7 +157,8 @@ const { state, actions } = store( 'clanspress-player-avatar', {
 							items: [
 								{
 									urlKey: 'avatarUrl',
-									mediaSelector: '.clanspress-player-avatar__img',
+									mediaSelector:
+										'.clanspress-player-avatar__img',
 									requireImg: true,
 									emptyClass:
 										'clanspress-player-avatar__img--empty',

@@ -95,10 +95,7 @@
 			"background": true
 		},
 		"html": false,
-		"align": [
-			"wide",
-			"full"
-		]
+		"align": [ "wide", "full" ]
 	},
 	"editorScript": "file:./index.js",
 	"selectors": {

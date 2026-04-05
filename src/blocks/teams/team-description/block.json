@@ -8,13 +8,8 @@
 	"icon": "text-page",
 	"description": "Displays the team description (post content).",
 	"textdomain": "clanspress",
-	"postTypes": [
-		"cp_team"
-	],
-	"usesContext": [
-		"postId",
-		"postType"
-	],
+	"postTypes": [ "cp_team" ],
+	"usesContext": [ "postId", "postType" ],
 	"supports": {
 		"spacing": {
 			"margin": true,
@@ -33,10 +28,7 @@
 			"background": true
 		},
 		"html": false,
-		"align": [
-			"wide",
-			"full"
-		]
+		"align": [ "wide", "full" ]
 	},
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",

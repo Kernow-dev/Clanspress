@@ -65,7 +65,9 @@ const { state, actions } = store( 'clanspress-team-avatar', {
 				'.clanspress-team-avatar__img'
 			);
 			if ( preview && preview.tagName === 'IMG' ) {
-				preview.classList.remove( 'clanspress-team-avatar__img--empty' );
+				preview.classList.remove(
+					'clanspress-team-avatar__img--empty'
+				);
 				preview.src = url;
 			}
 		},
@@ -107,10 +109,7 @@ const { state, actions } = store( 'clanspress-team-avatar', {
 			const formData = new FormData();
 			formData.append( 'action', 'clanspress_save_team_media' );
 			formData.append( 'clanspress_team_id', String( teamId ) );
-			formData.append(
-				'_clanspress_team_media_nonce',
-				nonceInput.value
-			);
+			formData.append( '_clanspress_team_media_nonce', nonceInput.value );
 			formData.append( 'team_avatar', fileInput.files[ 0 ] );
 
 			try {
@@ -131,7 +130,8 @@ const { state, actions } = store( 'clanspress-team-avatar', {
 								urlKey: 'avatarUrl',
 								mediaSelector: '.clanspress-team-avatar__img',
 								requireImg: true,
-								emptyClass: 'clanspress-team-avatar__img--empty',
+								emptyClass:
+									'clanspress-team-avatar__img--empty',
 								clearInputName: 'team_avatar',
 							},
 						],

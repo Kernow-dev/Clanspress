@@ -13,7 +13,10 @@ export default function Edit( { attributes, setAttributes } ) {
 			/>
 			<div { ...useBlockProps() }>
 				<p className="clanspress-player-block-placeholder">
-					{ __( 'Player display name (profile template)', 'clanspress' ) }
+					{ __(
+						'Player display name (profile template)',
+						'clanspress'
+					) }
 				</p>
 			</div>
 		</>

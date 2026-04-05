@@ -65,7 +65,9 @@ const { state, actions } = store( 'clanspress-team-cover', {
 				'.clanspress-team-cover__media'
 			);
 			if ( preview ) {
-				preview.classList.remove( 'clanspress-team-cover__media--empty' );
+				preview.classList.remove(
+					'clanspress-team-cover__media--empty'
+				);
 				preview.style.opacity = '';
 				preview.style.pointerEvents = '';
 				preview.src = url;
@@ -109,10 +111,7 @@ const { state, actions } = store( 'clanspress-team-cover', {
 			const formData = new FormData();
 			formData.append( 'action', 'clanspress_save_team_media' );
 			formData.append( 'clanspress_team_id', String( teamId ) );
-			formData.append(
-				'_clanspress_team_media_nonce',
-				nonceInput.value
-			);
+			formData.append( '_clanspress_team_media_nonce', nonceInput.value );
 			formData.append( 'team_cover', fileInput.files[ 0 ] );
 
 			try {
@@ -132,7 +131,8 @@ const { state, actions } = store( 'clanspress-team-cover', {
 							{
 								urlKey: 'coverUrl',
 								mediaSelector: '.clanspress-team-cover__media',
-								emptyClass: 'clanspress-team-cover__media--empty',
+								emptyClass:
+									'clanspress-team-cover__media--empty',
 								clearInputName: 'team_cover',
 							},
 						],

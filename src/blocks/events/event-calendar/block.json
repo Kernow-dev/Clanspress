@@ -49,10 +49,7 @@
 		},
 		"html": false,
 		"interactivity": true,
-		"align": [
-			"wide",
-			"full"
-		]
+		"align": [ "wide", "full" ]
 	},
 	"editorScript": "file:./index.js",
 	"viewScriptModule": "file:./view.js",

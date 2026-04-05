@@ -92,7 +92,7 @@ store( 'clanspress-team-challenge-button', {
 			if ( ! ( input instanceof HTMLInputElement ) ) {
 				return;
 			}
-			const file = input.files && input.files[0];
+			const file = input.files && input.files[ 0 ];
 			ctx.logoAttachmentId = 0;
 			ctx.logoUploadMessage = '';
 			if ( ! file ) {
@@ -122,11 +122,11 @@ store( 'clanspress-team-challenge-button', {
 						'Upload failed.';
 					return;
 				}
-				ctx.logoAttachmentId = data?.id ? parseInt( String( data.id ), 10 ) : 0;
+				ctx.logoAttachmentId = data?.id
+					? parseInt( String( data.id ), 10 )
+					: 0;
 				ctx.logoUploadMessage =
-					ctx.logoAttachmentId > 0
-						? 'Logo uploaded.'
-						: '';
+					ctx.logoAttachmentId > 0 ? 'Logo uploaded.' : '';
 			} catch {
 				ctx.logoUploadMessage = 'Network error.';
 			}
@@ -149,7 +149,9 @@ store( 'clanspress-team-challenge-button', {
 				challenger_name: String( fd.get( 'challenger_name' ) || '' ),
 				challenger_email: String( fd.get( 'challenger_email' ) || '' ),
 				message: String( fd.get( 'message' ) || '' ),
-				opponent_team_url: String( fd.get( 'opponent_team_url' ) || '' ),
+				opponent_team_url: String(
+					fd.get( 'opponent_team_url' ) || ''
+				),
 				proposed_scheduled_at: String(
 					fd.get( 'proposed_scheduled_at' ) || ''
 				),
@@ -183,8 +185,7 @@ store( 'clanspress-team-challenge-button', {
 						'Request failed.';
 					return;
 				}
-				ctx.formSuccess =
-					data?.message || 'Challenge sent.';
+				ctx.formSuccess = data?.message || 'Challenge sent.';
 				form.reset();
 				ctx.previewTitle = '';
 				ctx.previewLogo = '';

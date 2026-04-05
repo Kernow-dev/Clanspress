@@ -8,13 +8,8 @@
 	"icon": "format-image",
 	"description": "Displays the team cover image on single team templates.",
 	"textdomain": "clanspress",
-	"postTypes": [
-		"cp_team"
-	],
-	"usesContext": [
-		"postId",
-		"postType"
-	],
+	"postTypes": [ "cp_team" ],
+	"usesContext": [ "postId", "postType" ],
 	"attributes": {
 		"allowFrontEndMediaEdit": {
 			"type": "boolean",
@@ -29,24 +24,13 @@
 			"default": "bottom center"
 		},
 		"templateLock": {
-			"type": [
-				"string",
-				"boolean"
-			],
-			"enum": [
-				"all",
-				"insert",
-				"contentOnly",
-				false
-			]
+			"type": [ "string", "boolean" ],
+			"enum": [ "all", "insert", "contentOnly", false ]
 		}
 	},
 	"supports": {
 		"spacing": {
-			"margin": [
-				"top",
-				"bottom"
-			],
+			"margin": [ "top", "bottom" ],
 			"padding": true,
 			"blockGap": true,
 			"__experimentalDefaultControls": {
@@ -65,17 +49,12 @@
 			"text": true,
 			"background": false,
 			"heading": true,
-			"__experimentalSkipSerialization": [
-				"gradients"
-			],
+			"__experimentalSkipSerialization": [ "gradients" ],
 			"enableContrastChecker": false
 		},
 		"anchor": true,
 		"html": false,
-		"align": [
-			"wide",
-			"full"
-		],
+		"align": [ "wide", "full" ],
 		"__experimentalBorder": {
 			"color": true,
 			"radius": true,
