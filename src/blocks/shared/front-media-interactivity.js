@@ -35,6 +35,14 @@ export const CLANSPRESS_INLINE_IMAGE_MIME_TYPES = Object.freeze( [
 ] );
 
 /**
+ * Toolbar inner wrappers for front media blocks; used to scope panel open/close to the correct island.
+ *
+ * @type {string}
+ */
+export const CLANSPRESS_MEDIA_TOOLBAR_INNER_SELECTOR =
+	'.clanspress-player-cover__toolbar-inner, .clanspress-team-cover__toolbar-inner, .clanspress-player-avatar__toolbar-inner, .clanspress-team-avatar__toolbar-inner';
+
+/**
  * @param {File|undefined|null} file
  * @return {boolean}
  */
@@ -221,21 +229,29 @@ export function setClanspressPreviewObjectUrlFromFile( state, file ) {
 }
 
 /**
- * Resolves `data-wp-args` for the current interactivity element (hydration may expose hyphenated
- * or camelCased keys on `attributes`; fall back to the live DOM attribute).
+ * Resolves the toolbar panel id from `data-cp-panel` (preferred) or legacy `data-wp-args`.
+ *
+ * Uses `data-cp-panel` because `data-wp-*` values are Interactivity directives; unknown names are
+ * not kept as normal DOM attributes after hydration.
  *
  * @param {Record<string, unknown>|undefined} attributes From `getElement().attributes`.
- * @param {Element|null|undefined}            ref         From `getElement().ref`.
- * @return {string|null}
+ * @param {Element|null|undefined}            ref         From `getElement().ref` (Element when available).
+ * @return {string|null} Panel suffix matching the BEM modifier (e.g. `edit-cover`, `edit-avatar`).
  */
-export function getClanspressDataWpArgs( attributes, ref ) {
+export function getClanspressToolbarPanelId( attributes, ref ) {
 	const fromProps =
-		attributes?.[ 'data-wp-args' ] ?? attributes?.dataWpArgs;
+		attributes?.[ 'data-cp-panel' ] ??
+		attributes?.dataCpPanel ??
+		attributes?.[ 'data-wp-args' ] ??
+		attributes?.dataWpArgs;
 	if ( typeof fromProps === 'string' && fromProps !== '' ) {
 		return fromProps;
 	}
 	if ( ref && typeof ref.getAttribute === 'function' ) {
-		return ref.getAttribute( 'data-wp-args' );
+		return (
+			ref.getAttribute( 'data-cp-panel' ) ||
+			ref.getAttribute( 'data-wp-args' )
+		);
 	}
 	return null;
 }
@@ -251,21 +267,30 @@ export function createClanspressToolbarPanelToggler( getState, config ) {
 	return function togglePanel() {
 		const state = getState();
 		const { ref, attributes } = getElement();
-		if ( ! ref || ! ref.parentNode ) {
+		if ( ! ref ) {
 			return;
 		}
-		const panelName = getClanspressDataWpArgs( attributes, ref );
+		const scopeRoot =
+			typeof ref.closest === 'function'
+				? ref.closest( CLANSPRESS_MEDIA_TOOLBAR_INNER_SELECTOR )
+				: null;
+		const scope =
+			scopeRoot || ref.parentElement || ref.parentNode;
+		if ( ! scope || typeof scope.querySelector !== 'function' ) {
+			return;
+		}
+		const panelName = getClanspressToolbarPanelId( attributes, ref );
 		if ( ! panelName ) {
 			return;
 		}
-		const panel = ref.parentNode.querySelector(
+		const panel = scope.querySelector(
 			`${ panelSelectorPrefix }${ panelName }`
 		);
 		if ( ! panel ) {
 			return;
 		}
 		const willOpen = ! panel.classList.contains( 'is-open' );
-		ref.parentNode
+		scope
 			.querySelectorAll( allPanelsSelector )
 			.forEach( ( p ) => p.classList.remove( 'is-open' ) );
 		if ( willOpen ) {

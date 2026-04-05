@@ -119,7 +119,7 @@ $avatar_media      = $avatar_clip_open . $img_inner . $avatar_clip_close;
 					type="button"
 					class="clanspress-player-avatar__toggle"
 					data-wp-on--click="actions.togglePanel"
-					data-wp-args="edit-avatar"
+					data-cp-panel="edit-avatar"
 					data-wp-bind--aria-expanded="state.isThisPanelActive"
 					aria-controls="<?php echo esc_attr( $panel_id ); ?>"
 				>

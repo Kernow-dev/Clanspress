@@ -88,7 +88,7 @@ $render_cover_toolbar = static function ( string $panel_id, string $file_input_i
 				type="button"
 				class="clanspress-player-cover__toggle"
 				data-wp-on--click="actions.togglePanel"
-				data-wp-args="edit-cover"
+				data-cp-panel="edit-cover"
 				data-wp-bind--aria-expanded="state.isThisPanelActive"
 				aria-controls="<?php echo esc_attr( $panel_id ); ?>"
 			>
