@@ -8,11 +8,7 @@
 	"icon": "heading",
 	"description": "Displays the player display name on player profile templates.",
 	"textdomain": "clanspress",
-	"usesContext": [
-		"postId",
-		"postType",
-		"clanspress/playerId"
-	],
+	"usesContext": [ "postId", "postType", "clanspress/playerId" ],
 	"attributes": {
 		"textAlign": {
 			"type": "string"

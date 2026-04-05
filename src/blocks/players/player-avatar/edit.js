@@ -2,10 +2,7 @@
  * Player avatar block editor.
  */
 import { __ } from '@wordpress/i18n';
-import {
-	useBlockProps,
-	InspectorControls,
-} from '@wordpress/block-editor';
+import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import { PanelBody, ToggleControl } from '@wordpress/components';
 import { EntityLinkInspector } from '../../shared/entity-link-inspector';
 import './editor.scss';
@@ -21,10 +18,7 @@ export default function Edit( { attributes, setAttributes } ) {
 					initialOpen={ false }
 				>
 					<ToggleControl
-						label={ __(
-							'Allow front-end editing',
-							'clanspress'
-						) }
+						label={ __( 'Allow front-end editing', 'clanspress' ) }
 						help={ __(
 							'When enabled, the profile owner can change their avatar from this block on the front end.',
 							'clanspress'
@@ -41,7 +35,10 @@ export default function Edit( { attributes, setAttributes } ) {
 			<EntityLinkInspector
 				attributes={ attributes }
 				setAttributes={ setAttributes }
-				toggleLabel={ __( 'Link image to player profile', 'clanspress' ) }
+				toggleLabel={ __(
+					'Link image to player profile',
+					'clanspress'
+				) }
 			/>
 			<div { ...useBlockProps() }>
 				<p>{ __( 'Player avatar block', 'clanspress' ) }</p>

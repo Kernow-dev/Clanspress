@@ -8,13 +8,8 @@
 	"icon": "flag",
 	"description": "Lets guests and team managers challenge this team when challenges are enabled.",
 	"textdomain": "clanspress",
-	"postTypes": [
-		"cp_team"
-	],
-	"usesContext": [
-		"postId",
-		"postType"
-	],
+	"postTypes": [ "cp_team" ],
+	"usesContext": [ "postId", "postType" ],
 	"supports": {
 		"spacing": {
 			"margin": true,

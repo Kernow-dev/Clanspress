@@ -149,10 +149,7 @@ export default function Edit( {
 					initialOpen={ false }
 				>
 					<ToggleControl
-						label={ __(
-							'Allow front-end editing',
-							'clanspress'
-						) }
+						label={ __( 'Allow front-end editing', 'clanspress' ) }
 						help={ __(
 							'When enabled, the profile owner can change their cover image from this block on the front end.',
 							'clanspress'

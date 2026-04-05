@@ -8,9 +8,7 @@
 	"icon": "smiley",
 	"description": "Example block scaffolded with Create Block tool.",
 	"example": {},
-	"usesContext": [
-		"clanspress/playerId"
-	],
+	"usesContext": [ "clanspress/playerId" ],
 	"attributes": {
 		"allowFrontEndMediaEdit": {
 			"type": "boolean",

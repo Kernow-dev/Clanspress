@@ -1,8 +1,5 @@
 import { __ } from '@wordpress/i18n';
-import {
-	useBlockProps,
-	InspectorControls,
-} from '@wordpress/block-editor';
+import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import { PanelBody, ToggleControl } from '@wordpress/components';
 import { EntityLinkInspector } from '../../shared/entity-link-inspector';
 import './editor.scss';
@@ -18,10 +15,7 @@ export default function Edit( { attributes, setAttributes } ) {
 					initialOpen={ false }
 				>
 					<ToggleControl
-						label={ __(
-							'Allow front-end editing',
-							'clanspress'
-						) }
+						label={ __( 'Allow front-end editing', 'clanspress' ) }
 						help={ __(
 							'When enabled, team managers can change the avatar from this block on the front end.',
 							'clanspress'

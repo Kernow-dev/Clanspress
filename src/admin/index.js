@@ -136,7 +136,10 @@ function UserIdListControl( { field, value, onChange } ) {
 	const [ details, setDetails ] = useState( {} );
 	const searchRequestIdRef = useRef( 0 );
 
-	const idsKey = ids.slice().sort( ( a, b ) => a - b ).join( ',' );
+	const idsKey = ids
+		.slice()
+		.sort( ( a, b ) => a - b )
+		.join( ',' );
 
 	useEffect( () => {
 		if ( ! idsKey ) {
@@ -320,13 +323,18 @@ function UserIdListControl( { field, value, onChange } ) {
 					label={ __( 'Add user', 'clanspress' ) }
 					value={ query }
 					onChange={ setQuery }
-					placeholder={ __( 'Search by name or username…', 'clanspress' ) }
+					placeholder={ __(
+						'Search by name or username…',
+						'clanspress'
+					) }
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
 					autoComplete="off"
 				/>
 				{ loading ? (
-					<p className="description">{ __( 'Searching…', 'clanspress' ) }</p>
+					<p className="description">
+						{ __( 'Searching…', 'clanspress' ) }
+					</p>
 				) : null }
 				{ suggestions.length ? (
 					<ul
@@ -366,7 +374,10 @@ function UserIdListControl( { field, value, onChange } ) {
 										<span>{ name }</span>
 										{ disabled ? (
 											<span className="description">
-												{ __( '(already added)', 'clanspress' ) }
+												{ __(
+													'(already added)',
+													'clanspress'
+												) }
 											</span>
 										) : null }
 									</button>
@@ -1088,9 +1099,7 @@ function App() {
 																				>
 																					—
 																				</span>
-																				<VisuallyHidden
-																					as="span"
-																				>
+																				<VisuallyHidden as="span">
 																					{ __(
 																						'No official or core label',
 																						'clanspress'

@@ -1,10 +1,6 @@
 import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import {
-	PanelBody,
-	ToggleControl,
-	SelectControl,
-} from '@wordpress/components';
+import { PanelBody, ToggleControl, SelectControl } from '@wordpress/components';
 import './editor.scss';
 
 export default function Edit( { attributes, setAttributes } ) {
@@ -59,9 +55,14 @@ export default function Edit( { attributes, setAttributes } ) {
 						/>
 					) : null }
 					<ToggleControl
-						label={ __( 'Show country code in text', 'clanspress' ) }
+						label={ __(
+							'Show country code in text',
+							'clanspress'
+						) }
 						checked={ !! showCode }
-						onChange={ ( v ) => setAttributes( { showCode: !! v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { showCode: !! v } )
+						}
 						help={ __(
 							'When the country name is shown, append the ISO code in parentheses.',
 							'clanspress'
@@ -70,7 +71,11 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 				</PanelBody>
 			</InspectorControls>
-			<div { ...useBlockProps( { className: 'clanspress-player-country-editor' } ) }>
+			<div
+				{ ...useBlockProps( {
+					className: 'clanspress-player-country-editor',
+				} ) }
+			>
 				<div className="clanspress-country-display clanspress-country-display--preview">
 					{ ( countryDisplay === 'both' || ! countryDisplay ) && (
 						<>

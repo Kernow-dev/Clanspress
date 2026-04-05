@@ -8,11 +8,7 @@
 	"icon": "admin-site-alt3",
 	"description": "Displays the player country on player profile and roster templates.",
 	"textdomain": "clanspress",
-	"usesContext": [
-		"postId",
-		"postType",
-		"clanspress/playerId"
-	],
+	"usesContext": [ "postId", "postType", "clanspress/playerId" ],
 	"attributes": {
 		"showCode": {
 			"type": "boolean",

@@ -196,7 +196,8 @@ function createNotificationItemElement( notification, i18n ) {
 			if ( action.confirm ) {
 				btn.dataset.confirm = String( action.confirm );
 			}
-			btn.textContent = action.label != null ? String( action.label ) : '';
+			btn.textContent =
+				action.label != null ? String( action.label ) : '';
 			actionsRow.appendChild( btn );
 		} );
 		content.appendChild( actionsRow );
@@ -439,7 +440,8 @@ const { state, actions, callbacks } = store( 'clanspress/notification-bell', {
 
 	actions: {
 		toggleDropdown( event ) {
-			event.stopPropagation();
+			// Do not stopPropagation: document click handlers on other header UI (e.g. user nav)
+			// must see the bubble so they can close their popovers when this one opens.
 			const ctx = getContext();
 			ctx.isOpen = ! ctx.isOpen;
 

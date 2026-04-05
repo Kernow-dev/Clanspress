@@ -8,11 +8,7 @@
 	"icon": "admin-settings",
 	"description": "Link to player account settings. Only shown when the viewer is the profile owner.",
 	"textdomain": "clanspress",
-	"usesContext": [
-		"postId",
-		"postType",
-		"clanspress/playerId"
-	],
+	"usesContext": [ "postId", "postType", "clanspress/playerId" ],
 	"attributes": {
 		"label": {
 			"type": "string",

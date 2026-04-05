@@ -350,14 +350,26 @@ function clanspress_get_notifications_url( ?int $user_id = null ): string {
 		return '';
 	}
 
+	$profile_url = '';
 	if ( function_exists( 'clanspress_get_player_profile_url' ) ) {
-		$profile_url = clanspress_get_player_profile_url( $user_id );
-		if ( $profile_url ) {
-			return trailingslashit( $profile_url ) . 'notifications/';
+		$profile_url = (string) clanspress_get_player_profile_url( $user_id );
+	}
+	if ( '' === $profile_url ) {
+		// Same canonical base as {@see clanspress_get_user_nav_menu_items()}: author URLs are rewritten to /players/{nicename}/.
+		$profile_url = (string) get_author_posts_url( $user_id );
+	}
+	if ( '' === $profile_url ) {
+		$user = get_userdata( $user_id );
+		if ( $user instanceof \WP_User && is_string( $user->user_nicename ) && $user->user_nicename !== '' ) {
+			$profile_url = home_url( '/players/' . $user->user_nicename );
 		}
 	}
 
-	return home_url( '/players/notifications/' );
+	if ( '' !== $profile_url ) {
+		return trailingslashit( $profile_url ) . 'notifications/';
+	}
+
+	return '';
 }
 
 /**

@@ -8,9 +8,7 @@
 	"icon": "list-view",
 	"description": "Layout repeated for each team member. Use only inside a Player query block.",
 	"textdomain": "clanspress",
-	"ancestor": [
-		"clanspress/player-query"
-	],
+	"ancestor": [ "clanspress/player-query" ],
 	"usesContext": [
 		"clanspress/teamId",
 		"clanspress/inheritTeamContext",
@@ -61,10 +59,7 @@
 		"anchor": true,
 		"reusable": false,
 		"html": false,
-		"align": [
-			"wide",
-			"full"
-		],
+		"align": [ "wide", "full" ],
 		"layout": true,
 		"typography": {
 			"fontSize": true,

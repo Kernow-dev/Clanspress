@@ -95,10 +95,8 @@ const { state, actions } = store( 'clanspress-player-cover', {
 				if ( clientX === undefined || clientY === undefined ) {
 					return;
 				}
-				const rawX =
-					( ( clientX - rect.left ) / rect.width ) * 100;
-				const rawY =
-					( ( clientY - rect.top ) / rect.height ) * 100;
+				const rawX = ( ( clientX - rect.left ) / rect.width ) * 100;
+				const rawY = ( ( clientY - rect.top ) / rect.height ) * 100;
 				posX = Math.min( 100, Math.max( 0, rawX ) );
 				posY = Math.min( 100, Math.max( 0, rawY ) );
 				ref.style.left = `${ posX }%`;
@@ -152,7 +150,9 @@ const { state, actions } = store( 'clanspress-player-cover', {
 				'.clanspress-player-cover__media'
 			);
 			if ( preview ) {
-				preview.classList.remove( 'clanspress-player-cover__media--empty' );
+				preview.classList.remove(
+					'clanspress-player-cover__media--empty'
+				);
 				preview.style.opacity = '';
 				preview.style.pointerEvents = '';
 				preview.src = url;
@@ -161,7 +161,9 @@ const { state, actions } = store( 'clanspress-player-cover', {
 				'.clanspress-player-cover__position-box'
 			);
 			if ( posBox ) {
-				posBox.style.backgroundImage = `url(${ JSON.stringify( url ) })`;
+				posBox.style.backgroundImage = `url(${ JSON.stringify(
+					url
+				) })`;
 			}
 		},
 
@@ -248,7 +250,8 @@ const { state, actions } = store( 'clanspress-player-cover', {
 						items: [
 							{
 								urlKey: 'coverUrl',
-								mediaSelector: '.clanspress-player-cover__media',
+								mediaSelector:
+									'.clanspress-player-cover__media',
 								emptyClass:
 									'clanspress-player-cover__media--empty',
 								afterApply( root, url ) {
