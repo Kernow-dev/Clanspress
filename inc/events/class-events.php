@@ -64,11 +64,44 @@ final class Events {
 		$this->event_post_type->register();
 
 		add_action( 'init', array( $this, 'maybe_create_tables' ), 5 );
+		add_action( 'init', array( $this, 'register_cp_players_events_template_filter' ), 3 );
+		add_action( 'init', array( $this, 'register_group_events_block_template' ), 4 );
 		add_action( 'init', array( $this, 'register_team_events_subpage' ), 15 );
+		add_action( 'init', array( $this, 'register_player_events_subpage' ), 15 );
+		add_action( 'init', array( $this, 'register_group_events_subpage' ), 15 );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 		add_action( 'init', array( $this, 'register_blocks' ), 20 );
 		add_action( 'admin_post_clanspress_delete_event', array( $this, 'handle_frontend_delete_event' ) );
 		add_filter( 'clanspress_event_can_view_attendees', array( $this, 'filter_cp_event_attendee_list_access' ), 15, 4 );
+		add_filter( 'clanspress_profile_subpage_nav_visible', array( $this, 'filter_profile_subpage_events_nav_visible' ), 10, 5 );
+	}
+
+	/**
+	 * Hide the shared `events` subpage tab when it does not apply (owner-only player calendar, per-team flag).
+	 *
+	 * @param bool   $visible   Prior visibility.
+	 * @param string $context   Profile context (`player`, `team`, `group`, …).
+	 * @param string $slug      Subpage slug.
+	 * @param int    $object_id Subject id for the context.
+	 * @param array  $config    Subpage configuration.
+	 * @return bool
+	 */
+	public function filter_profile_subpage_events_nav_visible( bool $visible, string $context, string $slug, int $object_id, array $config ): bool {
+		if ( ! $visible || 'events' !== $slug ) {
+			return $visible;
+		}
+
+		if ( 'player' === $context ) {
+			return function_exists( '\clanspress_player_profile_events_subpage_visible_for_viewer' )
+				&& \clanspress_player_profile_events_subpage_visible_for_viewer( $object_id );
+		}
+
+		if ( 'team' === $context ) {
+			return function_exists( '\clanspress_events_are_enabled_for_team' )
+				&& \clanspress_events_are_enabled_for_team( $object_id );
+		}
+
+		return $visible;
 	}
 
 	/**
@@ -89,6 +122,10 @@ final class Events {
 			return;
 		}
 
+		if ( ! function_exists( '\clanspress_events_subpage_team_enabled' ) || ! \clanspress_events_subpage_team_enabled() ) {
+			return;
+		}
+
 		if ( 'team_directories' !== clanspress_teams_get_team_mode() ) {
 			return;
 		}
@@ -98,6 +135,141 @@ final class Events {
 			array(
 				'label'    => __( 'Events', 'clanspress' ),
 				'position' => 15,
+			)
+		);
+	}
+
+	/**
+	 * Register the player profile “Events” tab (`/players/{nicename}/events/`).
+	 *
+	 * @return void
+	 */
+	public function register_player_events_subpage(): void {
+		if ( ! function_exists( 'clanspress_register_player_subpage' ) ) {
+			return;
+		}
+
+		if ( ! function_exists( 'clanspress_events_are_globally_enabled' ) || ! clanspress_events_are_globally_enabled() ) {
+			return;
+		}
+
+		if ( ! function_exists( '\clanspress_events_subpage_player_enabled' ) || ! \clanspress_events_subpage_player_enabled() ) {
+			return;
+		}
+
+		clanspress_register_player_subpage(
+			'events',
+			array(
+				'label'    => __( 'Events', 'clanspress' ),
+				'position' => 20,
+			)
+		);
+	}
+
+	/**
+	 * Register the group profile “Events” tab for integrations (`cp_group` + Social Kit).
+	 *
+	 * @return void
+	 */
+	public function register_group_events_subpage(): void {
+		if ( ! function_exists( 'clanspress_register_group_subpage' ) ) {
+			return;
+		}
+
+		if ( ! function_exists( 'clanspress_events_are_globally_enabled' ) || ! clanspress_events_are_globally_enabled() ) {
+			return;
+		}
+
+		if ( ! function_exists( '\clanspress_events_subpage_group_enabled' ) || ! \clanspress_events_subpage_group_enabled() ) {
+			return;
+		}
+
+		clanspress_register_group_subpage(
+			'events',
+			array(
+				'label'       => __( 'Events', 'clanspress' ),
+				'position'    => 15,
+				'template_id' => 'clanspress-group-events',
+			)
+		);
+	}
+
+	/**
+	 * Add `player-events` to the Players extension FSE templates (before `init` priority 10).
+	 *
+	 * @return void
+	 */
+	public function register_cp_players_events_template_filter(): void {
+		add_filter( 'clanspress_extension_cp_players_templates', array( $this, 'filter_cp_players_events_template' ), 10, 2 );
+	}
+
+	/**
+	 * Merge player events subpage template into Players templates.
+	 *
+	 * @param array<string, array<string, string>>     $templates Template definitions keyed by slug.
+	 * @param \Kernowdev\Clanspress\Extensions\Skeleton $extension Calling extension.
+	 * @return array<string, array<string, string>>
+	 */
+	public function filter_cp_players_events_template( array $templates, $extension ): array {
+		if ( ! $extension instanceof \Kernowdev\Clanspress\Extensions\Skeleton ) {
+			return $templates;
+		}
+
+		if ( ! function_exists( 'clanspress_events_are_globally_enabled' ) || ! clanspress_events_are_globally_enabled() ) {
+			return $templates;
+		}
+
+		if ( ! function_exists( '\clanspress_events_subpage_player_enabled' ) || ! \clanspress_events_subpage_player_enabled() ) {
+			return $templates;
+		}
+
+		$path = \clanspress()->path . 'templates/players/player-events.html';
+		if ( ! is_readable( $path ) ) {
+			return $templates;
+		}
+
+		$templates['player-events'] = array(
+			'title' => __( 'Player events', 'clanspress' ),
+			'path'  => $path,
+		);
+
+		return $templates;
+	}
+
+	/**
+	 * Register the group events block template for Site Editor and extensions.
+	 *
+	 * @return void
+	 */
+	public function register_group_events_block_template(): void {
+		if ( ! function_exists( 'clanspress_events_are_globally_enabled' ) || ! clanspress_events_are_globally_enabled() ) {
+			return;
+		}
+
+		if ( ! function_exists( '\clanspress_events_subpage_group_enabled' ) || ! \clanspress_events_subpage_group_enabled() ) {
+			return;
+		}
+
+		if ( ! function_exists( 'register_block_template' ) ) {
+			return;
+		}
+
+		$path = \clanspress()->path . 'templates/groups/group-events.html';
+		if ( ! is_readable( $path ) ) {
+			return;
+		}
+
+		$content = file_get_contents( $path );
+		if ( false === $content ) {
+			return;
+		}
+
+		register_block_template(
+			'clanspress//clanspress-group-events',
+			array(
+				'title'       => __( 'Group events', 'clanspress' ),
+				'description' => __( 'Scheduled events and calendar on a group profile.', 'clanspress' ),
+				'content'     => $content,
 			)
 		);
 	}

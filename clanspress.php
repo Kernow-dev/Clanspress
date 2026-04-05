@@ -30,6 +30,7 @@ use Kernowdev\Clanspress\Admin\Settings;
 use Kernowdev\Clanspress\Extensions\Loader as Extension_Loader;
 use Kernowdev\Clanspress\Cross_Site_Match_Sync;
 use Kernowdev\Clanspress\Public_Rest;
+use Kernowdev\Clanspress\Wordban;
 
 // Use composer autoload.
 require_once __DIR__ . '/vendor/autoload.php';
@@ -40,6 +41,7 @@ require_once __DIR__ . '/inc/functions-block-templates.php';
 require_once __DIR__ . '/inc/functions-request-input.php';
 require_once __DIR__ . '/inc/functions-country-flags.php';
 require_once __DIR__ . '/inc/functions-block-entity-link.php';
+require_once __DIR__ . '/inc/profile-subpages.php';
 require_once __DIR__ . '/shortcut-function.php';
 
 /**
@@ -360,6 +362,8 @@ final class Main {
 		add_action( 'rest_api_init', array( Cross_Site_Match_Sync::class, 'register_routes' ) );
 
 		add_action( 'init', array( Block_Patterns::class, 'register' ), 100 );
+
+		Wordban::register_hooks();
 	}
 
 	/**

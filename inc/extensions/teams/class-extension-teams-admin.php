@@ -27,10 +27,11 @@ class Admin extends Abstract_Settings {
 		return apply_filters(
 			'clanspress_teams_defaults',
 			array(
-				'team_mode'              => 'single_team',
-				'player_team_membership' => 'multiple',
-				'default_team_avatar'    => '',
-				'default_team_cover'     => '',
+				'team_mode'               => 'single_team',
+				'player_team_membership'  => 'multiple',
+				'default_team_avatar'     => '',
+				'default_team_cover'      => '',
+				'events_profile_subpage'  => true,
 			)
 		);
 	}
@@ -57,6 +58,18 @@ class Admin extends Abstract_Settings {
 							'default'     => 'multiple',
 							'options'     => $this->get_player_team_membership_options(),
 							'sanitize'    => array( $this, 'sanitize_player_team_membership' ),
+						),
+					),
+				),
+				'integrations' => array(
+					'title'  => __( 'Extension integrations', 'clanspress' ),
+					'fields' => array(
+						'events_profile_subpage' => array(
+							'label'       => __( 'Team profile: Events tab', 'clanspress' ),
+							'type'        => 'checkbox',
+							'description' => __( 'When the Events extension is enabled, show the team Events tab and /teams/{slug}/events/. When off, those routes redirect to the public team profile.', 'clanspress' ),
+							'default'     => true,
+							'sanitize'    => 'rest_sanitize_boolean',
 						),
 					),
 				),

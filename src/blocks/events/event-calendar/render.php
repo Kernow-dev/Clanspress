@@ -28,6 +28,9 @@ if ( $team_id < 1 ) {
 if ( $group_id < 1 ) {
 	$group_id = (int) get_query_var( 'clanspress_events_group_id' );
 }
+if ( $group_id < 1 && 'group' === $scope && function_exists( 'clanspress_group_profile_context_group_id' ) ) {
+	$group_id = (int) clanspress_group_profile_context_group_id();
+}
 
 if ( 'player' === $scope ) {
 	if ( $player_user_id < 1 && function_exists( 'clanspress_player_profile_context_user_id' ) ) {

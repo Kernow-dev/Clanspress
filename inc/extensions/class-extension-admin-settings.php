@@ -69,17 +69,7 @@ abstract class Abstract_Settings {
 			)
 		);
 
-		$sections = $this->get_sections();
-
-		/**
-		 * Filter all sections before they are registered.
-		 *
-		 * @param array             $sections Sections array.
-		 * @param Abstract_Settings $settings Settings class instance.
-		 */
-		$sections = (array) apply_filters( "{$this->option_key}_sections", $sections, $this );
-
-		foreach ( $sections as $section_id => $section ) {
+		foreach ( $this->get_resolved_sections_with_fields() as $section_id => $section ) {
 			add_settings_section(
 				$section_id,
 				$section['title'] ?? '',
@@ -89,26 +79,10 @@ abstract class Abstract_Settings {
 
 			$fields = isset( $section['fields'] ) && is_array( $section['fields'] ) ? $section['fields'] : array();
 
-			/**
-			 * Filter section fields before they are registered.
-			 *
-			 * @param array             $fields     Field config map.
-			 * @param string            $section_id Section id.
-			 * @param array             $section    Section config.
-			 * @param Abstract_Settings $settings   Settings class instance.
-			 */
-			$fields = (array) apply_filters( "{$this->option_key}_section_fields", $fields, $section_id, $section, $this );
-
 			foreach ( $fields as $field_id => $field ) {
-				/**
-				 * Filter a single field config before registration.
-				 *
-				 * @param array             $field      Field config.
-				 * @param string            $field_id   Field id.
-				 * @param string            $section_id Section id.
-				 * @param Abstract_Settings $settings   Settings class instance.
-				 */
-				$field = (array) apply_filters( "{$this->option_key}_field", $field, $field_id, $section_id, $this );
+				if ( ! is_array( $field ) ) {
+					continue;
+				}
 
 				add_settings_field(
 					$field_id,
@@ -123,6 +97,69 @@ abstract class Abstract_Settings {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Sections and fields after the same filters used for Settings API registration.
+	 *
+	 * Used by {@see self::export_rest_schema()} and {@see self::get_flat_fields()} so the React
+	 * admin matches classic registration and sanitization.
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	protected function get_resolved_sections_with_fields(): array {
+		$sections = $this->get_sections();
+
+		/**
+		 * Filter all sections before they are registered.
+		 *
+		 * @param array             $sections Sections array.
+		 * @param Abstract_Settings $settings Settings class instance.
+		 */
+		$sections = (array) apply_filters( "{$this->option_key}_sections", $sections, $this );
+
+		$resolved = array();
+
+		foreach ( $sections as $section_id => $section ) {
+			if ( ! is_array( $section ) ) {
+				continue;
+			}
+
+			$fields = isset( $section['fields'] ) && is_array( $section['fields'] ) ? $section['fields'] : array();
+
+			/**
+			 * Filter section fields before they are registered.
+			 *
+			 * @param array             $fields     Field config map.
+			 * @param string            $section_id Section id.
+			 * @param array             $section    Section config.
+			 * @param Abstract_Settings $settings   Settings class instance.
+			 */
+			$fields = (array) apply_filters( "{$this->option_key}_section_fields", $fields, $section_id, $section, $this );
+
+			$resolved_fields = array();
+
+			foreach ( $fields as $field_id => $field ) {
+				if ( ! is_array( $field ) ) {
+					continue;
+				}
+
+				/**
+				 * Filter a single field config before registration.
+				 *
+				 * @param array             $field      Field config.
+				 * @param string            $field_id   Field id.
+				 * @param string            $section_id Section id.
+				 * @param Abstract_Settings $settings   Settings class instance.
+				 */
+				$resolved_fields[ $field_id ] = (array) apply_filters( "{$this->option_key}_field", $field, $field_id, $section_id, $this );
+			}
+
+			$section['fields']      = $resolved_fields;
+			$resolved[ $section_id ] = $section;
+		}
+
+		return $resolved;
 	}
 
 	public function render_field( array $args ): void {
@@ -278,12 +315,14 @@ abstract class Abstract_Settings {
 
 	protected function get_flat_fields(): array {
 		$flat = array();
-		foreach ( $this->get_sections() as $section ) {
+		foreach ( $this->get_resolved_sections_with_fields() as $section ) {
 			if ( empty( $section['fields'] ) || ! is_array( $section['fields'] ) ) {
 				continue;
 			}
 			foreach ( $section['fields'] as $id => $field ) {
-				$flat[ $id ] = $field;
+				if ( is_array( $field ) ) {
+					$flat[ $id ] = $field;
+				}
 			}
 		}
 		return $flat;
@@ -304,7 +343,7 @@ abstract class Abstract_Settings {
 	public function export_rest_schema(): array {
 		$out = array();
 
-		foreach ( $this->get_sections() as $section_id => $section ) {
+		foreach ( $this->get_resolved_sections_with_fields() as $section_id => $section ) {
 			$fields_out = array();
 			$fields     = isset( $section['fields'] ) && is_array( $section['fields'] ) ? $section['fields'] : array();
 
@@ -338,6 +377,12 @@ abstract class Abstract_Settings {
 						);
 					}
 					$row['options'] = $opts;
+				}
+
+				if ( 'user_id_list' === $row['type'] ) {
+					$row['user_search_path'] = isset( $field['user_search_path'] ) && is_string( $field['user_search_path'] )
+						? $field['user_search_path']
+						: 'wp/v2/users';
 				}
 
 				$fields_out[] = $row;

@@ -150,6 +150,8 @@ class Matches extends Skeleton {
 		add_action( 'init', array( $this, 'register_match_block_libraries' ), 11 );
 		add_action( 'rest_api_init', array( $this->matches_rest, 'register_routes' ) );
 		add_filter( 'clanspress_event_can_view_attendees', array( $this, 'events_can_view_match_attendees' ), 10, 4 );
+		add_filter( 'clanspress_team_front_action_rewrite_slugs', array( $this, 'filter_team_front_action_matches_slug' ), 20, 2 );
+		add_action( 'init', array( $this, 'register_team_matches_subpage' ), 15 );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_match_editor' ) );
 		add_filter( 'manage_cp_match_posts_columns', array( $this, 'match_admin_columns' ) );
 		add_action( 'manage_cp_match_posts_custom_column', array( $this, 'render_match_admin_column' ), 10, 2 );
@@ -217,6 +219,55 @@ class Matches extends Skeleton {
 	 */
 	public function get_settings_admin(): ?Abstract_Settings {
 		return isset( $this->admin ) ? $this->admin : null;
+	}
+
+	/**
+	 * Add the `matches` segment to team directory rewrites when the team Matches subpage is enabled.
+	 *
+	 * @param array<string, string>                $actions Slug => label.
+	 * @param \Kernowdev\Clanspress\Extensions\Teams $teams   Teams extension instance.
+	 * @return array<string, string>
+	 */
+	public function filter_team_front_action_matches_slug( array $actions, $teams ): array {
+		unset( $teams );
+		if ( ! function_exists( 'clanspress_matches_subpage_team_enabled' ) || ! clanspress_matches_subpage_team_enabled() ) {
+			return $actions;
+		}
+
+		$actions['matches'] = __( 'Matches', 'clanspress' );
+
+		return $actions;
+	}
+
+	/**
+	 * Register the team profile Matches tab when Teams uses directory URLs.
+	 *
+	 * @return void
+	 */
+	public function register_team_matches_subpage(): void {
+		if ( ! function_exists( 'clanspress_register_team_subpage' ) ) {
+			return;
+		}
+
+		if ( ! function_exists( 'clanspress_teams_get_team_mode' ) ) {
+			return;
+		}
+
+		if ( 'team_directories' !== clanspress_teams_get_team_mode() ) {
+			return;
+		}
+
+		if ( ! function_exists( 'clanspress_matches_subpage_team_enabled' ) || ! clanspress_matches_subpage_team_enabled() ) {
+			return;
+		}
+
+		clanspress_register_team_subpage(
+			'matches',
+			array(
+				'label'    => __( 'Matches', 'clanspress' ),
+				'position' => 18,
+			)
+		);
 	}
 
 	/**

@@ -40,8 +40,10 @@ class General_Settings extends Abstract_Settings {
 	protected function get_defaults(): array {
 		// Filters run once in {@see Abstract_Settings::register_settings()} as `clanspress_general_settings_defaults`.
 		return array(
-			'admin_notes'    => '',
-			'events_enabled' => true,
+			'admin_notes'          => '',
+			'events_enabled'       => true,
+			'wordban_enabled'      => false,
+			'wordban_custom_list'  => '',
 		);
 	}
 
@@ -63,6 +65,28 @@ class General_Settings extends Abstract_Settings {
 						'type'        => 'checkbox',
 						'description' => __( 'When off, team and group events, REST endpoints, and front-end event routes are disabled site-wide. Individual teams and groups can still turn events off when this is on.', 'clanspress' ),
 						'default'     => true,
+					),
+				),
+			),
+			'moderation' => array(
+				'title'  => __( 'Moderation', 'clanspress' ),
+				'fields' => array(
+					'wordban_enabled'     => array(
+						'label'       => __( 'Enable word filter', 'clanspress' ),
+						'type'        => 'checkbox',
+						'description' => __( 'When on, blocked words cannot be used in team names, group names, usernames, and similar short fields. The same list is masked in longer user-written content (for example social posts, comments, and forums): the first character stays visible and the rest is replaced with asterisks. A built-in list applies; you can add more below.', 'clanspress' ),
+						'default'     => false,
+					),
+					'wordban_custom_list' => array(
+						'label'       => __( 'Additional banned words', 'clanspress' ),
+						'type'        => 'textarea',
+						'description' => __( 'Comma- or line-separated. Multi-word phrases use each word only when it appears as a whole word. Common number or symbol substitutions (such as 1 for i or 3 for e) are treated like letters for matching.', 'clanspress' ),
+						'default'     => '',
+						'sanitize'    => 'sanitize_textarea_field',
+						'depends_on'  => array(
+							'field' => 'wordban_enabled',
+							'value' => true,
+						),
 					),
 				),
 			),

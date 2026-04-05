@@ -27,6 +27,25 @@ function clanspress_events_are_globally_enabled(): bool {
 }
 
 /**
+ * Whether the player “Events” profile tab should appear for the current viewer.
+ *
+ * Player-scoped calendars are owner-only; the tab is hidden for other visitors.
+ *
+ * @param int $player_id Profile user ID.
+ * @return bool
+ */
+function clanspress_player_profile_events_subpage_visible_for_viewer( int $player_id ): bool {
+	if ( $player_id < 1 ) {
+		return false;
+	}
+	if ( ! is_user_logged_in() ) {
+		return false;
+	}
+
+	return (int) get_current_user_id() === $player_id;
+}
+
+/**
  * Read a per-post "events enabled" flag: empty meta inherits enabled when global is on; explicit 0 disables.
  *
  * @param mixed $raw Raw meta value.

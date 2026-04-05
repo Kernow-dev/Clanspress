@@ -78,6 +78,18 @@ function clanspress_teams_get_team_create_url(): string {
 }
 
 /**
+ * Canonical front-end URL for a team profile given its `post_name` slug.
+ *
+ * @param string $slug Team slug (`post_name`).
+ * @return string Empty when Teams is inactive or the slug is invalid.
+ */
+function clanspress_teams_get_team_profile_url_for_slug( string $slug ): string {
+	$t = clanspress_teams();
+
+	return $t ? $t->get_team_profile_url_for_slug( $slug ) : '';
+}
+
+/**
  * Front-end URL for the team manage screen.
  *
  * @param int $team_id Team post ID.
@@ -373,20 +385,9 @@ function clanspress_teams_user_manages_any_team( ?int $user_id = null ): bool {
  * @return void
  */
 function clanspress_register_team_subpage( string $slug, array $args = array() ): void {
-	static $registry = array();
-
-	$slug     = sanitize_key( $slug );
-	$defaults = array(
-		'label'         => ucfirst( $slug ),
-		'template_id'   => "clanspress-team-{$slug}",
-		'default_blocks'=> '',
-		'capability'    => 'read',
-		'position'      => 10,
-	);
-
-	$registry[ $slug ] = array_merge( $defaults, $args );
-
-	$GLOBALS['clanspress_team_subpages_registry'] = $registry;
+	if ( function_exists( 'clanspress_register_profile_subpage' ) ) {
+		clanspress_register_profile_subpage( 'team', $slug, $args );
+	}
 }
 
 /**
@@ -395,30 +396,7 @@ function clanspress_register_team_subpage( string $slug, array $args = array() )
  * @return array<string,array>
  */
 function clanspress_get_team_subpages(): array {
-	$registry = isset( $GLOBALS['clanspress_team_subpages_registry'] ) && is_array( $GLOBALS['clanspress_team_subpages_registry'] )
-		? $GLOBALS['clanspress_team_subpages_registry']
-		: array();
-
-	/**
-	 * Filter team subpages registry for navigation and routing.
-	 *
-	 * @param array<string,array> $registry Raw registry keyed by slug.
-	 */
-	$subpages = (array) apply_filters( 'clanspress_team_subpages', $registry );
-
-	uasort(
-		$subpages,
-		static function ( $a, $b ) {
-			$pa = (int) ( $a['position'] ?? 10 );
-			$pb = (int) ( $b['position'] ?? 10 );
-			if ( $pa === $pb ) {
-				return strcmp( (string) ( $a['label'] ?? '' ), (string) ( $b['label'] ?? '' ) );
-			}
-			return $pa <=> $pb;
-		}
-	);
-
-	return $subpages;
+	return function_exists( 'clanspress_get_profile_subpages' ) ? clanspress_get_profile_subpages( 'team' ) : array();
 }
 
 /**
@@ -428,10 +406,7 @@ function clanspress_get_team_subpages(): array {
  * @return array<string,mixed>|null
  */
 function clanspress_get_team_subpage( string $slug ): ?array {
-	$slug     = sanitize_key( $slug );
-	$subpages = clanspress_get_team_subpages();
-
-	return isset( $subpages[ $slug ] ) ? $subpages[ $slug ] : null;
+	return function_exists( 'clanspress_get_profile_subpage' ) ? clanspress_get_profile_subpage( 'team', $slug ) : null;
 }
 
 /**

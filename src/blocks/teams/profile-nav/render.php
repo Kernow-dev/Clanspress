@@ -64,6 +64,14 @@ $settings_label = (string) apply_filters(
 
 $settings_active = ( 'settings' === $current_slug );
 
+$visible_subpages = function_exists( 'clanspress_profile_subpages_visible_for_nav' )
+	? clanspress_profile_subpages_visible_for_nav( 'team', $team_id, $subpages )
+	: array();
+
+if ( empty( $visible_subpages ) && ! $show_settings_link ) {
+	return;
+}
+
 $wrapper = get_block_wrapper_attributes(
 	array(
 		'class'       => 'clanspress-team-profile-nav',
@@ -84,18 +92,8 @@ $wrapper = get_block_wrapper_attributes(
 				<?php echo esc_html( $home_label ); ?>
 			</a>
 		</li>
-		<?php foreach ( $subpages as $slug => $config ) :
-			$label   = $config['label'] ?? ucfirst( $slug );
-			$cap     = $config['capability'] ?? 'read';
-			$allowed = current_user_can( $cap, $team_id );
-
-			if ( ! $allowed ) {
-				continue;
-			}
-
-			if ( 'events' === $slug && function_exists( 'clanspress_events_are_enabled_for_team' ) && ! clanspress_events_are_enabled_for_team( $team_id ) ) {
-				continue;
-			}
+		<?php foreach ( $visible_subpages as $slug => $config ) :
+			$label = $config['label'] ?? ucfirst( $slug );
 
 			$is_active = ( $slug === $current_slug );
 			$url       = trailingslashit( $base_url . $slug );

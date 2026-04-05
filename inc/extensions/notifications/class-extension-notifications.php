@@ -8,13 +8,24 @@
 namespace Kernowdev\Clanspress\Extensions;
 defined( 'ABSPATH' ) || exit;
 
+use Kernowdev\Clanspress\Extensions\Abstract_Settings;
 use Kernowdev\Clanspress\Extensions\Notification\Notification_Schema;
 use Kernowdev\Clanspress\Extensions\Notification\Notifications_Runtime;
+use Kernowdev\Clanspress\Extensions\Notifications\Admin as Notifications_Settings_Admin;
+
+require_once __DIR__ . '/class-extension-notifications-admin.php';
 
 /**
  * Official extension that boots the in-site notifications subsystem (DB, REST, bell block, profile tab).
  */
 class Notifications extends Skeleton {
+
+	/**
+	 * Option-backed settings for the unified Clanspress React admin.
+	 *
+	 * @var Notifications_Settings_Admin
+	 */
+	protected Notifications_Settings_Admin $admin;
 
 	/**
 	 * Registers the extension definition.
@@ -93,6 +104,16 @@ class Notifications extends Skeleton {
 	 * @return void
 	 */
 	public function run(): void {
+		$this->admin = new Notifications_Settings_Admin();
 		Notifications_Runtime::instance();
+	}
+
+	/**
+	 * Settings handler for the unified React admin (own tab: root extension).
+	 *
+	 * @return Abstract_Settings|null
+	 */
+	public function get_settings_admin(): ?Abstract_Settings {
+		return isset( $this->admin ) ? $this->admin : null;
 	}
 }

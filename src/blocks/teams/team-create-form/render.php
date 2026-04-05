@@ -82,7 +82,7 @@ $context             = array(
 	<?php if ( 'success' === $status ) : ?>
 		<p id="clanspress-team-create-notice" class="clanspress-team-create-form__notice is-success" role="status" tabindex="-1"><?php esc_html_e( 'Team created successfully.', 'clanspress' ); ?></p>
 	<?php elseif ( 'error' === $status ) : ?>
-		<p id="clanspress-team-create-notice" class="clanspress-team-create-form__notice is-error" role="alert" tabindex="-1"><?php echo esc_html( 'missing_name' === $status_code ? __( 'Team name is required.', 'clanspress' ) : __( 'Could not create team. Please try again.', 'clanspress' ) ); ?></p>
+		<p id="clanspress-team-create-notice" class="clanspress-team-create-form__notice is-error" role="alert" tabindex="-1"><?php echo esc_html( 'missing_name' === $status_code ? __( 'Team name is required.', 'clanspress' ) : ( 'wordban' === $status_code ? __( 'That text is not allowed.', 'clanspress' ) : __( 'Could not create team. Please try again.', 'clanspress' ) ) ); ?></p>
 	<?php endif; ?>
 	<form
 		method="post"

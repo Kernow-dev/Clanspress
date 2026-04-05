@@ -105,6 +105,284 @@ function setupApiFetch() {
 	apiFetch.use( apiFetch.createRootURLMiddleware( root ) );
 }
 
+/**
+ * Repeater-style user IDs with search (REST) and removable rows (avatar + name).
+ *
+ * @param {Object}   props
+ * @param {Object}   props.field   Field schema (`user_search_path`, `label`, `description`, `id`).
+ * @param {unknown}  props.value   Expected number[] from settings.
+ * @param {Function} props.onChange ( fieldId, nextValue ) => void
+ * @return {import('react').ReactNode}
+ */
+function UserIdListControl( { field, value, onChange } ) {
+	const fid = field.id;
+	const searchPathRaw =
+		field.userSearchPath || field.user_search_path || 'wp/v2/users';
+	const searchPath = String( searchPathRaw ).replace( /\/$/, '' );
+
+	const ids = Array.isArray( value )
+		? [
+				...new Set(
+					value
+						.map( ( v ) => parseInt( v, 10 ) )
+						.filter( ( n ) => n > 0 )
+				),
+		  ]
+		: [];
+
+	const [ query, setQuery ] = useState( '' );
+	const [ suggestions, setSuggestions ] = useState( [] );
+	const [ loading, setLoading ] = useState( false );
+	const [ details, setDetails ] = useState( {} );
+	const searchRequestIdRef = useRef( 0 );
+
+	const idsKey = ids.slice().sort( ( a, b ) => a - b ).join( ',' );
+
+	useEffect( () => {
+		if ( ! idsKey ) {
+			return;
+		}
+		let cancelled = false;
+		( async () => {
+			try {
+				const includeQs = ids
+					.map(
+						( uid ) =>
+							`include=${ encodeURIComponent( String( uid ) ) }`
+					)
+					.join( '&' );
+				const users = await apiFetch( {
+					path: `${ searchPath }?${ includeQs }&per_page=100&_fields=id,name,slug,avatar_urls`,
+				} );
+				if ( cancelled || ! Array.isArray( users ) ) {
+					return;
+				}
+				setDetails( ( prev ) => {
+					const next = { ...prev };
+					for ( const u of users ) {
+						const uid = parseInt( u.id, 10 );
+						if ( ! uid ) {
+							continue;
+						}
+						const av =
+							u.avatar_urls?.[ '96' ] ||
+							u.avatar_urls?.[ '48' ] ||
+							u.avatar_urls?.[ '24' ] ||
+							'';
+						next[ uid ] = {
+							name:
+								u.name ||
+								u.slug ||
+								/* translators: %d: user ID */
+								sprintf( __( 'User %d', 'clanspress' ), uid ),
+							avatar: av,
+						};
+					}
+					return next;
+				} );
+			} catch {
+				// Leave placeholders for display names.
+			}
+		} )();
+		return () => {
+			cancelled = true;
+		};
+	}, [ idsKey, searchPath ] );
+
+	useEffect( () => {
+		const q = query.trim();
+		if ( q.length < 2 ) {
+			setSuggestions( [] );
+			return;
+		}
+		const handle = setTimeout( async () => {
+			const reqId = ++searchRequestIdRef.current;
+			setLoading( true );
+			try {
+				const users = await apiFetch( {
+					path: `${ searchPath }?search=${ encodeURIComponent(
+						q
+					) }&per_page=10&_fields=id,name,slug,avatar_urls`,
+				} );
+				if ( reqId !== searchRequestIdRef.current ) {
+					return;
+				}
+				setSuggestions( Array.isArray( users ) ? users : [] );
+			} catch {
+				if ( reqId !== searchRequestIdRef.current ) {
+					return;
+				}
+				setSuggestions( [] );
+			} finally {
+				if ( reqId === searchRequestIdRef.current ) {
+					setLoading( false );
+				}
+			}
+		}, 300 );
+		return () => {
+			clearTimeout( handle );
+			searchRequestIdRef.current += 1;
+		};
+	}, [ query, searchPath ] );
+
+	const addUser = ( u ) => {
+		const uid = parseInt( u.id, 10 );
+		if ( ! uid || ids.includes( uid ) ) {
+			return;
+		}
+		const av =
+			u.avatar_urls?.[ '96' ] ||
+			u.avatar_urls?.[ '48' ] ||
+			u.avatar_urls?.[ '24' ] ||
+			'';
+		setDetails( ( d ) => ( {
+			...d,
+			[ uid ]: {
+				name:
+					u.name ||
+					u.slug ||
+					sprintf( __( 'User %d', 'clanspress' ), uid ),
+				avatar: av,
+			},
+		} ) );
+		onChange( fid, [ ...ids, uid ] );
+		setQuery( '' );
+		setSuggestions( [] );
+	};
+
+	const removeUser = ( uid ) => {
+		onChange(
+			fid,
+			ids.filter( ( x ) => x !== uid )
+		);
+	};
+
+	return (
+		<div className="clanspress-field-user-id-list">
+			{ field.label ? (
+				<p className="clanspress-field-user-id-list__label">
+					<strong>{ field.label }</strong>
+				</p>
+			) : null }
+			{ ids.length ? (
+				<ul
+					className="clanspress-field-user-id-list__rows"
+					aria-label={ __( 'Selected users', 'clanspress' ) }
+				>
+					{ ids.map( ( uid ) => {
+						const row = details[ uid ];
+						const label = row?.name
+							? row.name
+							: sprintf( __( 'User %d', 'clanspress' ), uid );
+						return (
+							<li
+								key={ uid }
+								className="clanspress-field-user-id-list__row"
+							>
+								<span className="clanspress-field-user-id-list__avatar-wrap">
+									{ row?.avatar ? (
+										<img
+											src={ row.avatar }
+											alt=""
+											width={ 32 }
+											height={ 32 }
+											className="clanspress-field-user-id-list__avatar"
+										/>
+									) : (
+										<span
+											className="clanspress-field-user-id-list__avatar clanspress-field-user-id-list__avatar--placeholder"
+											aria-hidden="true"
+										/>
+									) }
+								</span>
+								<span className="clanspress-field-user-id-list__name">
+									{ label }
+								</span>
+								<Button
+									variant="tertiary"
+									isDestructive
+									onClick={ () => removeUser( uid ) }
+									className="clanspress-field-user-id-list__remove"
+								>
+									{ __( 'Remove', 'clanspress' ) }
+								</Button>
+							</li>
+						);
+					} ) }
+				</ul>
+			) : (
+				<p className="description clanspress-field-user-id-list__empty">
+					{ __( 'No users added yet.', 'clanspress' ) }
+				</p>
+			) }
+			<div className="clanspress-field-user-id-list__search">
+				<TextControl
+					label={ __( 'Add user', 'clanspress' ) }
+					value={ query }
+					onChange={ setQuery }
+					placeholder={ __( 'Search by name or username…', 'clanspress' ) }
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
+					autoComplete="off"
+				/>
+				{ loading ? (
+					<p className="description">{ __( 'Searching…', 'clanspress' ) }</p>
+				) : null }
+				{ suggestions.length ? (
+					<ul
+						className="clanspress-field-user-id-list__suggestions"
+						role="listbox"
+						aria-label={ __( 'Matching users', 'clanspress' ) }
+					>
+						{ suggestions.map( ( u ) => {
+							const uid = parseInt( u.id, 10 );
+							const disabled = ! uid || ids.includes( uid );
+							const av =
+								u.avatar_urls?.[ '48' ] ||
+								u.avatar_urls?.[ '96' ] ||
+								u.avatar_urls?.[ '24' ] ||
+								'';
+							const name =
+								u.name ||
+								u.slug ||
+								sprintf( __( 'User %d', 'clanspress' ), uid );
+							return (
+								<li key={ uid || u.slug } role="option">
+									<button
+										type="button"
+										className="clanspress-field-user-id-list__suggestion"
+										disabled={ disabled }
+										onClick={ () => addUser( u ) }
+									>
+										{ av ? (
+											<img
+												src={ av }
+												alt=""
+												width={ 24 }
+												height={ 24 }
+												className="clanspress-field-user-id-list__suggestion-avatar"
+											/>
+										) : null }
+										<span>{ name }</span>
+										{ disabled ? (
+											<span className="description">
+												{ __( '(already added)', 'clanspress' ) }
+											</span>
+										) : null }
+									</button>
+								</li>
+							);
+						} ) }
+					</ul>
+				) : null }
+			</div>
+			{ field.description ? (
+				<p className="description">{ field.description }</p>
+			) : null }
+		</div>
+	);
+}
+
 function FieldControl( { field, value, onChange } ) {
 	const id = field.id;
 	const common = {
@@ -113,6 +391,14 @@ function FieldControl( { field, value, onChange } ) {
 	};
 
 	switch ( field.type ) {
+		case 'user_id_list':
+			return (
+				<UserIdListControl
+					field={ field }
+					value={ value }
+					onChange={ onChange }
+				/>
+			);
 		case 'image': {
 			const previewUrl =
 				value || field.fallbackUrl || field.fallback_url || '';

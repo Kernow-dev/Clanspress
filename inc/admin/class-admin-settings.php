@@ -13,6 +13,7 @@ use Kernowdev\Clanspress\Extensions\Loader;
 use Kernowdev\Clanspress\Extensions\Skeleton;
 
 require_once __DIR__ . '/class-general-settings.php';
+require_once __DIR__ . '/class-groups-settings.php';
 require_once __DIR__ . '/class-admin-rest.php';
 
 /**
@@ -23,6 +24,8 @@ class Settings {
 	protected static ?Settings $instance = null;
 
 	protected General_Settings $general_settings;
+
+	protected Groups_Settings $groups_settings;
 
 	/**
 	 * @var array<string, Abstract_Settings>
@@ -41,8 +44,10 @@ class Settings {
 
 	protected function __construct() {
 		$this->general_settings = new General_Settings();
+		$this->groups_settings  = new Groups_Settings();
 
 		$this->settings_registry[ $this->general_settings->get_option_key() ] = $this->general_settings;
+		$this->settings_registry[ $this->groups_settings->get_option_key() ]  = $this->groups_settings;
 
 		$loader = Loader::instance();
 		foreach ( $loader->get_extensions() as $slug => $extension ) {

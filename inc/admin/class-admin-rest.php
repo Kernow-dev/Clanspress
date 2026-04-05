@@ -122,6 +122,28 @@ class Admin_Rest {
 			),
 		);
 
+		$groups_key = Groups_Settings::OPTION_KEY;
+		if ( isset( $this->settings_by_option[ $groups_key ] ) ) {
+			$groups_handler = $this->settings_by_option[ $groups_key ];
+			$groups_schema  = $groups_handler->export_rest_schema();
+			if ( ! empty( $groups_schema ) ) {
+				$tabs[] = array(
+					'id'            => 'core-groups',
+					'type'          => 'extension',
+					'label'         => __( 'Groups', 'clanspress' ),
+					'sectionGroups' => array(
+						array(
+							'kind'      => 'primary',
+							'name'      => __( 'Groups', 'clanspress' ),
+							'slug'      => 'groups',
+							'optionKey' => $groups_key,
+							'sections'  => $groups_schema,
+						),
+					),
+				);
+			}
+		}
+
 		$by_slug = $extensions;
 
 		$children_by_parent = array();

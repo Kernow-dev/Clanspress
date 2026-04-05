@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 final class Notification_Schema {
 
 	public const OPTION_DB_VERSION = 'clanspress_notifications_db_version';
-	public const DB_VERSION        = '1';
+	public const DB_VERSION        = '1.0.0';
 
 	/**
 	 * Create or upgrade the notifications table.

@@ -22,6 +22,12 @@ if ( ! $extension instanceof \Kernowdev\Clanspress\Extensions\Matches ) {
 	return;
 }
 
-$markup  = $extension->render_list_block_markup( is_array( $attributes ) ? $attributes : array() );
+$attributes = is_array( $attributes ) ? $attributes : array();
+$team_qv    = (int) get_query_var( 'clanspress_matches_team_id' );
+if ( 0 === (int) ( $attributes['teamId'] ?? 0 ) && $team_qv > 0 ) {
+	$attributes['teamId'] = $team_qv;
+}
+
+$markup  = $extension->render_list_block_markup( $attributes );
 $wrapper = get_block_wrapper_attributes( array(), $block );
 echo '<div ' . $wrapper . '>' . $markup . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $wrapper from get_block_wrapper_attributes(); inner HTML escaped in Matches::render_list_block_markup().

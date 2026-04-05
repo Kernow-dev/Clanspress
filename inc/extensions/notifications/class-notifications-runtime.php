@@ -82,6 +82,10 @@ final class Notifications_Runtime {
 			return $templates;
 		}
 
+		if ( ! function_exists( '\clanspress_notifications_subpage_player_enabled' ) || ! \clanspress_notifications_subpage_player_enabled() ) {
+			return $templates;
+		}
+
 		$path = \clanspress()->path . 'templates/players/player-notifications.html';
 		if ( ! is_readable( $path ) ) {
 			return $templates;
@@ -179,6 +183,10 @@ final class Notifications_Runtime {
 	 */
 	public function register_notifications_subpage(): void {
 		if ( ! function_exists( 'clanspress_register_player_subpage' ) ) {
+			return;
+		}
+
+		if ( ! function_exists( '\clanspress_notifications_subpage_player_enabled' ) || ! \clanspress_notifications_subpage_player_enabled() ) {
 			return;
 		}
 

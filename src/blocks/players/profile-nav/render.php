@@ -77,6 +77,14 @@ $settings_label = (string) apply_filters(
 
 $settings_active = ( 'settings' === $current_slug );
 
+$visible_subpages = function_exists( 'clanspress_profile_subpages_visible_for_nav' )
+	? clanspress_profile_subpages_visible_for_nav( 'player', $player_id, $subpages )
+	: array();
+
+if ( empty( $visible_subpages ) && ! $show_settings_link ) {
+	return;
+}
+
 $wrapper = get_block_wrapper_attributes(
 	array(
 		'class'       => 'clanspress-player-profile-nav',
@@ -97,14 +105,8 @@ $wrapper = get_block_wrapper_attributes(
 				<?php echo esc_html( $home_label ); ?>
 			</a>
 		</li>
-		<?php foreach ( $subpages as $slug => $config ) :
-			$label   = $config['label'] ?? ucfirst( $slug );
-			$cap     = $config['capability'] ?? 'read';
-			$allowed = current_user_can( $cap, $player_id );
-
-			if ( ! $allowed ) {
-				continue;
-			}
+		<?php foreach ( $visible_subpages as $slug => $config ) :
+			$label = $config['label'] ?? ucfirst( $slug );
 
 			$is_active = ( $slug === $current_slug );
 			$url       = trailingslashit( $base_url . $slug );

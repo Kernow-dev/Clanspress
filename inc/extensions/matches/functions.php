@@ -27,6 +27,28 @@ function clanspress_matches(): ?Matches {
 }
 
 /**
+ * Whether the Matches extension should expose the team profile Matches subpage and `/teams/{slug}/matches/` route.
+ *
+ * @return bool
+ */
+function clanspress_matches_subpage_team_enabled(): bool {
+	if ( ! clanspress_matches() ) {
+		return false;
+	}
+
+	$defaults = array(
+		'subpage_team' => true,
+	);
+	$stored   = get_option( 'clanspress_matches_settings', array() );
+	if ( ! is_array( $stored ) ) {
+		$stored = array();
+	}
+	$merged = wp_parse_args( $stored, $defaults );
+
+	return ! empty( $merged['subpage_team'] );
+}
+
+/**
  * Human-readable title for a `cp_team` post ID.
  *
  * @param int $team_id Team post ID (`cp_team`).

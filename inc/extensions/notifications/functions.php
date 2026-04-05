@@ -35,6 +35,38 @@ function clanspress_notifications_extension_active(): bool {
 }
 
 /**
+ * Stored Notifications extension settings merged with defaults (`clanspress_notifications_settings`).
+ *
+ * @return array<string, mixed>
+ */
+function clanspress_notifications_settings_values(): array {
+	$defaults = array(
+		'subpage_player' => true,
+	);
+	$stored   = get_option( 'clanspress_notifications_settings', array() );
+	if ( ! is_array( $stored ) ) {
+		$stored = array();
+	}
+
+	return wp_parse_args( $stored, $defaults );
+}
+
+/**
+ * Whether the Notifications extension should register the player profile Notifications subpage and template.
+ *
+ * @return bool
+ */
+function clanspress_notifications_subpage_player_enabled(): bool {
+	if ( ! clanspress_notifications_extension_active() ) {
+		return false;
+	}
+
+	$values = clanspress_notifications_settings_values();
+
+	return ! empty( $values['subpage_player'] );
+}
+
+/**
  * Send a notification to a user.
  *
  * @param int                  $user_id User to notify.

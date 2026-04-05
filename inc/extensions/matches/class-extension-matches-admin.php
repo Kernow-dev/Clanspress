@@ -56,6 +56,7 @@ class Admin extends Abstract_Settings {
 				'datetime_format'    => 'M j, Y g:i a',
 				'show_scores'        => true,
 				'default_list_limit' => 10,
+				'subpage_team'       => true,
 			)
 		);
 	}
@@ -74,7 +75,19 @@ class Admin extends Abstract_Settings {
 		return apply_filters(
 			'clanspress_matches_sections',
 			array(
-				'display' => array(
+				'profile_subpages' => array(
+					'title'  => __( 'Profile subpages', 'clanspress' ),
+					'fields' => array(
+						'subpage_team' => array(
+							'label'       => __( 'Team profile: Matches tab', 'clanspress' ),
+							'type'        => 'checkbox',
+							'description' => __( 'When off, the team matches list URL is omitted and redirects to the public team profile. Flush permalinks after changing this if URLs do not update immediately.', 'clanspress' ),
+							'default'     => true,
+							'sanitize'    => 'rest_sanitize_boolean',
+						),
+					),
+				),
+				'display'          => array(
 					'title'  => __( 'Display', 'clanspress' ),
 					'fields' => array(
 						'list_per_page'        => array(

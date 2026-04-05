@@ -32,20 +32,9 @@ defined( 'ABSPATH' ) || exit;
  * @return void
  */
 function clanspress_register_group_subpage( string $slug, array $args = array() ): void {
-	static $registry = array();
-
-	$slug     = sanitize_key( $slug );
-	$defaults = array(
-		'label'          => ucfirst( $slug ),
-		'template_id'    => "clanspress-group-{$slug}",
-		'default_blocks' => '',
-		'capability'     => 'read',
-		'position'       => 10,
-	);
-
-	$registry[ $slug ] = array_merge( $defaults, $args );
-
-	$GLOBALS['clanspress_group_subpages_registry'] = $registry;
+	if ( function_exists( 'clanspress_register_profile_subpage' ) ) {
+		clanspress_register_profile_subpage( 'group', $slug, $args );
+	}
 }
 
 /**
@@ -54,30 +43,17 @@ function clanspress_register_group_subpage( string $slug, array $args = array() 
  * @return array<string, array<string, mixed>>
  */
 function clanspress_get_group_subpages(): array {
-	$registry = isset( $GLOBALS['clanspress_group_subpages_registry'] ) && is_array( $GLOBALS['clanspress_group_subpages_registry'] )
-		? $GLOBALS['clanspress_group_subpages_registry']
-		: array();
+	return function_exists( 'clanspress_get_profile_subpages' ) ? clanspress_get_profile_subpages( 'group' ) : array();
+}
 
-	/**
-	 * Filter group subpages registry for navigation and routing.
-	 *
-	 * @param array<string, array<string, mixed>> $registry Raw registry keyed by slug.
-	 */
-	$subpages = (array) apply_filters( 'clanspress_group_subpages', $registry );
-
-	uasort(
-		$subpages,
-		static function ( $a, $b ) {
-			$pa = (int) ( $a['position'] ?? 10 );
-			$pb = (int) ( $b['position'] ?? 10 );
-			if ( $pa === $pb ) {
-				return strcmp( (string) ( $a['label'] ?? '' ), (string) ( $b['label'] ?? '' ) );
-			}
-			return $pa <=> $pb;
-		}
-	);
-
-	return $subpages;
+/**
+ * Resolve a single group profile subpage config by slug.
+ *
+ * @param string $slug Subpage slug.
+ * @return array<string, mixed>|null
+ */
+function clanspress_get_group_subpage( string $slug ): ?array {
+	return function_exists( 'clanspress_get_profile_subpage' ) ? clanspress_get_profile_subpage( 'group', $slug ) : null;
 }
 
 /**

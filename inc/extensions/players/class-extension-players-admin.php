@@ -25,11 +25,12 @@ class Admin extends Abstract_Settings {
 		return apply_filters(
 			'clanspress_players_defaults',
 			array(
-				'enable_profiles' => true,
-				'enable_avatars'  => true,
-				'enable_covers'   => true,
-				'default_avatar'  => '',
-				'default_cover'   => '',
+				'enable_profiles'        => true,
+				'enable_avatars'         => true,
+				'enable_covers'          => true,
+				'default_avatar'         => '',
+				'default_cover'          => '',
+				'events_profile_subpage' => true,
 			)
 		);
 	}
@@ -59,6 +60,18 @@ class Admin extends Abstract_Settings {
 							'label'       => __( 'Enable cover images', 'clanspress' ),
 							'type'        => 'checkbox',
 							'description' => __( 'Enable player custom cover images.', 'clanspress' ),
+							'default'     => true,
+							'sanitize'    => 'rest_sanitize_boolean',
+						),
+					),
+				),
+				'integrations' => array(
+					'title'  => __( 'Extension integrations', 'clanspress' ),
+					'fields' => array(
+						'events_profile_subpage' => array(
+							'label'       => __( 'Player profile: Events tab', 'clanspress' ),
+							'type'        => 'checkbox',
+							'description' => __( 'When the Events extension is enabled, show the Events tab and /players/{user}/events/. When off, that URL redirects to the profile root.', 'clanspress' ),
 							'default'     => true,
 							'sanitize'    => 'rest_sanitize_boolean',
 						),

@@ -573,6 +573,15 @@ final class Event_Entity_Rest_Controller extends WP_REST_Controller {
 
 		$title   = sanitize_text_field( (string) $request->get_param( 'title' ) );
 		$content = isset( $request['content'] ) ? wp_kses_post( (string) $request->get_param( 'content' ) ) : '';
+		if ( function_exists( 'clanspress_wordban_validate_strict_text' ) ) {
+			$wb = clanspress_wordban_validate_strict_text( $title );
+			if ( $wb instanceof WP_Error ) {
+				return $wb;
+			}
+		}
+		if ( function_exists( 'clanspress_wordban_mask_html_content' ) ) {
+			$content = clanspress_wordban_mask_html_content( $content );
+		}
 		$status  = sanitize_key( (string) $request->get_param( 'status' ) );
 		if ( ! in_array( $status, array( 'draft', 'publish' ), true ) ) {
 			$status = 'publish';
@@ -645,10 +654,21 @@ final class Event_Entity_Rest_Controller extends WP_REST_Controller {
 
 		$update = array( 'ID' => $id );
 		if ( null !== $request->get_param( 'title' ) ) {
-			$update['post_title'] = sanitize_text_field( (string) $request->get_param( 'title' ) );
+			$new_title = sanitize_text_field( (string) $request->get_param( 'title' ) );
+			if ( function_exists( 'clanspress_wordban_validate_strict_text' ) ) {
+				$wb = clanspress_wordban_validate_strict_text( $new_title );
+				if ( $wb instanceof WP_Error ) {
+					return $wb;
+				}
+			}
+			$update['post_title'] = $new_title;
 		}
 		if ( null !== $request->get_param( 'content' ) ) {
-			$update['post_content'] = wp_kses_post( (string) $request->get_param( 'content' ) );
+			$new_content = wp_kses_post( (string) $request->get_param( 'content' ) );
+			if ( function_exists( 'clanspress_wordban_mask_html_content' ) ) {
+				$new_content = clanspress_wordban_mask_html_content( $new_content );
+			}
+			$update['post_content'] = $new_content;
 		}
 		if ( null !== $request->get_param( 'status' ) ) {
 			$st = sanitize_key( (string) $request->get_param( 'status' ) );
