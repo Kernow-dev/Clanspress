@@ -221,6 +221,26 @@ export function setClanspressPreviewObjectUrlFromFile( state, file ) {
 }
 
 /**
+ * Resolves `data-wp-args` for the current interactivity element (hydration may expose hyphenated
+ * or camelCased keys on `attributes`; fall back to the live DOM attribute).
+ *
+ * @param {Record<string, unknown>|undefined} attributes From `getElement().attributes`.
+ * @param {Element|null|undefined}            ref         From `getElement().ref`.
+ * @return {string|null}
+ */
+export function getClanspressDataWpArgs( attributes, ref ) {
+	const fromProps =
+		attributes?.[ 'data-wp-args' ] ?? attributes?.dataWpArgs;
+	if ( typeof fromProps === 'string' && fromProps !== '' ) {
+		return fromProps;
+	}
+	if ( ref && typeof ref.getAttribute === 'function' ) {
+		return ref.getAttribute( 'data-wp-args' );
+	}
+	return null;
+}
+
+/**
  * @param {() => { activePanel: string|null }} getState Lazy state accessor (see {@link getClanspressInteractivityStateGetter}).
  * @param {{ panelSelectorPrefix: string, allPanelsSelector: string }} config `panelSelectorPrefix` includes the trailing `--` (e.g. `.clanspress-team-cover__panel--`).
  * @return {() => void}
@@ -231,10 +251,10 @@ export function createClanspressToolbarPanelToggler( getState, config ) {
 	return function togglePanel() {
 		const state = getState();
 		const { ref, attributes } = getElement();
-		if ( ! ref || ! attributes || ! ref.parentNode ) {
+		if ( ! ref || ! ref.parentNode ) {
 			return;
 		}
-		const panelName = attributes[ 'data-wp-args' ];
+		const panelName = getClanspressDataWpArgs( attributes, ref );
 		if ( ! panelName ) {
 			return;
 		}

@@ -6,6 +6,7 @@ import {
 	applyClanspressInlineMediaSavePayload,
 	createClanspressShowToast,
 	createClanspressToolbarPanelToggler,
+	getClanspressDataWpArgs,
 	getClanspressInteractivityStateGetter,
 	rejectClanspressInvalidImageFile,
 	setClanspressPreviewObjectUrlFromFile,
@@ -30,8 +31,8 @@ const { state, actions } = store( STORE_NAMESPACE, {
 		},
 
 		isThisPanelActive() {
-			const { attributes } = getElement();
-			return this.activePanel === attributes[ 'data-wp-args' ];
+			const { ref, attributes } = getElement();
+			return this.activePanel === getClanspressDataWpArgs( attributes, ref );
 		},
 
 		isToastSuccess() {

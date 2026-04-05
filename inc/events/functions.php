@@ -27,6 +27,72 @@ function clanspress_events_are_globally_enabled(): bool {
 }
 
 /**
+ * Default `per_page` for `event-posts` list requests that use `starts_after` / `starts_before` (calendar windows).
+ *
+ * Kept in sync with {@see \Kernowdev\Clanspress\Events\Event_Entity_Rest_Controller} and event block clients via localized config.
+ *
+ * @return int Positive integer (default 200).
+ */
+function clanspress_events_rest_default_per_page_for_range_query(): int {
+	$default = 200;
+
+	/**
+	 * Filter default page size for ranged event queries (calendar SSR + `fetchEvents`).
+	 *
+	 * @param int $default Default per_page before request clamping.
+	 */
+	return (int) max( 1, (int) apply_filters( 'clanspress_events_rest_default_per_page_range', $default ) );
+}
+
+/**
+ * Maximum `per_page` for ranged `event-posts` queries (hard cap in the REST controller).
+ *
+ * @return int Positive integer (default 500).
+ */
+function clanspress_events_rest_max_per_page_for_range_query(): int {
+	$max = 500;
+
+	/**
+	 * Filter maximum page size for ranged event queries.
+	 *
+	 * @param int $max Upper bound for `per_page` when a start/end window is set.
+	 */
+	return (int) max( 1, (int) apply_filters( 'clanspress_events_rest_max_per_page_range', $max ) );
+}
+
+/**
+ * Default `per_page` for paginated `event-posts` list requests (no start/end window).
+ *
+ * @return int Positive integer (default 20).
+ */
+function clanspress_events_rest_default_per_page_paginated(): int {
+	$default = 20;
+
+	/**
+	 * Filter default page size for paginated event list queries (no calendar window).
+	 *
+	 * @param int $default Default per_page before clamping to the paginated max.
+	 */
+	return (int) max( 1, (int) apply_filters( 'clanspress_events_rest_default_per_page_paginated', $default ) );
+}
+
+/**
+ * Maximum `per_page` for paginated `event-posts` requests (event list block, non-range API use).
+ *
+ * @return int Positive integer (default 50).
+ */
+function clanspress_events_rest_max_per_page_paginated(): int {
+	$max = 50;
+
+	/**
+	 * Filter maximum page size for paginated event list queries.
+	 *
+	 * @param int $max Upper bound for `per_page` when no start/end window is set.
+	 */
+	return (int) max( 1, (int) apply_filters( 'clanspress_events_rest_max_per_page_paginated', $max ) );
+}
+
+/**
  * Whether the player “Events” profile tab should appear for the current viewer.
  *
  * Player-scoped calendars are owner-only; the tab is hidden for other visitors.
@@ -119,6 +185,11 @@ function clanspress_events_get_user_team_ids_for_calendar( int $user_id ): array
 	if ( $user_id < 1 ) {
 		return array();
 	}
+
+	if ( ! function_exists( 'clanspress_teams' ) || null === clanspress_teams() ) {
+		return array();
+	}
+
 	$raw = get_user_meta( $user_id, 'cp_team_membership_ids', true );
 	if ( ! is_array( $raw ) ) {
 		$raw = array();
@@ -165,6 +236,22 @@ function clanspress_events_get_user_team_ids_for_calendar( int $user_id ): array
  */
 function clanspress_events_get_user_group_ids_for_calendar( int $user_id ): array {
 	if ( $user_id < 1 ) {
+		return array();
+	}
+
+	$groups_feature_active = post_type_exists( 'cp_group' );
+
+	/**
+	 * Filter whether group-scoped events may appear in a player’s merged calendar.
+	 *
+	 * Default: true when the `cp_group` post type is registered (group product active).
+	 *
+	 * @param bool $active   Whether group events are included.
+	 * @param int  $user_id Profile owner user ID.
+	 */
+	$groups_feature_active = (bool) apply_filters( 'clanspress_groups_feature_active', $groups_feature_active, $user_id );
+
+	if ( ! $groups_feature_active ) {
 		return array();
 	}
 
@@ -242,3 +329,5 @@ function clanspress_event_calendar_month_grid_markup( string $anchor_ymd, array 
 
 	return $html;
 }
+
+require_once __DIR__ . '/event-block-ssr.php';

@@ -449,11 +449,23 @@ final class Event_Entity_Rest_Controller extends WP_REST_Controller {
 
 		$per_page_req = (int) $request->get_param( 'per_page' );
 		if ( $has_range ) {
-			$per_page = max( 1, min( 500, $per_page_req > 0 ? $per_page_req : 200 ) );
-			$page     = 1;
+			$default_range = function_exists( 'clanspress_events_rest_default_per_page_for_range_query' )
+				? clanspress_events_rest_default_per_page_for_range_query()
+				: 200;
+			$max_range     = function_exists( 'clanspress_events_rest_max_per_page_for_range_query' )
+				? clanspress_events_rest_max_per_page_for_range_query()
+				: 500;
+			$per_page      = max( 1, min( $max_range, $per_page_req > 0 ? $per_page_req : $default_range ) );
+			$page          = 1;
 		} else {
-			$per_page = max( 1, min( 50, $per_page_req > 0 ? $per_page_req : 20 ) );
-			$page     = max( 1, (int) $request->get_param( 'page' ) );
+			$default_page = function_exists( 'clanspress_events_rest_default_per_page_paginated' )
+				? clanspress_events_rest_default_per_page_paginated()
+				: 20;
+			$max_page     = function_exists( 'clanspress_events_rest_max_per_page_paginated' )
+				? clanspress_events_rest_max_per_page_paginated()
+				: 50;
+			$per_page     = max( 1, min( $max_page, $per_page_req > 0 ? $per_page_req : $default_page ) );
+			$page         = max( 1, (int) $request->get_param( 'page' ) );
 		}
 
 		// phpcs:disable WordPress.DB.SlowDBQuery -- Event list requires `meta_query` / `meta_key` for scope, range, and start-time ordering.

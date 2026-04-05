@@ -66,7 +66,7 @@ function rangeForView( view, anchorDate ) {
 	if ( view === 'week' ) {
 		return { start: startOfWeek( a ), end: endOfWeek( a ) };
 	}
-	/* month, list: same visible range */
+	/* month + list: anchored month (must match PHP `clanspress_events_calendar_range_iso_for_view`). */
 	return { start: startOfMonth( a ), end: endOfMonth( a ) };
 }
 
@@ -278,7 +278,10 @@ async function fetchEvents( ctx, start, end ) {
 	const url = raw.startsWith( 'http' )
 		? new URL( raw )
 		: new URL( raw.replace( /^\/+/, '' ), window.location.origin );
-	url.searchParams.set( 'per_page', '200' );
+	url.searchParams.set(
+		'per_page',
+		String( ctx.rangePerPage || 200 )
+	);
 	url.searchParams.set( 'order', 'asc' );
 	url.searchParams.set( 'time_scope', 'all' );
 	url.searchParams.set( 'starts_after', start.toISOString() );
@@ -511,6 +514,11 @@ const { actions } = store( 'clanspress-event-calendar', {
 				ctx.view = 'month';
 			}
 			syncViewButtons( root, ctx.view );
+			if ( ctx.calSsrHydrated ) {
+				ctx.calLoading = false;
+				ctx.fetchError = '';
+				return;
+			}
 			void actions.load();
 		},
 	},

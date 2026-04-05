@@ -105,6 +105,10 @@ $create_url = (string) apply_filters( 'clanspress_event_calendar_create_url', $c
 
 $today_ymd = wp_date( 'Y-m-d' );
 
+$range_per_page = function_exists( 'clanspress_events_rest_default_per_page_for_range_query' )
+	? clanspress_events_rest_default_per_page_for_range_query()
+	: 200;
+
 $config = array(
 	'scope'       => $scope_api,
 	'teamId'      => $team_id,
@@ -114,6 +118,7 @@ $config = array(
 	'restUrl'     => esc_url_raw( rest_url( 'clanspress/v1/event-posts' ) ),
 	'nonce'       => wp_create_nonce( 'wp_rest' ),
 	'anchor'      => wp_date( 'Y-m-d' ),
+	'rangePerPage' => (int) $range_per_page,
 	'createUrl'   => $create_url ? esc_url_raw( $create_url ) : '',
 	'i18n'        => array(
 		'loading'     => __( 'Loading…', 'clanspress' ),
@@ -142,8 +147,47 @@ $config = array(
 
 $calendar_heading = '';
 $calendar_surface = '';
-if ( 'month' === $default_view && function_exists( 'clanspress_event_calendar_month_grid_markup' ) ) {
-	$anchor_ts       = strtotime( $config['anchor'] . ' 12:00:00' );
+$config['calSsrHydrated'] = false;
+
+if ( function_exists( 'clanspress_events_block_query_collection' ) ) {
+	$range_iso = clanspress_events_calendar_range_iso_for_view( $default_view, $config['anchor'] );
+	$query_args = array(
+		'per_page'      => (int) $range_per_page,
+		'page'          => 1,
+		'time_scope'    => 'all',
+		'order'         => 'asc',
+		'starts_after'  => $range_iso['starts_after'],
+		'starts_before' => $range_iso['starts_before'],
+	);
+	if ( 'team' === $scope_api ) {
+		$query_args['team_id'] = $team_id;
+	} elseif ( 'group' === $scope_api ) {
+		$query_args['group_id'] = $group_id;
+	} else {
+		$query_args['player_user_id'] = $resolved_player_id;
+	}
+
+	$cal_items = array();
+	$coll      = clanspress_events_block_query_collection( $query_args );
+	if ( ! is_wp_error( $coll ) && isset( $coll['items'] ) && is_array( $coll['items'] ) ) {
+		$cal_items = $coll['items'];
+	}
+
+	$calendar_heading = clanspress_events_calendar_heading_for_view( $default_view, $config['anchor'] );
+	$calendar_surface = clanspress_event_calendar_render_surface_html(
+		$default_view,
+		$config['anchor'],
+		$cal_items,
+		$config['i18n']['weekdays'],
+		$today_ymd,
+		array(
+			'untitled' => $config['i18n']['untitled'],
+			'noEvents' => $config['i18n']['noEvents'],
+		)
+	);
+	$config['calSsrHydrated'] = true;
+} elseif ( 'month' === $default_view && function_exists( 'clanspress_event_calendar_month_grid_markup' ) ) {
+	$anchor_ts = strtotime( $config['anchor'] . ' 12:00:00' );
 	$calendar_heading = $anchor_ts ? wp_date( 'F Y', $anchor_ts ) : '';
 	$calendar_surface = clanspress_event_calendar_month_grid_markup(
 		$config['anchor'],

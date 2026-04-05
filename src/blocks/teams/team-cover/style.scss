@@ -76,7 +76,7 @@
 		position: absolute;
 		top: 0;
 		right: 0;
-		z-index: 3;
+		z-index: 10;
 		padding: 0.5rem;
 		pointer-events: none;
 		opacity: 0;
@@ -85,6 +85,7 @@
 
 	&:is(:hover, :focus-within) .clanspress-team-cover__toolbar {
 		opacity: 1;
+		pointer-events: auto;
 	}
 
 	.clanspress-team-cover__toolbar-inner {

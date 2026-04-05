@@ -959,6 +959,10 @@ The **Notifications** extension (`cp_notifications`) must be enabled under **Cla
 
 The **Events** extension (`cp_events`) gates the `cp_event` post type, RSVP database table, event REST endpoints, and event blocks. Use `clanspress_events_extension_active()` (or `function_exists( 'clanspress_events_are_globally_enabled' )` for feature flags that load with the extension) before relying on event behavior. Team virtual URLs under `/teams/{slug}/events/` are registered only when both **Teams** and **Events** are enabled.
 
+Player merged calendars (`player_user_id` on `GET clanspress/v1/event-posts`) omit team-scoped events when the **Teams** extension is disabled, and omit group-scoped events when no group product is active (default: `cp_group` is not registered). Override group detection with `clanspress_groups_feature_active`.
+
+Event list pagination limits are shared with the REST layer: `clanspress_events_rest_default_per_page_paginated`, `clanspress_events_rest_max_per_page_paginated`, and for calendar range queries `clanspress_events_rest_default_per_page_range`, `clanspress_events_rest_max_per_page_range` (SSR and the event calendar block read the default range size from the same helpers).
+
 **Event REST (`POST`/`PUT` `clanspress/v1/event-posts`):** optional JSON field `member_outreach` — `none` (default), `notify` (in-app notification to each roster member), or `rsvp_tentative` (add tentative RSVP rows for members without an existing RSVP, plus notify). Team rosters use the Teams extension membership map (banned users excluded). Group rosters use the `clanspress_group_event_member_user_ids` filter (core supplies an empty list until a groups integration fills it). Adjust recipients with `clanspress_event_member_outreach_user_ids`. After a run, `clanspress_event_member_outreach_completed` fires with counts (`notified`, `rsvp_set`, `skipped`).
 
 ### Notification Bell Block

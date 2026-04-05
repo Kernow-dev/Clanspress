@@ -8,7 +8,10 @@
 
 .clanspress-player-avatar {
 	position: relative;
-	display: inline-block;
+	display: inline-flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 0.35rem;
 	line-height: 0;
 	max-width: 100%;
 }
@@ -63,12 +66,9 @@
 	padding: 0;
 }
 
+// Toolbar sits in normal flow under the clipped circle so the block hover area includes the gap
+// between avatar and controls (absolute + margin created a dead zone that hid the bar mid-move).
 .clanspress-player-avatar__toolbar {
-	position: absolute;
-	top: 100%;
-	right: 0;
-	left: auto;
-	margin-top: 0.35rem;
 	display: flex;
 	flex-direction: column;
 	align-items: flex-end;

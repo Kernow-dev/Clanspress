@@ -123,8 +123,9 @@ const { state, actions } = store( 'clanspress-event-list', {
 			}
 			state.root = root;
 			const ctx = getContext();
+			const cap = Number( ctx.maxPerPage ) || 50;
 			state.perPage = Math.min(
-				50,
+				cap,
 				Math.max( 1, Number( ctx.perPage ) || 20 )
 			);
 			state.timeScope = 'all';
@@ -134,6 +135,14 @@ const { state, actions } = store( 'clanspress-event-list', {
 			);
 			if ( timeSel ) {
 				timeSel.value = 'all';
+			}
+			if ( ctx.ssrHydrated ) {
+				state.total = Number( ctx.ssrTotal ) || 0;
+				state.loading = false;
+				const tp = state.totalPages();
+				const pfx = ( ctx.i18n || {} ).pageLabel || '';
+				state.pageLabel = `${ pfx } ${ state.page } / ${ tp }`;
+				return;
 			}
 			actions.fetchList();
 		},
