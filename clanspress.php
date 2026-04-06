@@ -26,7 +26,6 @@ namespace Kernowdev\Clanspress;
 defined( 'ABSPATH' ) || exit;
 
 use AllowDynamicProperties;
-use Kernowdev\Clanspress\Admin\General_Settings;
 use Kernowdev\Clanspress\Admin\Settings;
 use Kernowdev\Clanspress\Extensions\Loader as Extension_Loader;
 use Kernowdev\Clanspress\Cross_Site_Match_Sync;
@@ -267,8 +266,6 @@ final class Main {
 
 		add_filter( 'block_categories_all', array( $this, 'register_block_categories' ), 5, 2 );
 
-		add_filter( 'show_admin_bar', array( $this, 'filter_show_admin_bar_for_general_settings' ), 99 );
-
 		// Scripts and styles.
 		add_action(
 			'admin_enqueue_scripts',
@@ -334,42 +331,6 @@ final class Main {
 		);
 
 		return array_merge( $prepend, $links );
-	}
-
-	/**
-	 * Respect General settings: hide the front-end toolbar for users without `manage_options`.
-	 *
-	 * Super admins on multisite always keep the bar. `is_admin()` requests are left unchanged.
-	 *
-	 * @param bool $show Whether WordPress would show the admin bar.
-	 * @return bool
-	 */
-	public function filter_show_admin_bar_for_general_settings( $show ): bool {
-		$show = (bool) $show;
-
-		if ( is_admin() ) {
-			return $show;
-		}
-
-		$raw = get_option( General_Settings::OPTION_KEY, array() );
-		if ( ! is_array( $raw ) || empty( $raw['hide_wp_admin_bar_for_non_admins'] ) ) {
-			return $show;
-		}
-
-		if ( ! is_user_logged_in() ) {
-			return $show;
-		}
-
-		$uid = get_current_user_id();
-		if ( $uid > 0 && is_multisite() && is_super_admin( $uid ) ) {
-			return $show;
-		}
-
-		if ( current_user_can( 'manage_options' ) ) {
-			return $show;
-		}
-
-		return false;
 	}
 
 	/**

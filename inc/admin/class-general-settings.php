@@ -29,6 +29,44 @@ class General_Settings extends Abstract_Settings {
 	 */
 	protected bool $register_standalone_submenu = false;
 
+	public function hooks(): void {
+		parent::hooks();
+		add_filter( 'show_admin_bar', array( $this, 'filter_show_admin_bar' ), 99 );
+	}
+
+	/**
+	 * Hide the front-end WordPress toolbar for users without `manage_options` when the option is enabled.
+	 *
+	 * Super admins on multisite always keep the bar. `is_admin()` requests are unchanged.
+	 *
+	 * @param bool $show Whether WordPress would show the admin bar.
+	 * @return bool
+	 */
+	public function filter_show_admin_bar( bool $show ): bool {
+		if ( is_admin() ) {
+			return $show;
+		}
+
+		if ( ! $this->get( 'hide_wp_admin_bar_for_non_admins', false ) ) {
+			return $show;
+		}
+
+		if ( ! is_user_logged_in() ) {
+			return $show;
+		}
+
+		$uid = get_current_user_id();
+		if ( $uid > 0 && is_multisite() && is_super_admin( $uid ) ) {
+			return $show;
+		}
+
+		if ( current_user_can( 'manage_options' ) ) {
+			return $show;
+		}
+
+		return false;
+	}
+
 	protected function get_page_title(): string {
 		return __( 'Clanspress', 'clanspress' );
 	}
