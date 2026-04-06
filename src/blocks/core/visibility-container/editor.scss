@@ -1,0 +1,7 @@
+// Editor: outline so the container is visible when empty or nested.
+
+.clanspress-visibility-container-editor {
+	min-height: 2.5rem;
+	outline: 1px dashed rgb(0 0 0 / 18%);
+	outline-offset: 2px;
+}

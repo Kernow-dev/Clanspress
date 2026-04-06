@@ -258,6 +258,10 @@ final class Main {
 	public function hooks(): void {
 		add_action( 'init', array( $this, 'init' ), 0 );
 
+		add_action( 'init', array( $this, 'register_core_blocks' ), 20 );
+
+		add_action( 'enqueue_block_editor_assets', array( $this, 'localize_visibility_container_block_editor' ) );
+
 		add_filter( 'plugin_action_links_' . $this->basename, array( $this, 'filter_plugin_action_links' ) );
 
 		add_filter( 'block_categories_all', array( $this, 'register_block_categories' ), 5, 2 );
@@ -364,6 +368,77 @@ final class Main {
 		add_action( 'init', array( Block_Patterns::class, 'register' ), 100 );
 
 		Wordban::register_hooks();
+	}
+
+	/**
+	 * Register plugin blocks that are not tied to a single extension bundle.
+	 *
+	 * @return void
+	 */
+	public function register_core_blocks(): void {
+		if ( ! $this->check_requirements() ) {
+			return;
+		}
+
+		require_once $this->path . 'inc/visibility-container.php';
+
+		$path = $this->path . 'build/core/visibility-container';
+		if ( is_dir( $path ) ) {
+			register_block_type( $path );
+		}
+	}
+
+	/**
+	 * Pass role labels into the block editor for the visibility container token fields.
+	 *
+	 * @return void
+	 */
+	public function localize_visibility_container_block_editor(): void {
+		if ( ! function_exists( 'wp_roles' ) ) {
+			return;
+		}
+
+		$registry = \WP_Block_Type_Registry::get_instance();
+		$block    = $registry->get_registered( 'clanspress/visibility-container' );
+		if ( ! $block instanceof \WP_Block_Type || empty( $block->editor_script ) ) {
+			return;
+		}
+
+		$handle = $block->editor_script;
+		if ( is_array( $handle ) ) {
+			$handle = $handle[0];
+		}
+		$handle = (string) $handle;
+		if ( '' === $handle || ! wp_script_is( $handle, 'registered' ) ) {
+			return;
+		}
+
+		/**
+		 * Filter the editor script handle used to localize visibility-container role data.
+		 *
+		 * Default is the handle WordPress registered for the block’s `editorScript` (from block.json).
+		 *
+		 * @param string $handle Editor script handle.
+		 */
+		$handle = (string) apply_filters( 'clanspress_visibility_container_editor_script_handle', $handle );
+
+		if ( '' === $handle || ! wp_script_is( $handle, 'registered' ) ) {
+			return;
+		}
+
+		$roles_out = array();
+		foreach ( wp_roles()->roles as $slug => $details ) {
+			$roles_out[] = array(
+				'slug'  => $slug,
+				'label' => translate_user_role( $details['name'] ),
+			);
+		}
+
+		wp_localize_script(
+			$handle,
+			'clanspressVisibilityContainer',
+			array( 'roles' => $roles_out )
+		);
 	}
 
 	/**

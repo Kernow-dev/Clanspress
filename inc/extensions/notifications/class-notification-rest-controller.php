@@ -325,13 +325,16 @@ final class Notification_Rest_Controller extends WP_REST_Controller {
 		/**
 		 * Whether the poll endpoint may block with a sleep loop until `timeout` or new notifications.
 		 *
-		 * When false, performs a single DB read and returns immediately (reduces PHP worker occupancy on busy hosts).
-		 * When true (default), preserves long-poll behaviour.
+		 * Default comes from Notifications settings (Clanspress → Settings → Notifications → “Use long-polling”).
+		 * When false, performs a single DB read and returns immediately. When true, preserves long-poll behaviour.
+		 * The client still respects `next_poll` between requests.
 		 *
-		 * @param bool $blocking Default true.
+		 * @param bool $blocking Default from {@see clanspress_notifications_poll_long_polling_enabled()}.
 		 * @param int  $user_id  User ID.
 		 */
-		$blocking_wait = (bool) apply_filters( 'clanspress_notification_poll_blocking_wait', true, $user_id );
+		$default_blocking = function_exists( 'clanspress_notifications_poll_long_polling_enabled' )
+			&& clanspress_notifications_poll_long_polling_enabled();
+		$blocking_wait    = (bool) apply_filters( 'clanspress_notification_poll_blocking_wait', $default_blocking, $user_id );
 
 		if ( ! $blocking_wait ) {
 			$new_notifications = $this->get_new_notifications( $user_id, $since, $last_id );

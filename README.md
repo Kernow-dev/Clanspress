@@ -1148,7 +1148,7 @@ class My_Extension {
 
 ### Real-Time Updates (Long Polling)
 
-The notification bell uses HTTP long polling by default. The poll endpoint (`/notifications/poll`) may block until new notifications arrive or the timeout elapses (default cap **25** seconds; overridable via `clanspress_notification_poll_timeout`). The handler does **not** flush the object cache on each iteration (that would clear the entire site cache). Hosts that need lower PHP worker occupancy can set **`clanspress_notification_poll_blocking_wait`** to `false` to perform a single read and return immediately (client still uses `next_poll` spacing).
+The notification bell polls `/notifications/poll` on an interval guided by `next_poll` in the response. **Clanspress → Settings → Notifications → Notification bell → Use long-polling** controls whether each poll may block (sleep loop until new items or timeout, default cap **25** seconds via `clanspress_notification_poll_timeout`) or return after a single database read (recommended for busy sites). The filter `clanspress_notification_poll_blocking_wait` can still override the saved setting. The handler does **not** flush the object cache on each iteration (that would clear the entire site cache).
 
 **Polling parameters:**
 - `since` - ISO timestamp to get notifications after
@@ -1224,7 +1224,7 @@ add_filter( 'clanspress_notification_transport_config', function( $config, $user
 | Filter | Description |
 |--------|-------------|
 | `clanspress_notification_poll_timeout` | Modify poll timeout |
-| `clanspress_notification_poll_blocking_wait` | Set `false` to skip the sleep loop (single query per request) |
+| `clanspress_notification_poll_blocking_wait` | Override long-polling: `(bool $blocking, int $user_id)` after the Notifications setting is applied. |
 | `clanspress_notification_poll_interval` | Modify poll check interval |
 | `clanspress_notification_poll_transport` | Override polling with custom transport |
 | `clanspress_notification_next_poll_interval` | Modify next poll interval |

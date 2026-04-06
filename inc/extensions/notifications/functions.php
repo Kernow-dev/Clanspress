@@ -37,11 +37,15 @@ function clanspress_notifications_extension_active(): bool {
 /**
  * Stored Notifications extension settings merged with defaults (`clanspress_notifications_settings`).
  *
- * @return array<string, mixed>
+ * @return array<string, mixed> {
+ *     @type bool $subpage_player    Player profile notifications subpage enabled.
+ *     @type bool $poll_long_polling Notification bell uses blocking long-polling when true.
+ * }
  */
 function clanspress_notifications_settings_values(): array {
 	$defaults = array(
-		'subpage_player' => true,
+		'subpage_player'   => true,
+		'poll_long_polling' => false,
 	);
 	$stored   = get_option( 'clanspress_notifications_settings', array() );
 	if ( ! is_array( $stored ) ) {
@@ -64,6 +68,25 @@ function clanspress_notifications_subpage_player_enabled(): bool {
 	$values = clanspress_notifications_settings_values();
 
 	return ! empty( $values['subpage_player'] );
+}
+
+/**
+ * Whether the notification bell should use blocking long-polling on `/notifications/poll`.
+ *
+ * When false (default), each poll returns after a single database read. When true, the request may
+ * block up to the configured timeout. The filter {@see 'clanspress_notification_poll_blocking_wait'}
+ * still runs after this value and can override it.
+ *
+ * @return bool
+ */
+function clanspress_notifications_poll_long_polling_enabled(): bool {
+	if ( ! clanspress_notifications_extension_active() ) {
+		return false;
+	}
+
+	$values = clanspress_notifications_settings_values();
+
+	return ! empty( $values['poll_long_polling'] );
 }
 
 /**
