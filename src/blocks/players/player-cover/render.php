@@ -163,13 +163,15 @@ if ( ! $has_cover ) {
 	<?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes. ?>
 	<?php echo $interactive_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- data-wp-* built with esc_attr( wp_json_encode() ). ?>
 >
-	<img
-		class="clanspress-player-cover__media clanspress-player-cover__media--empty"
-		src="<?php echo esc_url( $cover_placeholder ); ?>"
-		alt="<?php echo esc_attr( $cover_alt ); ?>"
-		loading="lazy"
-		decoding="async"
-	/>
+	<div class="clanspress-player-cover__media-clip">
+		<img
+			class="clanspress-player-cover__media clanspress-player-cover__media--empty"
+			src="<?php echo esc_url( $cover_placeholder ); ?>"
+			alt="<?php echo esc_attr( $cover_alt ); ?>"
+			loading="lazy"
+			decoding="async"
+		/>
+	</div>
 	<?php if ( $show_controls ) : ?>
 		<?php $render_cover_toolbar( $panel_empty_id, $file_empty_id, '' ); ?>
 	<?php endif; ?>
@@ -213,14 +215,16 @@ $wrapper_attributes = get_block_wrapper_attributes(
 	<?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes. ?>
 	<?php echo $interactive_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- data-wp-* built with esc_attr( wp_json_encode() ). ?>
 >
-	<img
-		class="clanspress-player-cover__media"
-		style="object-position: <?php echo esc_attr( $object_position ); ?>;"
-		src="<?php echo esc_url( $cover_image ); ?>"
-		alt="<?php echo esc_attr( $cover_alt ); ?>"
-		loading="lazy"
-		decoding="async"
-	/>
+	<div class="clanspress-player-cover__media-clip">
+		<img
+			class="clanspress-player-cover__media"
+			style="object-position: <?php echo esc_attr( $object_position ); ?>;"
+			src="<?php echo esc_url( $cover_image ); ?>"
+			alt="<?php echo esc_attr( $cover_alt ); ?>"
+			loading="lazy"
+			decoding="async"
+		/>
+	</div>
 	<?php if ( $show_controls ) : ?>
 		<?php $render_cover_toolbar( $panel_id, $file_id, (string) $cover_image ); ?>
 	<?php endif; ?>

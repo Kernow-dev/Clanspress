@@ -108,7 +108,7 @@
 		"typography": ".wp-block-clanspress-player-cover .player-cover__content-container",
 		"border": ".wp-block-clanspress-player-cover",
 		"filter": {
-			"duotone": ".wp-block-clanspress-player-cover > .clanspress-player-cover__media, .wp-block-clanspress-player-cover > .player-cover__video-background"
+			"duotone": ".wp-block-clanspress-player-cover > .clanspress-player-cover__media-clip > .clanspress-player-cover__media, .wp-block-clanspress-player-cover > .player-cover__video-background"
 		}
 	},
 	"editorScript": "file:./index.js",

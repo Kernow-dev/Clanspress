@@ -595,6 +595,9 @@ function clanspress_players_get_display_avatar( int $player_id = 0, bool $suppre
 	/**
 	 * Filters the resolved player avatar image URL after attachment/default resolution.
 	 *
+	 * Return a URL string; consumers (REST, img[src], notifications) expect a URL, not HTML. Use
+	 * {@see clanspress_players_get_player_avatar_img_html()} for markup.
+	 *
 	 * @param string       $user_avatar      URL.
 	 * @param int          $player_id        User ID.
 	 * @param string|array $size             Size used for attachment resolution.
