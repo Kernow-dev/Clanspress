@@ -134,6 +134,7 @@ class Teams extends Skeleton {
 		add_action( 'init', array( $this, 'register_team_meta' ), 10 );
 		add_action( 'init', array( $this, 'register_team_blocks' ), 10 );
 		add_action( 'init', array( $this, 'register_team_templates' ), 10 );
+		add_action( 'after_setup_theme', array( $this, 'register_team_image_sizes' ) );
 		add_action( 'admin_post_clanspress_create_team', array( $this, 'handle_create_team' ) );
 		add_action( 'admin_post_nopriv_clanspress_create_team', array( $this, 'handle_create_team' ) );
 		add_action( 'admin_post_clanspress_save_team_manage', array( $this, 'handle_save_team_manage' ) );
@@ -3917,13 +3918,11 @@ class Teams extends Skeleton {
 		 */
 		do_action( 'clanspress_team_media_ajax_saved', $team_id, $this );
 
-		$avatar_id = (int) get_post_meta( $team_id, 'cp_team_avatar_id', true );
-		$cover_id  = (int) get_post_meta( $team_id, 'cp_team_cover_id', true );
+		$cover_id = (int) get_post_meta( $team_id, 'cp_team_cover_id', true );
 
-		$avatar_url = $avatar_id ? (string) wp_get_attachment_image_url( $avatar_id, 'medium' ) : '';
-		if ( '' === $avatar_url && function_exists( 'clanspress_teams_get_default_avatar_url' ) ) {
-			$avatar_url = clanspress_teams_get_default_avatar_url( $team_id );
-		}
+		$avatar_url = function_exists( 'clanspress_teams_get_display_team_avatar' )
+			? clanspress_teams_get_display_team_avatar( $team_id, false, '', 'team_media_ajax', 'large' )
+			: '';
 
 		$cover_url = $cover_id ? (string) wp_get_attachment_image_url( $cover_id, 'full' ) : '';
 		if ( '' === $cover_url && function_exists( 'clanspress_teams_get_default_cover_url' ) ) {
@@ -4212,6 +4211,17 @@ class Teams extends Skeleton {
 	 */
 	public function is_team_directories_mode(): bool {
 		return 'team_directories' === $this->get_team_mode();
+	}
+
+	/**
+	 * Register intermediate sizes for team avatars (mapped from Teams settings presets).
+	 *
+	 * @return void
+	 */
+	public function register_team_image_sizes(): void {
+		add_image_size( 'clanspress-team-avatar-large', 512, 512, true );
+		add_image_size( 'clanspress-team-avatar-medium', 256, 256, true );
+		add_image_size( 'clanspress-team-avatar-small', 96, 96, true );
 	}
 
 	/**

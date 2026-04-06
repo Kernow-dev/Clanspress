@@ -438,17 +438,148 @@ function clanspress_player_profile_route_current_slug(): string {
 }
 
 /**
- * Returns the players display avatar.
+ * Label map for image size slugs in Players / Teams settings UI.
  *
- * @param int          $player_id The Player/User unique identifier.
+ * @return array<string, string> Slug => translated label.
+ */
+function clanspress_players_get_image_size_choices_for_settings(): array {
+	$slugs = array_values(
+		array_unique(
+			array_merge(
+				array( 'full' ),
+				get_intermediate_image_sizes()
+			)
+		)
+	);
+	sort( $slugs );
+
+	$labels = array(
+		'full'                          => __( 'Full size', 'clanspress' ),
+		'thumbnail'                     => __( 'Thumbnail', 'clanspress' ),
+		'medium'                        => __( 'Medium', 'clanspress' ),
+		'medium_large'                  => __( 'Medium large', 'clanspress' ),
+		'large'                         => __( 'Large (WordPress)', 'clanspress' ),
+		'clanspress-avatar-large'       => __( 'Clanspress player avatar — large (default preset)', 'clanspress' ),
+		'clanspress-avatar-medium'      => __( 'Clanspress player avatar — medium (default preset)', 'clanspress' ),
+		'clanspress-avatar-small'       => __( 'Clanspress player avatar — small (default preset)', 'clanspress' ),
+		'clanspress-team-avatar-large'  => __( 'Clanspress team avatar — large (default preset)', 'clanspress' ),
+		'clanspress-team-avatar-medium' => __( 'Clanspress team avatar — medium (default preset)', 'clanspress' ),
+		'clanspress-team-avatar-small'  => __( 'Clanspress team avatar — small (default preset)', 'clanspress' ),
+	);
+
+	$out = array();
+	foreach ( $slugs as $slug ) {
+		$key           = (string) $slug;
+		$out[ $key ] = $labels[ $key ] ?? $key;
+	}
+
+	/**
+	 * Filters selectable image size slugs for Clanspress avatar settings dropdowns.
+	 *
+	 * @param array<string, string> $out Slug => label.
+	 */
+	return (array) apply_filters( 'clanspress_players_image_size_choices_for_settings', $out );
+}
+
+/**
+ * Ensures an image size slug is registered (or `full`) before saving settings.
+ *
+ * @param string $value    Raw value.
+ * @param string $fallback Slug to use when invalid.
+ * @return string
+ */
+function clanspress_players_sanitize_image_size_setting_value( string $value, string $fallback ): string {
+	$value    = sanitize_key( $value );
+	$fallback = sanitize_key( $fallback );
+	$allowed  = array_keys( clanspress_players_get_image_size_choices_for_settings() );
+
+	if ( in_array( $value, $allowed, true ) ) {
+		return $value;
+	}
+
+	if ( in_array( $fallback, $allowed, true ) ) {
+		return $fallback;
+	}
+
+	return 'thumbnail';
+}
+
+/**
+ * Maps a semantic avatar preset to the image size slug from Players settings.
+ *
+ * @param string $preset One of `large`, `medium`, `small`.
+ * @return string Registered size name or `full`.
+ */
+function clanspress_players_resolve_player_avatar_image_size( string $preset ): string {
+	$preset = sanitize_key( $preset );
+	$keys   = array(
+		'large'  => 'player_avatar_image_size_large',
+		'medium' => 'player_avatar_image_size_medium',
+		'small'  => 'player_avatar_image_size_small',
+	);
+	$defaults = array(
+		'large'  => 'clanspress-avatar-large',
+		'medium' => 'clanspress-avatar-medium',
+		'small'  => 'clanspress-avatar-small',
+	);
+
+	$setting_key = $keys[ $preset ] ?? $keys['large'];
+	$fallback    = $defaults[ $preset ] ?? $defaults['large'];
+
+	$raw = '';
+	$loader = clanspress()->extensions;
+	if ( null !== $loader ) {
+		$ext = $loader->get( 'cp_players' );
+		if ( $ext instanceof \Kernowdev\Clanspress\Extensions\Players && method_exists( $ext, 'get_setting' ) ) {
+			$raw = (string) $ext->get_setting( $setting_key, $fallback );
+		}
+	}
+
+	$sanitized = clanspress_players_sanitize_image_size_setting_value( $raw, $fallback );
+
+	/**
+	 * Filters the resolved image size slug for a player avatar preset.
+	 *
+	 * @param string $size     Sanitized size slug.
+	 * @param string $preset   `large`, `medium`, or `small`.
+	 * @param string $raw      Value from settings before sanitization.
+	 * @param string $fallback Default slug for this preset.
+	 */
+	return (string) apply_filters( 'clanspress_players_resolve_player_avatar_image_size', $sanitized, $preset, $raw, $fallback );
+}
+
+/**
+ * Returns the players display avatar URL.
+ *
+ * All Clanspress player avatar surfaces should resolve the image URL through this function so third-party
+ * code can override output once (XP overlays, rank badges as image, CDN URLs, etc.). Use the optional
+ * {@see $context} argument to vary behaviour by surface; it is passed to filters and avatar markup helpers.
+ *
+ * Pass {@see $avatar_preset} as `large`, `medium`, or `small` to use the image sizes configured under
+ * Clanspress → Players (profiles, forums/social feeds, comments/replies). When set, it overrides {@see $size}.
+ *
+ * @param int          $player_id        The Player/User unique identifier.
  * @param bool         $suppress_filters Disallows filtering of the value.
- * @param string|array $size The image size, either a registered size, or an array of width and height.
+ * @param string|array $size             Registered size name or array of width and height (ignored when preset is set).
+ * @param string       $context          Logical surface key (e.g. `player_avatar_block`, `user_nav`, `notifications`).
+ * @param string       $avatar_preset    Optional. `large`, `medium`, or `small` for settings-driven sizes.
  *
  * @return string
  */
-function clanspress_players_get_display_avatar( int $player_id = 0, bool $suppress_filters = false, string|array $size = 'clanspress-avatar-large' ): string {
+function clanspress_players_get_display_avatar( int $player_id = 0, bool $suppress_filters = false, string|array $size = '', string $context = '', string $avatar_preset = '' ): string {
 	if ( ! $player_id ) {
 		$player_id = get_current_user_id();
+	}
+
+	$preset_key = sanitize_key( $avatar_preset );
+	$preset_for_filter = '';
+
+	if ( in_array( $preset_key, array( 'large', 'medium', 'small' ), true ) ) {
+		$size              = clanspress_players_resolve_player_avatar_image_size( $preset_key );
+		$preset_for_filter = $preset_key;
+	} elseif ( '' === $size || ( is_array( $size ) && empty( $size ) ) ) {
+		$size              = clanspress_players_resolve_player_avatar_image_size( 'large' );
+		$preset_for_filter = 'large';
 	}
 
 	$user_avatar = wp_get_attachment_image_url( clanspress_players_get_display_avatar_id( $player_id, $suppress_filters ), $size );
@@ -462,10 +593,15 @@ function clanspress_players_get_display_avatar( int $player_id = 0, bool $suppre
 	}
 
 	/**
-	 * Allows filtering of the players display avatar, this can be bypassed by setting $suppress_filters param
-	 * to true.
+	 * Filters the resolved player avatar image URL after attachment/default resolution.
+	 *
+	 * @param string       $user_avatar      URL.
+	 * @param int          $player_id        User ID.
+	 * @param string|array $size             Size used for attachment resolution.
+	 * @param string       $context          Surface key (empty string when not passed by caller).
+	 * @param string       $avatar_preset  `large`, `medium`, `small`, or empty when an explicit size was used.
 	 */
-	return apply_filters( 'clanspress_players_get_display_avatar', $user_avatar, $player_id );
+	return apply_filters( 'clanspress_players_get_display_avatar', $user_avatar, $player_id, $size, $context, $preset_for_filter );
 }
 
 /**
@@ -492,6 +628,169 @@ function clanspress_players_get_display_avatar_id( int $player_id = 0, bool $sup
 	 * to true.
 	 */
 	return apply_filters( 'clanspress_players_get_display_avatar_id', $user_avatar_id, $player_id );
+}
+
+/**
+ * Builds a single &lt;img&gt; tag for a player avatar using {@see clanspress_players_get_display_avatar()}.
+ *
+ * Prefer this over hand-built &lt;img&gt; markup in templates and blocks so attribute and inner markup
+ * hooks run consistently. Wrap or extend output with {@see clanspress_players_apply_player_avatar_display_markup()}.
+ *
+ * @param int   $user_id WordPress user ID.
+ * @param array $args {
+ *     Optional. Arguments.
+ *
+ *     @type string       $preset           Optional. `large`, `medium`, or `small` (Players settings). Overrides `size` when set.
+ *     @type string|array $size             Image size when `preset` is empty. Default resolves to large preset.
+ *     @type string       $context          Surface key for URL/img hooks. Default ''.
+ *     @type string       $class            Class attribute (full string). Default `clanspress-player-avatar__img`.
+ *     @type string       $alt              Alt text. Default from display name + translated “player avatar”.
+ *     @type bool         $suppress_filters Same as {@see clanspress_players_get_display_avatar()}. Default false.
+ *     @type string       $loading          `loading` attribute. Default `lazy`. Use empty string to omit.
+ *     @type string       $decoding         `decoding` attribute. Default `async`. Use empty string to omit.
+ *     @type int          $width            If positive, output width attribute.
+ *     @type int          $height           If positive, output height attribute.
+ * }
+ * @return string HTML fragment or empty string when no URL resolves.
+ */
+function clanspress_players_get_player_avatar_img_html( int $user_id, array $args = array() ): string {
+	if ( $user_id <= 0 ) {
+		return '';
+	}
+
+	$defaults = array(
+		'preset'           => '',
+		'size'             => '',
+		'context'          => '',
+		'class'            => 'clanspress-player-avatar__img',
+		'alt'              => '',
+		'suppress_filters' => false,
+		'loading'          => 'lazy',
+		'decoding'         => 'async',
+		'width'            => 0,
+		'height'           => 0,
+	);
+
+	$args = wp_parse_args( $args, $defaults );
+
+	$preset_arg = sanitize_key( (string) $args['preset'] );
+	if ( in_array( $preset_arg, array( 'large', 'medium', 'small' ), true ) ) {
+		$url = clanspress_players_get_display_avatar( $user_id, (bool) $args['suppress_filters'], '', (string) $args['context'], $preset_arg );
+	} else {
+		$size_arg = $args['size'];
+		if ( '' === $size_arg || ( is_array( $size_arg ) && empty( $size_arg ) ) ) {
+			$size_arg = clanspress_players_resolve_player_avatar_image_size( 'large' );
+		}
+		$url = clanspress_players_get_display_avatar( $user_id, (bool) $args['suppress_filters'], $size_arg, (string) $args['context'], '' );
+	}
+
+	if ( '' === $url ) {
+		return '';
+	}
+
+	if ( '' === $args['alt'] && function_exists( 'clanspress_players_get_display_name' ) ) {
+		$args['alt'] = sprintf(
+			/* translators: %s: Player display name. */
+			__( '%s player avatar', 'clanspress' ),
+			clanspress_players_get_display_name( $user_id )
+		);
+	}
+
+	/**
+	 * Fires before the player avatar &lt;img&gt; is built (URL is resolved).
+	 *
+	 * @param int    $user_id User ID.
+	 * @param array  $args    Arguments passed to {@see clanspress_players_get_player_avatar_img_html()}.
+	 * @param string $url     Avatar URL.
+	 */
+	do_action( 'clanspress_player_avatar_img_before', $user_id, $args, $url );
+
+	$attr = array(
+		'class'    => (string) $args['class'],
+		'src'      => $url,
+		'alt'      => (string) $args['alt'],
+		'loading'  => (string) $args['loading'],
+		'decoding' => (string) $args['decoding'],
+	);
+
+	$w = (int) $args['width'];
+	$h = (int) $args['height'];
+	if ( $w > 0 ) {
+		$attr['width'] = (string) $w;
+	}
+	if ( $h > 0 ) {
+		$attr['height'] = (string) $h;
+	}
+
+	/**
+	 * Filters attributes for the player avatar &lt;img&gt; element before the tag is built.
+	 *
+	 * @param array  $attr    Attribute name => value. Omitted or empty values are skipped (except alt may be empty).
+	 * @param int    $user_id User ID.
+	 * @param array  $args    Arguments from {@see clanspress_players_get_player_avatar_img_html()}.
+	 * @param string $url     Avatar URL.
+	 */
+	$attr = apply_filters( 'clanspress_players_player_avatar_img_attributes', $attr, $user_id, $args, $url );
+
+	$parts = array();
+	foreach ( $attr as $name => $value ) {
+		$name = sanitize_key( (string) $name );
+		if ( '' === $name ) {
+			continue;
+		}
+		if ( '' === $value && 'alt' !== $name ) {
+			continue;
+		}
+		if ( 'src' === $name ) {
+			$parts[] = sprintf( 'src="%s"', esc_url( (string) $value ) );
+			continue;
+		}
+		$parts[] = sprintf( '%s="%s"', esc_attr( $name ), esc_attr( (string) $value ) );
+	}
+
+	$html = '<img ' . implode( ' ', $parts ) . ' />';
+
+	/**
+	 * Fires after the player avatar &lt;img&gt; HTML is built.
+	 *
+	 * @param int    $user_id User ID.
+	 * @param array  $args    Arguments from {@see clanspress_players_get_player_avatar_img_html()}.
+	 * @param string $url     Avatar URL.
+	 * @param string $html    Built &lt;img&gt; markup.
+	 */
+	do_action( 'clanspress_player_avatar_img_after', $user_id, $args, $url, $html );
+
+	/**
+	 * Filters the player avatar &lt;img&gt; HTML fragment.
+	 *
+	 * @param string $html    Markup.
+	 * @param int    $user_id User ID.
+	 * @param array  $args    Arguments from {@see clanspress_players_get_player_avatar_img_html()}.
+	 * @param string $url     Avatar URL.
+	 */
+	return (string) apply_filters( 'clanspress_players_player_avatar_img_html', $html, $user_id, $args, $url );
+}
+
+/**
+ * Filters inner avatar markup (image, placeholder, or empty-state image) for display.
+ *
+ * Use this to wrap the avatar with rank badges, XP bars, or extra layout. Applies
+ * {@see 'clanspress_players_player_avatar_display_markup'}.
+ *
+ * @param string $inner   HTML inside the avatar area (before profile link wrapping, if any).
+ * @param int    $user_id User ID.
+ * @param array  $args    Optional. Same `context` / `size` keys as passed to image helpers; extra keys allowed.
+ * @return string
+ */
+function clanspress_players_apply_player_avatar_display_markup( string $inner, int $user_id, array $args = array() ): string {
+	/**
+	 * Filters inner player avatar markup after core builds the image or empty-state fragment.
+	 *
+	 * @param string $inner   HTML.
+	 * @param int    $user_id User ID.
+	 * @param array  $args    Context from the caller (e.g. `context`, `size`).
+	 */
+	return (string) apply_filters( 'clanspress_players_player_avatar_display_markup', $inner, $user_id, $args );
 }
 
 /**

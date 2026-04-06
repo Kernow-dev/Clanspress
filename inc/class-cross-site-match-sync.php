@@ -318,11 +318,9 @@ final class Cross_Site_Match_Sync {
 
 		$opponent_label = get_the_title( $challenged_team_id );
 		$opponent_url   = get_permalink( $challenged_team_id ) ?: home_url( '/' );
-		$opponent_logo  = '';
-		$aid            = (int) get_post_meta( $challenged_team_id, 'cp_team_avatar_id', true );
-		if ( $aid ) {
-			$opponent_logo = (string) wp_get_attachment_image_url( $aid, 'medium' );
-		}
+		$opponent_logo = function_exists( 'clanspress_teams_get_display_team_avatar' )
+			? clanspress_teams_get_display_team_avatar( $challenged_team_id, false, '', 'cross_site_match_sync', 'medium' )
+			: '';
 		if ( '' === $opponent_logo && has_post_thumbnail( $challenged_team_id ) ) {
 			$opponent_logo = (string) get_the_post_thumbnail_url( $challenged_team_id, 'medium' );
 		}

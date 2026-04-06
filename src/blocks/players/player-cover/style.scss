@@ -6,8 +6,8 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	// Allow the edit toolbar + panel to extend past the cover bounds (overflow would clip them).
-	overflow: visible;
+	overflow: hidden;
+	overflow: clip;
 	box-sizing: border-box;
 	width: 100%;
 	min-height: 12rem;

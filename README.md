@@ -543,12 +543,36 @@ On **success**, the JSON body matches `wp_send_json_success()`: `success` is tru
 
 | Key | Purpose |
 |-----|---------|
-| `avatarUrl` | Resolved display URL for the logged-in user’s avatar (attachments + defaults, after `clanspress_players_get_display_avatar` filters). |
+| `avatarUrl` | Resolved display URL for the logged-in user’s avatar (attachments + defaults, after `clanspress_players_get_display_avatar` filters; REST save uses context `profile_settings_rest`). |
 | `coverUrl` | Resolved display URL for the logged-in user’s cover (`clanspress_players_get_display_cover`). |
 
-The **player-avatar** and **player-cover** interactivity modules use these values after save to point `<img>` / background previews at the server URL and revoke temporary object URLs. Custom front-end code calling the same action should do the same if you show blob previews.
+The **player-avatar** and **player-cover** interactivity modules use these values after save to point `<img>` / background previews at the server URL and revoke temporary object URLs.
 
 On **failure**, `wp_send_json_error()` returns `success: false` and `data` typically includes an `errors` object from `clanspress_save_player_settings_errors`.
+
+### Player and team avatars (URLs, presets, and markup)
+
+**Admin (Clanspress → Settings → Players / Teams)** — Each extension has three dropdowns that map semantic presets to a WordPress image size (any registered intermediate size or `full`):
+
+| Preset | Intended use (defaults) |
+|--------|-------------------------|
+| **Large** | Player/team profiles and profile avatar blocks |
+| **Medium** | Forum topics, social-style feeds, public team cards |
+| **Small** | Comments, replies, notifications, compact nav |
+
+Core registers **Clanspress player** sizes (`clanspress-avatar-large` 512², `clanspress-avatar-medium` 256², `clanspress-avatar-small` 96²) and **Clanspress team** sizes (`clanspress-team-avatar-*` with the same dimensions). Defaults point to those slugs; you can switch a preset to e.g. `thumbnail` or `full`. After changing sizes, run a thumbnail regeneration tool if you need existing uploads resized.
+
+**Player API**
+
+1. **`clanspress_players_get_display_avatar( $user_id, $suppress_filters, $size, $context, $avatar_preset )`** — Returns the URL. Pass **`$avatar_preset`** as `large`, `medium`, or `small` to use the sizes from Players settings (overrides `$size`). When `$avatar_preset` is empty and `$size` is empty, **large** is used. Pass **`$context`** so filters can branch (`player_avatar_block`, `user_nav`, `notifications`, `profile_settings_rest`, etc.). The filter receives the fifth argument **`$avatar_preset`** (`''` when you passed an explicit `$size` only).
+2. **`clanspress_players_get_player_avatar_img_html( $user_id, $args )`** — Builds the `<img>`; `$args` may include **`preset`** (`large`/`medium`/`small`) or **`size`** when no preset.
+3. **`clanspress_players_apply_player_avatar_display_markup( $inner_html, $user_id, $args )`** — Wrap/augment inner markup (`clanspress_players_player_avatar_display_markup`).
+
+**Team API** — **`clanspress_teams_get_display_team_avatar( $team_id, $suppress_filters, $size, $context, $avatar_preset )`** mirrors the player helper and uses **Teams → Team avatar image sizes**. Filter: **`clanspress_teams_get_display_team_avatar`**.
+
+**Blocks** — The **player-avatar** and **team-avatar** blocks expose attribute **`avatarPreset`** (`large` \| `medium` \| `small`, default `large`). Plugin templates set **`large`** on profile headers and **`medium`** on team roster grids; the editor sidebar **Avatar output** panel changes the preset per block.
+
+Third-party code (forums, social feeds, comments) should call these helpers with the appropriate **preset** so site owners control pixels from settings. See **`AGENTS.md`** Hook Reference for related filters (`clanspress_players_resolve_player_avatar_image_size`, `clanspress_teams_resolve_team_avatar_image_size`, etc.).
 
 Extend or override the object with filter **`clanspress_player_settings_frontend_config`** (same array shape as above).
 

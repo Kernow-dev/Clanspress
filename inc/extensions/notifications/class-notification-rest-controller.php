@@ -437,7 +437,9 @@ final class Notification_Rest_Controller extends WP_REST_Controller {
 						$row->actor = (object) array(
 							'id'         => $actor->ID,
 							'name'       => $actor->display_name,
-							'avatar_url' => get_avatar_url( $actor->ID, array( 'size' => 48 ) ),
+							'avatar_url' => function_exists( 'clanspress_players_get_display_avatar' )
+								? clanspress_players_get_display_avatar( (int) $actor->ID, false, '', 'notifications', 'small' )
+								: get_avatar_url( $actor->ID, array( 'size' => 48 ) ),
 						);
 					}
 				}

@@ -20,11 +20,80 @@ if ( $is_logged_in ) {
 	$user_id      = $user->ID;
 	$display_name = $user->display_name;
 
-	// Use Clanspress player avatar if available, fallback to Gravatar.
-	if ( function_exists( 'clanspress_players_get_display_avatar' ) ) {
-		$avatar_url = clanspress_players_get_display_avatar( $user_id, false, 'thumbnail' );
+	$avatar_url_fallback = function_exists( 'clanspress_players_get_display_avatar' )
+		? clanspress_players_get_display_avatar( $user_id, false, '', 'user_nav', 'small' )
+		: get_avatar_url( $user_id, array( 'size' => max( 96, (int) $avatar_size * 2 ) ) );
+
+	$avatar_trigger  = '';
+	$avatar_dropdown = '';
+
+	if ( function_exists( 'clanspress_players_get_player_avatar_img_html' ) && function_exists( 'clanspress_players_apply_player_avatar_display_markup' ) ) {
+		$nav_avatar_base = array(
+			'context' => 'user_nav',
+			'preset'  => 'small',
+			'alt'     => '',
+		);
+
+		$trigger_inner = clanspress_players_get_player_avatar_img_html(
+			$user_id,
+			array_merge(
+				$nav_avatar_base,
+				array(
+					'class'  => 'clanspress-user-nav__avatar',
+					'width'  => (int) $avatar_size,
+					'height' => (int) $avatar_size,
+				)
+			)
+		);
+
+		if ( '' === $trigger_inner ) {
+			$trigger_inner = sprintf(
+				'<img src="%1$s" alt="" class="clanspress-user-nav__avatar" width="%2$d" height="%2$d" loading="lazy" decoding="async" />',
+				esc_url( $avatar_url_fallback ),
+				(int) $avatar_size
+			);
+		}
+
+		$avatar_trigger = clanspress_players_apply_player_avatar_display_markup(
+			$trigger_inner,
+			$user_id,
+			array_merge( $nav_avatar_base, array( 'variant' => 'trigger' ) )
+		);
+
+		$dropdown_inner = clanspress_players_get_player_avatar_img_html(
+			$user_id,
+			array_merge(
+				$nav_avatar_base,
+				array(
+					'class'  => 'clanspress-user-nav__dropdown-avatar',
+					'width'  => 40,
+					'height' => 40,
+				)
+			)
+		);
+
+		if ( '' === $dropdown_inner ) {
+			$dropdown_inner = sprintf(
+				'<img src="%s" alt="" class="clanspress-user-nav__dropdown-avatar" width="40" height="40" loading="lazy" decoding="async" />',
+				esc_url( $avatar_url_fallback )
+			);
+		}
+
+		$avatar_dropdown = clanspress_players_apply_player_avatar_display_markup(
+			$dropdown_inner,
+			$user_id,
+			array_merge( $nav_avatar_base, array( 'variant' => 'dropdown' ) )
+		);
 	} else {
-		$avatar_url = get_avatar_url( $user_id, array( 'size' => $avatar_size * 2 ) );
+		$avatar_trigger = sprintf(
+			'<img src="%1$s" alt="" class="clanspress-user-nav__avatar" width="%2$d" height="%2$d" loading="lazy" decoding="async" />',
+			esc_url( $avatar_url_fallback ),
+			(int) $avatar_size
+		);
+		$avatar_dropdown = sprintf(
+			'<img src="%s" alt="" class="clanspress-user-nav__dropdown-avatar" width="40" height="40" loading="lazy" decoding="async" />',
+			esc_url( $avatar_url_fallback )
+		);
 	}
 
 	$profile_url = function_exists( 'clanspress_get_player_profile_url' )
@@ -64,13 +133,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 			data-wp-on--click="actions.toggleDropdown"
 			data-wp-bind--aria-expanded="context.isOpen"
 		>
-			<img
-				src="<?php echo esc_url( $avatar_url ); ?>"
-				alt=""
-				class="clanspress-user-nav__avatar"
-				width="<?php echo esc_attr( $avatar_size ); ?>"
-				height="<?php echo esc_attr( $avatar_size ); ?>"
-			/>
+			<?php echo $avatar_trigger; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Avatar HTML built with esc_url/esc_attr in helpers or sprintf fallback. ?>
 			<?php if ( $show_username ) : ?>
 				<span class="clanspress-user-nav__username"><?php echo esc_html( $display_name ); ?></span>
 			<?php endif; ?>
@@ -96,13 +159,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 		>
 			<div class="clanspress-user-nav__dropdown-header">
 				<a href="<?php echo esc_url( $profile_url ); ?>" class="clanspress-user-nav__profile-link">
-					<img
-						src="<?php echo esc_url( $avatar_url ); ?>"
-						alt=""
-						class="clanspress-user-nav__dropdown-avatar"
-						width="40"
-						height="40"
-					/>
+					<?php echo $avatar_dropdown; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Avatar HTML built with esc_url/esc_attr in helpers or sprintf fallback. ?>
 					<div class="clanspress-user-nav__profile-info">
 						<span class="clanspress-user-nav__profile-name"><?php echo esc_html( $display_name ); ?></span>
 						<span class="clanspress-user-nav__profile-label"><?php esc_html_e( 'View Profile', 'clanspress' ); ?></span>

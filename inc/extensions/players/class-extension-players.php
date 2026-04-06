@@ -1291,6 +1291,9 @@ class Players extends Skeleton {
 			300,
 			true
 		);
+		add_image_size( 'clanspress-avatar-large', 512, 512, true );
+		add_image_size( 'clanspress-avatar-medium', 256, 256, true );
+		add_image_size( 'clanspress-avatar-small', 96, 96, true );
 	}
 
 	public function register_profile_blocks() {
@@ -1661,7 +1664,7 @@ class Players extends Skeleton {
 			return null;
 		}
 
-		$user_avatar           = clanspress_players_get_display_avatar( $user_id, true );
+		$user_avatar           = clanspress_players_get_display_avatar( $user_id, true, '', '', 'large' );
 		$user_cover            = clanspress_players_get_display_cover( $user_id, true );
 		$background_position_x = round( clanspress_players_get_display_cover_position_x( $user_id ) * 100 ) . '% ';
 		$background_position_y = round( clanspress_players_get_display_cover_position_y( $user_id ) * 100 ) . '% ';
@@ -2121,7 +2124,7 @@ class Players extends Skeleton {
 
 		$success_data = array();
 		if ( function_exists( 'clanspress_players_get_display_avatar' ) ) {
-			$success_data['avatarUrl'] = clanspress_players_get_display_avatar( $user_id );
+			$success_data['avatarUrl'] = clanspress_players_get_display_avatar( $user_id, false, '', 'profile_settings_rest', 'large' );
 		}
 		if ( function_exists( 'clanspress_players_get_display_cover' ) ) {
 			$success_data['coverUrl'] = clanspress_players_get_display_cover( $user_id );

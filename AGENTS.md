@@ -97,8 +97,8 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 | Settings UI base | `Abstract_Settings` | Option-backed admin pages for an extension. |
 | Admin (unified UI) | `Kernowdev\Clanspress\Admin\Settings`, `General_Settings`, `Groups_Settings`, `Admin_Rest` (`inc/admin/`) | Clanspress → Settings React app. **`Groups_Settings`** (`clanspress_groups_settings`) registers the **Groups** tab for group profile integrations (not an extension slug). |
 | Teams model | `Kernowdev\Clanspress\Extensions\Teams\Team` | In-memory team entity; persist via `Team_Data_Store` (implementations may map to `cp_team`). |
-| Teams helpers | `inc/extensions/teams/functions.php` | Theme-safe `clanspress_teams_*()` wrappers. |
-| Players helpers | `inc/extensions/players/functions.php` | Theme-safe `clanspress_players_*()` wrappers; `clanspress_player_blocks_resolve_subject_user_id()` aligns player block user resolution with `clanspress_player_profile_context_user_id()`. |
+| Teams helpers | `inc/extensions/teams/functions.php` | Theme-safe `clanspress_teams_*()` wrappers. Team avatars: `clanspress_teams_get_display_team_avatar( $team_id, $suppress, $size, $context, $avatar_preset )` with presets mapped to **Teams → Team avatar image sizes**. |
+| Players helpers | `inc/extensions/players/functions.php` | Theme-safe `clanspress_players_*()` wrappers; `clanspress_player_blocks_resolve_subject_user_id()` aligns player block user resolution with `clanspress_player_profile_context_user_id()`. Player avatars: resolve URLs with `clanspress_players_get_display_avatar( $user_id, $suppress, $size, $context, $avatar_preset )` (`large` / `medium` / `small` presets map to **Players → Player avatar image sizes**); build `<img>` with `clanspress_players_get_player_avatar_img_html()`; wrap with `clanspress_players_apply_player_avatar_display_markup()` (see Hook Reference). |
 | Matches extension | `Kernowdev\Clanspress\Extensions\Matches` | `cp_match` CPT, REST list/detail, JS blocks + editor sidebar; **requires** `cp_teams`, **not** a Teams sub-extension. Optional team profile tab `/teams/{slug}/matches/` when `subpage_team` is on in `clanspress_matches_settings`. |
 | Matches helpers | `inc/extensions/matches/functions.php` | `clanspress_matches()` and related theme-safe helpers. |
 | Notifications extension | `inc/extensions/notifications/class-extension-notifications.php`, `Kernowdev\Clanspress\Extensions\Notifications` | Official slug `cp_notifications` (optional; one-time default-on migration). **Requires** `cp_players`. `run()` registers `Extensions\Notifications\Admin` settings (`clanspress_notifications_settings`) then boots `Kernowdev\Clanspress\Extensions\Notification\Notifications_Runtime`. |
@@ -130,6 +130,16 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 - `clanspress_load_players_directory_template` — Resolved PHP template path for `/players/`: `(string $path, string $located_theme_path)`.
 - `clanspress_players_directory_per_page` — User-query page size on the players directory shortcode: `(int $per_page)`.
 - `clanspress_redirect_author_archive_to_players_url` — 301 target for `/author/…` and `?author=` → `/players/…`: `(string $target, \WP_User $user)`.
+- `clanspress_players_get_display_avatar` — Player avatar image URL after attachment/default resolution: `(string $url, int $user_id, string|array $size, string $context, string $avatar_preset)`. `$avatar_preset` is `large`, `medium`, `small`, or empty when an explicit `$size` was used (presets map to **Players → Player avatar image sizes**). Use `$context` to vary behaviour by surface (`player_avatar_block`, `user_nav`, `notifications`, `profile_settings_rest`, etc.). Pair with `clanspress_players_get_display_avatar_id` for attachment-based logic.
+- `clanspress_players_resolve_player_avatar_image_size` — Maps preset to registered size slug before URL resolution: `(string $size, string $preset, string $raw, string $fallback)`.
+- `clanspress_players_image_size_choices_for_settings` — Slug → label map for Players/Teams avatar size dropdowns: `(array $choices)`.
+- `clanspress_teams_get_display_team_avatar` — Team avatar URL: `(string $url, int $team_id, string|array $size, string $context, string $avatar_preset)`.
+- `clanspress_teams_resolve_team_avatar_image_size` — Maps team preset to size slug: `(string $size, string $preset, string $raw, string $fallback)`.
+- `clanspress_players_player_avatar_img_attributes` — Attribute map for the avatar `<img>` before the tag is built: `(array $attr, int $user_id, array $args, string $url)`.
+- `clanspress_players_player_avatar_img_html` — Final `<img>` fragment from `clanspress_players_get_player_avatar_img_html()`: `(string $html, int $user_id, array $args, string $url)`.
+- `clanspress_players_player_avatar_display_markup` — Inner avatar fragment after core builds image or empty-state markup (before profile link wrapping in blocks): `(string $inner, int $user_id, array $args)`.
+- `clanspress_players_player_avatar_empty_img_markup` — Empty-state upload placeholder `<img>` in the player avatar block: `(string $html, int $user_id, array $args)`.
+- `clanspress_players_player_avatar_placeholder_markup` — Text placeholder when the user has no avatar and inline upload is off: `(string $html, int $user_id, array $args)`.
 - `clanspress_team_challenge_button_visible` — Show the **Team challenge** block UI: `(bool $visible, int $team_id, \WP_Block $block)`.
 - `clanspress_team_challenge_notify_user_ids` — Recipients for new challenge notifications: `(array $user_ids, int $team_id)`.
 - `clanspress_cross_site_sync_key` — Legacy shared HMAC secret (optional): `(string $key)` non-empty forces legacy `timestamp:hmac` headers instead of Ed25519 `v1:…` (for old integrations only).
@@ -171,6 +181,8 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 - `clanspress_extension_run_{slug}` — Main runtime hook: register CPTs, routes, blocks, etc.
 - `clanspress_forums_init` — Companion plugin loaded and Clanspress available: `( \Kernowdev\ClanspressForums\Plugin $plugin )`.
 - `clanspress_forums_rest_api_init` — After forums REST routes register: `( \Kernowdev\ClanspressForums\Extension\Forums $extension )`.
+- `clanspress_player_avatar_img_before` — Before building the player avatar `<img>` (URL resolved): `(int $user_id, array $args, string $url)`.
+- `clanspress_player_avatar_img_after` — After the `<img>` string is built: `(int $user_id, array $args, string $url, string $html)`.
 
 Extension-specific hooks (e.g. teams, players) belong in PHPDoc next to each `apply_filters` / `do_action` in the relevant class.
 

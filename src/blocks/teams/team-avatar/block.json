@@ -11,6 +11,11 @@
 	"postTypes": [ "cp_team" ],
 	"usesContext": [ "postId", "postType" ],
 	"attributes": {
+		"avatarPreset": {
+			"type": "string",
+			"default": "large",
+			"enum": [ "large", "medium", "small" ]
+		},
 		"allowFrontEndMediaEdit": {
 			"type": "boolean",
 			"default": false

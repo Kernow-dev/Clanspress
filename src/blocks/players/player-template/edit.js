@@ -51,7 +51,7 @@ function GridLayoutIcon() {
 }
 
 const INNER_TEMPLATE = [
-	[ 'clanspress/player-avatar' ],
+	[ 'clanspress/player-avatar', { avatarPreset: 'medium' } ],
 	[ 'clanspress/player-display-name' ],
 ];
 

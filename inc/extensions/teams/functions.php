@@ -410,6 +410,100 @@ function clanspress_get_team_subpage( string $slug ): ?array {
 }
 
 /**
+ * Maps a semantic team avatar preset to the image size slug from Teams settings.
+ *
+ * @param string $preset One of `large`, `medium`, `small`.
+ * @return string Registered size name or `full`.
+ */
+function clanspress_teams_resolve_team_avatar_image_size( string $preset ): string {
+	$preset = sanitize_key( $preset );
+	$keys   = array(
+		'large'  => 'team_avatar_image_size_large',
+		'medium' => 'team_avatar_image_size_medium',
+		'small'  => 'team_avatar_image_size_small',
+	);
+	$defaults = array(
+		'large'  => 'clanspress-team-avatar-large',
+		'medium' => 'clanspress-team-avatar-medium',
+		'small'  => 'clanspress-team-avatar-small',
+	);
+
+	$setting_key = $keys[ $preset ] ?? $keys['large'];
+	$fallback    = $defaults[ $preset ] ?? $defaults['large'];
+	$raw         = (string) clanspress_teams_get_setting( $setting_key, $fallback );
+
+	if ( function_exists( 'clanspress_players_sanitize_image_size_setting_value' ) ) {
+		$sanitized = clanspress_players_sanitize_image_size_setting_value( $raw, $fallback );
+	} else {
+		$sanitized = $fallback;
+	}
+
+	/**
+	 * Filters the resolved image size slug for a team avatar preset.
+	 *
+	 * @param string $size     Sanitized size slug.
+	 * @param string $preset   `large`, `medium`, or `small`.
+	 * @param string $raw      Value from settings before sanitization.
+	 * @param string $fallback Default slug for this preset.
+	 */
+	return (string) apply_filters( 'clanspress_teams_resolve_team_avatar_image_size', $sanitized, $preset, $raw, $fallback );
+}
+
+/**
+ * Resolved team avatar image URL (custom avatar, default asset, filters).
+ *
+ * Use {@see $avatar_preset} `large` (profiles), `medium` (feeds / forum-style surfaces), or `small` (compact UI)
+ * so output follows Teams → avatar image size settings.
+ *
+ * @param int          $team_id          Team post ID (`cp_team`).
+ * @param bool         $suppress_filters When true, skips {@see 'clanspress_teams_get_display_team_avatar'}.
+ * @param string|array $size             Explicit WP image size; ignored when {@see $avatar_preset} is set.
+ * @param string       $context          Optional surface key for filters (e.g. `team_avatar_block`, `public_rest`).
+ * @param string       $avatar_preset    Optional `large`, `medium`, or `small`.
+ * @return string
+ */
+function clanspress_teams_get_display_team_avatar( int $team_id, bool $suppress_filters = false, string|array $size = '', string $context = '', string $avatar_preset = '' ): string {
+	if ( $team_id < 1 ) {
+		return '';
+	}
+
+	$preset_key        = sanitize_key( $avatar_preset );
+	$preset_for_filter = '';
+
+	if ( in_array( $preset_key, array( 'large', 'medium', 'small' ), true ) ) {
+		$size              = clanspress_teams_resolve_team_avatar_image_size( $preset_key );
+		$preset_for_filter = $preset_key;
+	} elseif ( '' === $size || ( is_array( $size ) && empty( $size ) ) ) {
+		$size              = clanspress_teams_resolve_team_avatar_image_size( 'large' );
+		$preset_for_filter = 'large';
+	}
+
+	$avatar_id = (int) get_post_meta( $team_id, 'cp_team_avatar_id', true );
+	$url       = $avatar_id ? (string) wp_get_attachment_image_url( $avatar_id, $size ) : '';
+
+	if ( '' === $url ) {
+		$url = clanspress_teams_get_default_avatar_url( $team_id );
+	}
+
+	$url = trim( (string) $url );
+
+	if ( $suppress_filters ) {
+		return $url;
+	}
+
+	/**
+	 * Filters the resolved team avatar image URL.
+	 *
+	 * @param string       $url              URL.
+	 * @param int          $team_id          Team post ID.
+	 * @param string|array $size             Size used for attachment resolution.
+	 * @param string       $context          Surface key.
+	 * @param string       $avatar_preset    `large`, `medium`, `small`, or empty when an explicit size was used.
+	 */
+	return (string) apply_filters( 'clanspress_teams_get_display_team_avatar', $url, $team_id, $size, $context, $preset_for_filter );
+}
+
+/**
  * Global default team avatar image URL (Teams settings, then bundled asset).
  *
  * @param int $team_id Team post ID for filters.

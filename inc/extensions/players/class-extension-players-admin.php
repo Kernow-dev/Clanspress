@@ -25,12 +25,15 @@ class Admin extends Abstract_Settings {
 		return apply_filters(
 			'clanspress_players_defaults',
 			array(
-				'enable_profiles'        => true,
-				'enable_avatars'         => true,
-				'enable_covers'          => true,
-				'default_avatar'         => '',
-				'default_cover'          => '',
-				'events_profile_subpage' => true,
+				'enable_profiles'                 => true,
+				'enable_avatars'                  => true,
+				'enable_covers'                   => true,
+				'default_avatar'                  => '',
+				'default_cover'                   => '',
+				'events_profile_subpage'          => true,
+				'player_avatar_image_size_large'  => 'clanspress-avatar-large',
+				'player_avatar_image_size_medium' => 'clanspress-avatar-medium',
+				'player_avatar_image_size_small'  => 'clanspress-avatar-small',
 			)
 		);
 	}
@@ -77,6 +80,35 @@ class Admin extends Abstract_Settings {
 						),
 					),
 				),
+				'avatar_sizes' => array(
+					'title'  => __( 'Player avatar image sizes', 'clanspress' ),
+					'fields' => array(
+						'player_avatar_image_size_large'  => array(
+							'label'       => __( 'Large — player profiles', 'clanspress' ),
+							'type'        => 'select',
+							'description' => __( 'Used for profile pages, the player avatar block, and other prominent displays. Code may request this with preset “large”.', 'clanspress' ),
+							'default'     => 'clanspress-avatar-large',
+							'options'     => $this->get_avatar_image_size_options(),
+							'sanitize'    => array( $this, 'sanitize_player_avatar_size_large' ),
+						),
+						'player_avatar_image_size_medium' => array(
+							'label'       => __( 'Medium — forums and social-style feeds', 'clanspress' ),
+							'type'        => 'select',
+							'description' => __( 'Typical size for post authors in forums, activity feeds, and similar layouts. Preset “medium”.', 'clanspress' ),
+							'default'     => 'clanspress-avatar-medium',
+							'options'     => $this->get_avatar_image_size_options(),
+							'sanitize'    => array( $this, 'sanitize_player_avatar_size_medium' ),
+						),
+						'player_avatar_image_size_small'  => array(
+							'label'       => __( 'Small — comments and replies', 'clanspress' ),
+							'type'        => 'select',
+							'description' => __( 'Compact UI such as comment threads, notifications, and nav. Preset “small”.', 'clanspress' ),
+							'default'     => 'clanspress-avatar-small',
+							'options'     => $this->get_avatar_image_size_options(),
+							'sanitize'    => array( $this, 'sanitize_player_avatar_size_small' ),
+						),
+					),
+				),
 				'branding' => array(
 					'title'  => __( 'Branding defaults', 'clanspress' ),
 					'fields' => array(
@@ -104,6 +136,52 @@ class Admin extends Abstract_Settings {
 
 	public function render_page(): void {
 		$this->render_settings_page( __( 'Players', 'clanspress' ) );
+	}
+
+	/**
+	 * Options for avatar image size dropdowns (registered sizes + full).
+	 *
+	 * @return array<string, string>
+	 */
+	protected function get_avatar_image_size_options(): array {
+		return function_exists( 'clanspress_players_get_image_size_choices_for_settings' )
+			? clanspress_players_get_image_size_choices_for_settings()
+			: array(
+				'thumbnail' => __( 'Thumbnail', 'clanspress' ),
+				'medium'    => __( 'Medium', 'clanspress' ),
+				'large'     => __( 'Large', 'clanspress' ),
+				'full'      => __( 'Full size', 'clanspress' ),
+			);
+	}
+
+	/**
+	 * @param mixed $value Raw setting.
+	 * @return string
+	 */
+	public function sanitize_player_avatar_size_large( $value ): string {
+		return function_exists( 'clanspress_players_sanitize_image_size_setting_value' )
+			? clanspress_players_sanitize_image_size_setting_value( (string) $value, 'clanspress-avatar-large' )
+			: 'clanspress-avatar-large';
+	}
+
+	/**
+	 * @param mixed $value Raw setting.
+	 * @return string
+	 */
+	public function sanitize_player_avatar_size_medium( $value ): string {
+		return function_exists( 'clanspress_players_sanitize_image_size_setting_value' )
+			? clanspress_players_sanitize_image_size_setting_value( (string) $value, 'clanspress-avatar-medium' )
+			: 'clanspress-avatar-medium';
+	}
+
+	/**
+	 * @param mixed $value Raw setting.
+	 * @return string
+	 */
+	public function sanitize_player_avatar_size_small( $value ): string {
+		return function_exists( 'clanspress_players_sanitize_image_size_setting_value' )
+			? clanspress_players_sanitize_image_size_setting_value( (string) $value, 'clanspress-avatar-small' )
+			: 'clanspress-avatar-small';
 	}
 
 	/**
