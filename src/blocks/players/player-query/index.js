@@ -23,7 +23,7 @@ const TEMPLATE = [
 		'clanspress/player-template',
 		{},
 		[
-			[ 'clanspress/player-avatar' ],
+			[ 'clanspress/player-avatar', { avatarPreset: 'medium' } ],
 			[ 'clanspress/player-display-name' ],
 		],
 	],

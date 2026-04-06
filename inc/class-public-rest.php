@@ -143,9 +143,10 @@ final class Public_Rest {
 			);
 		}
 
-		$team_id   = (int) $post->ID;
-		$avatar_id = (int) get_post_meta( $team_id, 'cp_team_avatar_id', true );
-		$logo_url  = $avatar_id ? (string) wp_get_attachment_image_url( $avatar_id, 'medium' ) : '';
+		$team_id  = (int) $post->ID;
+		$logo_url = function_exists( 'clanspress_teams_get_display_team_avatar' )
+			? clanspress_teams_get_display_team_avatar( $team_id, false, '', 'public_rest', 'medium' )
+			: '';
 		if ( '' === $logo_url && has_post_thumbnail( $team_id ) ) {
 			$logo_url = (string) get_the_post_thumbnail_url( $team_id, 'medium' );
 		}

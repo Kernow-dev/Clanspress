@@ -4,11 +4,12 @@
 import { store, getContext, getElement } from '@wordpress/interactivity';
 import {
 	applyClanspressInlineMediaSavePayload,
+	CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS,
 	createClanspressHideToast,
 	createClanspressShowToast,
 	createClanspressToolbarPanelToggler,
-	getClanspressToolbarPanelId,
 	getClanspressInteractivityStateGetter,
+	getClanspressToolbarPanelId,
 	rejectClanspressInvalidImageFile,
 	setClanspressPreviewObjectUrlFromFile,
 } from '../../shared/front-media-interactivity.js';
@@ -51,6 +52,8 @@ const { state, actions } = store( STORE_NAMESPACE, {
 		togglePanel: createClanspressToolbarPanelToggler( getPlayerCoverState, {
 			panelSelectorPrefix: '.clanspress-player-cover__panel--',
 			allPanelsSelector: '.clanspress-player-cover__panel',
+			islandRootSelector:
+				CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.playerCover,
 		} ),
 
 		startDrag( event ) {

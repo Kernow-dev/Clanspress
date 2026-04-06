@@ -1,5 +1,7 @@
 // Front-end: match team-avatar / core-adjacent simplicity; optional toolbar only when block attribute is on.
 
+@use '../../shared/clanspress-media-stacking' as *;
+
 .wp-block-clanspress-player-avatar.clanspress-player-avatar-block {
 	position: relative;
 	margin: 0;
@@ -77,7 +79,7 @@
 	pointer-events: none;
 	opacity: 0;
 	transition: opacity 0.15s ease;
-	z-index: 5;
+	z-index: $clanspress-media-avatar-toolbar-z;
 }
 
 .wp-block-clanspress-player-avatar.clanspress-player-avatar-block:is(
@@ -159,7 +161,7 @@
 	position: absolute;
 	right: 0;
 	top: 0;
-	z-index: 40;
+	z-index: $clanspress-media-toast-z;
 	max-width: min(100%, 20rem);
 	opacity: 0;
 	transform: translateY(6px);

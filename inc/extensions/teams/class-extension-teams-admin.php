@@ -27,11 +27,14 @@ class Admin extends Abstract_Settings {
 		return apply_filters(
 			'clanspress_teams_defaults',
 			array(
-				'team_mode'               => 'single_team',
-				'player_team_membership'  => 'multiple',
-				'default_team_avatar'     => '',
-				'default_team_cover'      => '',
-				'events_profile_subpage'  => true,
+				'team_mode'                      => 'single_team',
+				'player_team_membership'         => 'multiple',
+				'default_team_avatar'            => '',
+				'default_team_cover'             => '',
+				'events_profile_subpage'         => true,
+				'team_avatar_image_size_large'   => 'clanspress-team-avatar-large',
+				'team_avatar_image_size_medium'  => 'clanspress-team-avatar-medium',
+				'team_avatar_image_size_small'   => 'clanspress-team-avatar-small',
 			)
 		);
 	}
@@ -70,6 +73,35 @@ class Admin extends Abstract_Settings {
 							'description' => __( 'When the Events extension is enabled, show the team Events tab and /teams/{slug}/events/. When off, those routes redirect to the public team profile.', 'clanspress' ),
 							'default'     => true,
 							'sanitize'    => 'rest_sanitize_boolean',
+						),
+					),
+				),
+				'team_avatar_sizes' => array(
+					'title'  => __( 'Team avatar image sizes', 'clanspress' ),
+					'fields' => array(
+						'team_avatar_image_size_large' => array(
+							'label'       => __( 'Large — team profiles', 'clanspress' ),
+							'type'        => 'select',
+							'description' => __( 'Team profile pages and the team avatar block. Preset “large” in code.', 'clanspress' ),
+							'default'     => 'clanspress-team-avatar-large',
+							'options'     => $this->get_team_avatar_image_size_options(),
+							'sanitize'    => array( $this, 'sanitize_team_avatar_size_large' ),
+						),
+						'team_avatar_image_size_medium' => array(
+							'label'       => __( 'Medium — forums and social-style feeds', 'clanspress' ),
+							'type'        => 'select',
+							'description' => __( 'Lists, cards, and feed-style team logos. Preset “medium”.', 'clanspress' ),
+							'default'     => 'clanspress-team-avatar-medium',
+							'options'     => $this->get_team_avatar_image_size_options(),
+							'sanitize'    => array( $this, 'sanitize_team_avatar_size_medium' ),
+						),
+						'team_avatar_image_size_small' => array(
+							'label'       => __( 'Small — compact UI', 'clanspress' ),
+							'type'        => 'select',
+							'description' => __( 'Small team marks in tight layouts. Preset “small”.', 'clanspress' ),
+							'default'     => 'clanspress-team-avatar-small',
+							'options'     => $this->get_team_avatar_image_size_options(),
+							'sanitize'    => array( $this, 'sanitize_team_avatar_size_small' ),
 						),
 					),
 				),
@@ -179,5 +211,51 @@ class Admin extends Abstract_Settings {
 
 	public function render_page(): void {
 		$this->render_settings_page( __( 'Teams', 'clanspress' ) );
+	}
+
+	/**
+	 * Options for team avatar image size dropdowns.
+	 *
+	 * @return array<string, string>
+	 */
+	protected function get_team_avatar_image_size_options(): array {
+		return function_exists( 'clanspress_players_get_image_size_choices_for_settings' )
+			? clanspress_players_get_image_size_choices_for_settings()
+			: array(
+				'thumbnail' => __( 'Thumbnail', 'clanspress' ),
+				'medium'    => __( 'Medium', 'clanspress' ),
+				'large'     => __( 'Large', 'clanspress' ),
+				'full'      => __( 'Full size', 'clanspress' ),
+			);
+	}
+
+	/**
+	 * @param mixed $value Raw setting.
+	 * @return string
+	 */
+	public function sanitize_team_avatar_size_large( $value ): string {
+		return function_exists( 'clanspress_players_sanitize_image_size_setting_value' )
+			? clanspress_players_sanitize_image_size_setting_value( (string) $value, 'clanspress-team-avatar-large' )
+			: 'clanspress-team-avatar-large';
+	}
+
+	/**
+	 * @param mixed $value Raw setting.
+	 * @return string
+	 */
+	public function sanitize_team_avatar_size_medium( $value ): string {
+		return function_exists( 'clanspress_players_sanitize_image_size_setting_value' )
+			? clanspress_players_sanitize_image_size_setting_value( (string) $value, 'clanspress-team-avatar-medium' )
+			: 'clanspress-team-avatar-medium';
+	}
+
+	/**
+	 * @param mixed $value Raw setting.
+	 * @return string
+	 */
+	public function sanitize_team_avatar_size_small( $value ): string {
+		return function_exists( 'clanspress_players_sanitize_image_size_setting_value' )
+			? clanspress_players_sanitize_image_size_setting_value( (string) $value, 'clanspress-team-avatar-small' )
+			: 'clanspress-team-avatar-small';
 	}
 }

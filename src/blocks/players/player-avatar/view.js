@@ -4,11 +4,12 @@
 import { store, getContext, getElement } from '@wordpress/interactivity';
 import {
 	applyClanspressInlineMediaSavePayload,
+	CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS,
 	createClanspressHideToast,
 	createClanspressShowToast,
 	createClanspressToolbarPanelToggler,
-	getClanspressToolbarPanelId,
 	getClanspressInteractivityStateGetter,
+	getClanspressToolbarPanelId,
 	rejectClanspressInvalidImageFile,
 	setClanspressPreviewObjectUrlFromFile,
 } from '../../shared/front-media-interactivity.js';
@@ -48,10 +49,15 @@ const { state, actions } = store( STORE_NAMESPACE, {
 	},
 
 	actions: {
-		togglePanel: createClanspressToolbarPanelToggler( getPlayerAvatarState, {
-			panelSelectorPrefix: '.clanspress-player-avatar__panel--',
-			allPanelsSelector: '.clanspress-player-avatar__panel',
-		} ),
+		togglePanel: createClanspressToolbarPanelToggler(
+			getPlayerAvatarState,
+			{
+				panelSelectorPrefix: '.clanspress-player-avatar__panel--',
+				allPanelsSelector: '.clanspress-player-avatar__panel',
+				islandRootSelector:
+					CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.playerAvatar,
+			}
+		),
 
 		selectAvatar() {
 			state.root

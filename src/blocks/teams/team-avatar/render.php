@@ -14,6 +14,11 @@ defined( 'ABSPATH' ) || exit;
 
 $team_id = clanspress_team_single_block_team_id( $block );
 
+$avatar_preset = isset( $attributes['avatarPreset'] ) ? sanitize_key( (string) $attributes['avatarPreset'] ) : 'large';
+if ( ! in_array( $avatar_preset, array( 'large', 'medium', 'small' ), true ) ) {
+	$avatar_preset = 'large';
+}
+
 $width = isset( $attributes['width'] ) ? (int) $attributes['width'] : 120;
 $width = min( 512, max( 32, $width ) );
 
@@ -40,15 +45,13 @@ if ( $team_id < 1 ) {
 	return;
 }
 
-$avatar_id = (int) get_post_meta( $team_id, 'cp_team_avatar_id', true );
-$url       = $avatar_id ? wp_get_attachment_image_url( $avatar_id, 'medium' ) : '';
-if ( ! $url && function_exists( 'clanspress_teams_get_default_avatar_url' ) ) {
-	$url = clanspress_teams_get_default_avatar_url( $team_id );
-}
-$url = trim( (string) $url );
-if ( ! $url && function_exists( 'clanspress' ) ) {
+$url = function_exists( 'clanspress_teams_get_display_team_avatar' )
+	? clanspress_teams_get_display_team_avatar( $team_id, false, '', 'team_avatar_block', $avatar_preset )
+	: '';
+if ( '' === $url && function_exists( 'clanspress' ) ) {
 	$url = clanspress()->url . 'assets/img/avatars/default-avatar.png';
 }
+$url = trim( (string) $url );
 
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(

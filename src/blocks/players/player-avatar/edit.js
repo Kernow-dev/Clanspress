@@ -3,16 +3,49 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, ToggleControl } from '@wordpress/components';
+import { PanelBody, ToggleControl, SelectControl } from '@wordpress/components';
 import { EntityLinkInspector } from '../../shared/entity-link-inspector';
 import './editor.scss';
 
+const AVATAR_PRESET_OPTIONS = [
+	{
+		label: __( 'Large — profiles', 'clanspress' ),
+		value: 'large',
+	},
+	{
+		label: __( 'Medium — feeds & lists', 'clanspress' ),
+		value: 'medium',
+	},
+	{
+		label: __( 'Small — compact UI', 'clanspress' ),
+		value: 'small',
+	},
+];
+
 export default function Edit( { attributes, setAttributes } ) {
-	const { allowFrontEndMediaEdit } = attributes;
+	const { allowFrontEndMediaEdit, avatarPreset } = attributes;
 
 	return (
 		<>
 			<InspectorControls>
+				<PanelBody title={ __( 'Avatar output', 'clanspress' ) }>
+					<SelectControl
+						label={ __( 'Image size preset', 'clanspress' ) }
+						help={ __(
+							'Uses the matching size from Clanspress → Players → Player avatar image sizes.',
+							'clanspress'
+						) }
+						value={ avatarPreset || 'large' }
+						options={ AVATAR_PRESET_OPTIONS }
+						onChange={ ( value ) =>
+							setAttributes( {
+								avatarPreset: value || 'large',
+							} )
+						}
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+					/>
+				</PanelBody>
 				<PanelBody
 					title={ __( 'Profile media', 'clanspress' ) }
 					initialOpen={ false }

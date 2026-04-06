@@ -1,13 +1,15 @@
 // Front-end: align with team-cover layout; minimal WP-admin-style toolbar when inline edit is enabled.
 
+@use '../../shared/clanspress-media-stacking' as *;
+
 .wp-block-clanspress-player-cover.clanspress-player-cover-block {
 	position: relative;
 	background-position: center center;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	// Allow the edit toolbar + panel to extend past the cover bounds (overflow would clip them).
-	overflow: visible;
+	overflow: hidden;
+	overflow: clip;
 	box-sizing: border-box;
 	width: 100%;
 	min-height: 12rem;
@@ -77,7 +79,8 @@
 		position: absolute;
 		top: 0;
 		right: 0;
-		z-index: 10;
+		// Stacking: see `_clanspress-media-stacking.scss` — above `.player-cover__content-container` (z-index: 2).
+		z-index: $clanspress-media-cover-toolbar-z;
 		padding: 0.5rem;
 		pointer-events: none;
 		opacity: 0;

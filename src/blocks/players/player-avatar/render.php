@@ -23,14 +23,22 @@ if ( ! $user_id ) {
 	return '';
 }
 
-$avatar_image = clanspress_players_get_display_avatar( $user_id );
-
 $can_edit       = get_current_user_id() === $user_id;
 $allow_inline   = ! empty( $attributes['allowFrontEndMediaEdit'] );
 $show_controls  = $can_edit && $allow_inline;
 $display_name   = clanspress_players_get_display_name( $user_id );
 
 $inner_classes = 'clanspress-player-avatar__img';
+
+$avatar_preset = isset( $attributes['avatarPreset'] ) ? sanitize_key( (string) $attributes['avatarPreset'] ) : 'large';
+if ( ! in_array( $avatar_preset, array( 'large', 'medium', 'small' ), true ) ) {
+	$avatar_preset = 'large';
+}
+
+$avatar_display_args = array(
+	'context' => 'player_avatar_block',
+	'preset'  => $avatar_preset,
+);
 // Transparent GIF: valid src when the profile has no avatar yet but inline upload is allowed.
 $placeholder_src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
@@ -60,30 +68,43 @@ if ( $show_controls ) {
 $avatar_file_input_id = wp_unique_id( 'clanspress-profile-avatar-' );
 $panel_id             = wp_unique_id( 'clanspress-player-avatar-panel-' );
 
-ob_start();
-if ( $avatar_image ) {
-	printf(
-		'<img class="%1$s" src="%2$s" alt="%3$s" loading="lazy" decoding="async" />',
-		esc_attr( $inner_classes ),
-		esc_url( $avatar_image ),
-		esc_attr( sprintf( /* translators: %s: Player display name. */ __( '%s player avatar', 'clanspress' ), $display_name ) )
-	);
+$img_html = function_exists( 'clanspress_players_get_player_avatar_img_html' )
+	? clanspress_players_get_player_avatar_img_html(
+		$user_id,
+		array_merge(
+			$avatar_display_args,
+			array( 'class' => $inner_classes )
+		)
+	)
+	: '';
+
+if ( '' !== $img_html ) {
+	$img_inner = $img_html;
 } elseif ( $show_controls ) {
+	ob_start();
 	printf(
 		'<img class="%1$s clanspress-player-avatar__img--empty" src="%2$s" alt="%3$s" loading="lazy" decoding="async" />',
 		esc_attr( $inner_classes ),
 		esc_url( $placeholder_src ),
 		esc_attr( sprintf( /* translators: %s: Player display name. */ __( '%s — no avatar yet', 'clanspress' ), $display_name ) )
 	);
+	$img_inner = ob_get_clean();
+	$img_inner = (string) apply_filters( 'clanspress_players_player_avatar_empty_img_markup', $img_inner, $user_id, $avatar_display_args );
 } else {
+	ob_start();
 	printf(
 		'<span class="%1$s clanspress-player-avatar__img--placeholder" role="img" aria-label="%2$s">%3$s</span>',
 		esc_attr( $inner_classes ),
 		esc_attr( sprintf( /* translators: %s: Player display name. */ __( '%s — no avatar yet', 'clanspress' ), $display_name ) ),
 		esc_html__( 'No avatar', 'clanspress' )
 	);
+	$img_inner = ob_get_clean();
+	$img_inner = (string) apply_filters( 'clanspress_players_player_avatar_placeholder_markup', $img_inner, $user_id, $avatar_display_args );
 }
-$img_inner = ob_get_clean();
+
+if ( function_exists( 'clanspress_players_apply_player_avatar_display_markup' ) ) {
+	$img_inner = clanspress_players_apply_player_avatar_display_markup( $img_inner, $user_id, $avatar_display_args );
+}
 
 if ( ! empty( $attributes['isLink'] ) && function_exists( 'clanspress_block_player_profile_url' ) && function_exists( 'clanspress_block_entity_link_url' ) ) {
 	$href = clanspress_block_entity_link_url(

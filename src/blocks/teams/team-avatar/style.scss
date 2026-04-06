@@ -1,3 +1,5 @@
+@use '../../shared/clanspress-media-stacking' as *;
+
 .wp-block-clanspress-team-avatar {
 	margin: 0;
 }
@@ -84,7 +86,7 @@
 	pointer-events: none;
 	opacity: 0;
 	transition: opacity 0.15s ease;
-	z-index: 5;
+	z-index: $clanspress-media-avatar-toolbar-z;
 }
 
 .wp-block-clanspress-team-avatar.clanspress-team-avatar-block:is(
@@ -166,7 +168,7 @@
 	position: absolute;
 	right: 0;
 	top: 0;
-	z-index: 40;
+	z-index: $clanspress-media-toast-z;
 	max-width: min(100%, 20rem);
 	opacity: 0;
 	transform: translateY(6px);

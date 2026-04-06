@@ -10,6 +10,11 @@
 	"example": {},
 	"usesContext": [ "clanspress/playerId" ],
 	"attributes": {
+		"avatarPreset": {
+			"type": "string",
+			"default": "large",
+			"enum": [ "large", "medium", "small" ]
+		},
 		"allowFrontEndMediaEdit": {
 			"type": "boolean",
 			"default": false

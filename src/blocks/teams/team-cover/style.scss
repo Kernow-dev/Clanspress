@@ -1,3 +1,5 @@
+@use '../../shared/clanspress-media-stacking' as *;
+
 .wp-block-clanspress-team-cover {
 	position: relative;
 	background-position: center center;
@@ -76,7 +78,8 @@
 		position: absolute;
 		top: 0;
 		right: 0;
-		z-index: 10;
+		// Stacking: see `_clanspress-media-stacking.scss` (aligned with player-cover toolbar).
+		z-index: $clanspress-media-cover-toolbar-z;
 		padding: 0.5rem;
 		pointer-events: none;
 		opacity: 0;

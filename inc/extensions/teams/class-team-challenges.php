@@ -457,9 +457,13 @@ final class Team_Challenges {
 			$snapshot['source']     = 'local_team';
 			$snapshot['title']      = get_the_title( $challenger_team_id );
 			$snapshot['profileUrl'] = get_permalink( $challenger_team_id ) ?: '';
-			$aid                    = (int) get_post_meta( $challenger_team_id, 'cp_team_avatar_id', true );
-			if ( $aid ) {
-				$snapshot['logoUrl'] = (string) wp_get_attachment_image_url( $aid, 'medium' );
+			if ( function_exists( 'clanspress_teams_get_display_team_avatar' ) ) {
+				$snapshot['logoUrl'] = clanspress_teams_get_display_team_avatar( $challenger_team_id, false, '', 'team_challenge', 'medium' );
+			} else {
+				$aid = (int) get_post_meta( $challenger_team_id, 'cp_team_avatar_id', true );
+				if ( $aid ) {
+					$snapshot['logoUrl'] = (string) wp_get_attachment_image_url( $aid, 'medium' );
+				}
 			}
 		}
 
