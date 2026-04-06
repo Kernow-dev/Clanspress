@@ -29,6 +29,44 @@ class General_Settings extends Abstract_Settings {
 	 */
 	protected bool $register_standalone_submenu = false;
 
+	public function hooks(): void {
+		parent::hooks();
+		add_filter( 'show_admin_bar', array( $this, 'filter_show_admin_bar' ), 99 );
+	}
+
+	/**
+	 * Hide the front-end WordPress toolbar for users without `manage_options` when the option is enabled.
+	 *
+	 * Super admins on multisite always keep the bar. `is_admin()` requests are unchanged.
+	 *
+	 * @param bool $show Whether WordPress would show the admin bar.
+	 * @return bool
+	 */
+	public function filter_show_admin_bar( bool $show ): bool {
+		if ( is_admin() ) {
+			return $show;
+		}
+
+		if ( ! $this->get( 'hide_wp_admin_bar_for_non_admins', false ) ) {
+			return $show;
+		}
+
+		if ( ! is_user_logged_in() ) {
+			return $show;
+		}
+
+		$uid = get_current_user_id();
+		if ( $uid > 0 && is_multisite() && is_super_admin( $uid ) ) {
+			return $show;
+		}
+
+		if ( current_user_can( 'manage_options' ) ) {
+			return $show;
+		}
+
+		return false;
+	}
+
 	protected function get_page_title(): string {
 		return __( 'Clanspress', 'clanspress' );
 	}
@@ -40,10 +78,11 @@ class General_Settings extends Abstract_Settings {
 	protected function get_defaults(): array {
 		// Filters run once in {@see Abstract_Settings::register_settings()} as `clanspress_general_settings_defaults`.
 		return array(
-			'admin_notes'          => '',
-			'events_enabled'       => true,
-			'wordban_enabled'      => false,
-			'wordban_custom_list'  => '',
+			'admin_notes'                      => '',
+			'events_enabled'                   => true,
+			'wordban_enabled'                  => false,
+			'wordban_custom_list'              => '',
+			'hide_wp_admin_bar_for_non_admins' => false,
 		);
 	}
 
@@ -65,6 +104,12 @@ class General_Settings extends Abstract_Settings {
 						'type'        => 'checkbox',
 						'description' => __( 'When off, team and group events, REST endpoints, and front-end event routes are disabled site-wide. Individual teams and groups can still turn events off when this is on.', 'clanspress' ),
 						'default'     => true,
+					),
+					'hide_wp_admin_bar_for_non_admins' => array(
+						'label'       => __( 'Hide WordPress toolbar on the front end for non-administrators', 'clanspress' ),
+						'type'        => 'checkbox',
+						'description' => __( 'When on, only users who can manage options (and super admins on multisite) see the admin bar while viewing the site. The dashboard and block editor are unchanged.', 'clanspress' ),
+						'default'     => false,
 					),
 				),
 			),
