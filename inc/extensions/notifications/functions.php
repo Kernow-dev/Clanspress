@@ -511,7 +511,7 @@ function clanspress_render_notification( object $notification, bool $compact = f
 		<div class="clanspress-notification__content">
 			<div class="clanspress-notification__header">
 				<?php if ( $notification->url && ! $notification->is_actionable ) : ?>
-					<a href="<?php echo esc_url( $notification->url ); ?>" class="clanspress-notification__link">
+					<a href="<?php echo esc_url( $notification->url ); ?>" class="clanspress-notification__link" data-notification-id="<?php echo esc_attr( (string) $notification->id ); ?>">
 						<span class="clanspress-notification__title"><?php echo esc_html( $notification->title ); ?></span>
 					</a>
 				<?php else : ?>
@@ -597,9 +597,16 @@ function clanspress_render_player_notifications_page_markup(): string {
 	$unread_count  = $result['unread_count'];
 	$total_pages   = $per_page > 0 ? (int) ceil( $total / $per_page ) : 1;
 
+	$rest_root = trailingslashit( (string) rest_url( 'clanspress/v1' ) );
+	$rest_nonce = wp_create_nonce( 'wp_rest' );
+
 	ob_start();
 	?>
-	<div class="clanspress-notifications-page">
+	<div
+		class="clanspress-notifications-page"
+		data-clanspress-notifications-rest="<?php echo esc_url( $rest_root ); ?>"
+		data-clanspress-notifications-nonce="<?php echo esc_attr( $rest_nonce ); ?>"
+	>
 		<div class="clanspress-notifications-page__header">
 			<h1><?php esc_html_e( 'Notifications', 'clanspress' ); ?></h1>
 			<?php if ( $unread_count > 0 ) : ?>
@@ -726,6 +733,50 @@ function clanspress_render_player_notifications_page_markup(): string {
 			font-size: 0.875rem;
 		}
 	</style>
+	<script>
+	(function () {
+		const root = document.querySelector('.clanspress-notifications-page[data-clanspress-notifications-rest]');
+		if (!root) {
+			return;
+		}
+		const restBase = root.getAttribute('data-clanspress-notifications-rest');
+		const nonce = root.getAttribute('data-clanspress-notifications-nonce');
+		if (!restBase || !nonce) {
+			return;
+		}
+		root.addEventListener('click', function (ev) {
+			const a = ev.target.closest('a.clanspress-notification__link[data-notification-id]');
+			if (!a || !root.contains(a)) {
+				return;
+			}
+			const id = a.getAttribute('data-notification-id');
+			if (!id) {
+				return;
+			}
+			const row = a.closest('.clanspress-notification');
+			if (row && row.classList.contains('is-read')) {
+				return;
+			}
+			ev.preventDefault();
+			const href = a.getAttribute('href');
+			const url = restBase.replace(/\/?$/, '/') + 'notifications/' + encodeURIComponent(id) + '/read';
+			fetch(url, {
+				method: 'POST',
+				credentials: 'same-origin',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': nonce,
+				},
+			})
+				.catch(function () {})
+				.finally(function () {
+					if (href) {
+						window.location.assign(href);
+					}
+				});
+		});
+	})();
+	</script>
 	<?php
 	$html = (string) ob_get_clean();
 

@@ -87,10 +87,11 @@ function safeClassSuffix( raw ) {
  * Build one notification row using DOM APIs (avoid innerHTML with API-sourced strings).
  *
  * @param {Object} notification Notification data.
- * @param {Object} i18n         Internationalization strings.
+ * @param {Object} ctx          Context: `i18n`, `restUrl`, `nonce`.
  * @return {HTMLElement|null}
  */
-function createNotificationItemElement( notification, i18n ) {
+function createNotificationItemElement( notification, ctx ) {
+	const i18n = ctx?.i18n || {};
 	const id = parseInt( notification?.id, 10 );
 	if ( ! Number.isFinite( id ) || id < 1 ) {
 		return null;
@@ -154,6 +155,30 @@ function createNotificationItemElement( notification, i18n ) {
 			? String( notification.title )
 			: '';
 		a.appendChild( titleSpan );
+		if (
+			! notification.is_read &&
+			ctx?.restUrl &&
+			ctx?.nonce
+		) {
+			a.addEventListener( 'click', async ( e ) => {
+				e.preventDefault();
+				try {
+					await restFetch( ctx.restUrl, ctx.nonce, {
+						path: `notifications/${ id }/read`,
+						method: 'POST',
+					} );
+					if (
+						typeof ctx.unreadCount === 'number' &&
+						ctx.unreadCount > 0
+					) {
+						ctx.unreadCount -= 1;
+					}
+				} catch ( err ) {
+					console.error( 'Failed to mark notification read:', err );
+				}
+				window.location.assign( linkUrl );
+			} );
+		}
 		header.appendChild( a );
 	} else {
 		const titleSpan = document.createElement( 'span' );
@@ -257,7 +282,7 @@ function renderNotificationsList( ctx, ref ) {
 
 	const frag = document.createDocumentFragment();
 	ctx.notifications.forEach( ( n ) => {
-		const el = createNotificationItemElement( n, ctx.i18n );
+		const el = createNotificationItemElement( n, ctx );
 		if ( el ) {
 			frag.appendChild( el );
 		}
