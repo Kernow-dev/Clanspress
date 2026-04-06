@@ -151,6 +151,7 @@ class Players extends Skeleton {
 
 		// Blocks and assets.
 		add_action( 'init', array( $this, 'register_profile_blocks' ) );
+		add_filter( 'render_block_context', array( $this, 'filter_render_block_context_social_on_player_profile' ), 10, 3 );
 
 		// Profile meta.
 		add_action( 'init', array( $this, 'register_user_meta_keys' ) );
@@ -293,6 +294,49 @@ class Players extends Skeleton {
 		$vars[] = 'cp_player_subpage';
 		$vars[] = 'cp_players_directory';
 		return $vars;
+	}
+
+	/**
+	 * Supplies `clanspress/playerId` to Social Kit feed/composer blocks when `feedContext` is `profile`.
+	 *
+	 * The `players-player-profile` template renders `post-content` without a `player-query` ancestor, so
+	 * those blocks would otherwise miss profile owner context. They declare `usesContext` for this key.
+	 *
+	 * @param array<string, mixed>      $context      Default block context.
+	 * @param array<string, mixed>      $parsed_block Parsed block (core shape).
+	 * @param \WP_Block|null|array|null $parent_block Parent block instance when available.
+	 * @return array<string, mixed>
+	 */
+	public function filter_render_block_context_social_on_player_profile( array $context, array $parsed_block, $parent_block ): array {
+		unset( $parent_block );
+
+		$name = isset( $parsed_block['blockName'] ) ? (string) $parsed_block['blockName'] : '';
+		if ( 'clanspress-social/social-feed' !== $name && 'clanspress-social/social-composer' !== $name ) {
+			return $context;
+		}
+
+		$attrs = isset( $parsed_block['attrs'] ) && is_array( $parsed_block['attrs'] ) ? $parsed_block['attrs'] : array();
+		$feed  = isset( $attrs['feedContext'] ) && is_string( $attrs['feedContext'] ) ? $attrs['feedContext'] : 'home';
+		if ( 'profile' !== $feed ) {
+			return $context;
+		}
+
+		if ( ! empty( $context['clanspress/playerId'] ) && (int) $context['clanspress/playerId'] > 0 ) {
+			return $context;
+		}
+
+		if ( ! function_exists( 'clanspress_player_profile_context_user_id' ) ) {
+			return $context;
+		}
+
+		$uid = (int) clanspress_player_profile_context_user_id();
+		if ( $uid <= 0 ) {
+			return $context;
+		}
+
+		$context['clanspress/playerId'] = $uid;
+
+		return $context;
 	}
 
 	/**
