@@ -1148,7 +1148,7 @@ class My_Extension {
 
 ### Real-Time Updates (Long Polling)
 
-The notification bell uses HTTP long polling by default. The poll endpoint (`/notifications/poll`) may block until new notifications arrive or the timeout elapses (default cap **25** seconds; overridable via `clanspress_notification_poll_timeout`). The handler does **not** flush the object cache on each iteration (that would clear the entire site cache). Hosts that need lower PHP worker occupancy can set **`clanspress_notification_poll_blocking_wait`** to `false` to perform a single read and return immediately (client still uses `next_poll` spacing).
+The notification bell polls `/notifications/poll` on an interval guided by `next_poll` in the response. By default the poll endpoint performs **one** database read and returns immediately (`clanspress_notification_poll_blocking_wait` default `false`), which avoids tying up PHP-FPM workers when many users are online. Set that filter to `true` for **long-polling** (the request may block up to the timeout, default cap **25** seconds; overridable via `clanspress_notification_poll_timeout`). The handler does **not** flush the object cache on each iteration (that would clear the entire site cache).
 
 **Polling parameters:**
 - `since` - ISO timestamp to get notifications after
@@ -1224,7 +1224,7 @@ add_filter( 'clanspress_notification_transport_config', function( $config, $user
 | Filter | Description |
 |--------|-------------|
 | `clanspress_notification_poll_timeout` | Modify poll timeout |
-| `clanspress_notification_poll_blocking_wait` | Set `false` to skip the sleep loop (single query per request) |
+| `clanspress_notification_poll_blocking_wait` | Default `false` (single query per request). Set `true` for long-polling. |
 | `clanspress_notification_poll_interval` | Modify poll check interval |
 | `clanspress_notification_poll_transport` | Override polling with custom transport |
 | `clanspress_notification_next_poll_interval` | Modify next poll interval |

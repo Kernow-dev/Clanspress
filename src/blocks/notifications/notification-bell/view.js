@@ -1,7 +1,9 @@
 /**
  * Notification Bell block - Interactivity API view script.
  *
- * Uses HTTP long polling by default. Third-party plugins can provide
+ * Polls `/notifications/poll` on a server-driven interval (`next_poll`). The server defaults to
+ * non-blocking polls (one DB read per request); enable long-polling via
+ * `clanspress_notification_poll_blocking_wait` if desired. Third-party plugins can provide
  * WebSocket transport via the 'sync.providers' filter (same pattern as WP 7.0 RTC).
  */
 import { store, getContext, getElement } from '@wordpress/interactivity';

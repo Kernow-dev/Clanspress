@@ -87,7 +87,7 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 | Area | Class / file | Purpose |
 |------|----------------|--------|
 | Entry | `clanspress()` in `shortcut-function.php` | Returns `Main` singleton. |
-| Core | `Kernowdev\Clanspress\Main` (`clanspress.php`) | Bootstrap, i18n, maintenance, loads `Extension_Loader`. |
+| Core | `Kernowdev\Clanspress\Main` (`clanspress.php`) | Bootstrap, i18n, maintenance, loads `Extension_Loader`. Registers core blocks (e.g. `clanspress/visibility-container` from `build/core/visibility-container`) and editor locals for them. |
 | Public REST | `Kernowdev\Clanspress\Public_Rest` (`inc/class-public-rest.php`) | Unauthenticated `clanspress/v1/discovery` + `public-team` for cross-site detection and team cards. |
 | Cross-site matches | `Kernowdev\Clanspress\Cross_Site_Match_Sync` (`inc/class-cross-site-match-sync.php`) | Ed25519-signed `sync-peer-match` inbound route + outbound push when a challenge is accepted; per-install keys in `clanspress_match_sync_site_keys`, public key at `GET clanspress/v1/site-sync-public-key`. Optional legacy HMAC via `clanspress_cross_site_sync_key` filter only. |
 | Team challenges | `Kernowdev\Clanspress\Extensions\Teams\Team_Challenges` (`inc/extensions/teams/class-team-challenges.php`) | Internal `cp_team_challenge` CPT, challenge REST + media upload, notifications (`team_challenge_accept` / `team_challenge_decline`), ties accept flow to `cp_match` + optional events. |
@@ -121,6 +121,7 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 - `clanspress_should_enqueue_player_settings_frontend_assets` — Gate whether `CLANSPRESSPLAYERSETTINGS` is printed on a front request: `(bool $enqueue)` after core heuristics (player settings route, logged-in author profile, singular posts with player-settings / avatar / cover blocks). Return true to force enqueue when custom templates need the payload.
 - `clanspress_can_install_{slug}_extension` — Extra install gates: `(bool $can_install, Skeleton $extension)`.
 - `clanspress_validate_installed_extensions` — After admin saves extension list: `( $new_installed, $requested, $available_extensions )`.
+- `clanspress_visibility_container_should_show` — Whether to render **Visibility container** inner blocks for the current visitor: `(bool $visible, array $attributes, \WP_Block|null $block)`.
 - `clanspress_required_extension_slugs` — Slugs that cannot be disabled (default `cp_players` only): `(array $slugs)`.
 - `clanspress_core_bundled_extension_slugs` — Slugs shipped inside the main Clanspress plugin (admin **Core** badge); excludes separate add-on plugins: `(array $slugs)`.
 - `clanspress_install_notifications_extension_by_default` — If true (default), the loader runs a **one-time** migration that adds `cp_notifications` to installed extensions when missing; set false before first boot to skip: `(bool $enable)`.
@@ -158,7 +159,7 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 - `clanspress_profile_subpages_nav_enabled_for_unknown_context` — Same for custom contexts not in the map: `(bool $enabled, string $context)`.
 - `clanspress_group_profile_nav_context` — Virtual group profile context when not on singular `cp_group`: `(array|null $context)`.
 - `clanspress_group_events_create_url` — “Add event” URL from group calendar block: `(string $url, int $group_id)`.
-- `clanspress_notification_poll_blocking_wait` — Allow `/notifications/poll` to sleep in a loop until timeout or new items: `(bool $blocking, int $user_id)`. Default `true`; set `false` for one-shot polls (less PHP worker hold time).
+- `clanspress_notification_poll_blocking_wait` — Allow `/notifications/poll` to sleep in a loop until timeout or new items: `(bool $blocking, int $user_id)`. Default `false` (one-shot poll per request; safer under concurrent users). Set `true` to restore long-polling (fewer HTTP round-trips, longer PHP worker occupancy).
 - `clanspress_group_event_member_user_ids` — User IDs targeted by group-scoped event roster outreach (`notify` / `rsvp_tentative` on `POST`/`PUT` `event-posts`): `(array $user_ids, int $group_id)`. Core default empty; group plugins should populate.
 - `clanspress_event_member_outreach_user_ids` — Final recipient list after core resolves team roster or group filter: `(array $user_ids, int $event_id, string $scope, int $team_id, int $group_id, string $mode)`.
 - `clanspress_forums_topic_public_url` — Notification/share URL for a topic (and optional reply): `(string $url, string $forum_slug, string $topic_slug, int $reply_id)`.
