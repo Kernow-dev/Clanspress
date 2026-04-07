@@ -2,6 +2,9 @@
 /**
  * Server output: hide inner blocks when visibility rules fail (not CSS-only).
  *
+ * WordPress loads this via `ob_start(); require; return ob_get_clean();` — output must be echoed
+ * (or printed), not returned from this file; a top-level `return` value is discarded.
+ *
  * @package clanspress
  */
 
@@ -34,7 +37,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 	$block
 );
 
-return sprintf(
+printf(
 	'<div %1$s>%2$s</div>',
 	$wrapper_attributes, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped attributes.
 	$inner_html // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- inner blocks HTML from core serializer or WP_Block::render().
