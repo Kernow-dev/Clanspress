@@ -9,6 +9,7 @@ import {
 	createClanspressShowToast,
 	createClanspressToolbarPanelToggler,
 	getClanspressInteractivityStateGetter,
+	getClanspressIslandRootFromRef,
 	getClanspressToolbarPanelId,
 	rejectClanspressInvalidImageFile,
 	setClanspressPreviewObjectUrlFromFile,
@@ -60,7 +61,12 @@ const { state, actions } = store( STORE_NAMESPACE, {
 		),
 
 		selectAvatar() {
-			state.root
+			const { ref } = getElement();
+			const root = getClanspressIslandRootFromRef(
+				ref,
+				CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.playerAvatar
+			);
+			root
 				?.querySelector( 'input[name="profile_avatar"]' )
 				?.click();
 		},
@@ -79,8 +85,13 @@ const { state, actions } = store( STORE_NAMESPACE, {
 			) {
 				return;
 			}
+			const { ref } = getElement();
+			const root = getClanspressIslandRootFromRef(
+				ref,
+				CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.playerAvatar
+			);
 			const url = setClanspressPreviewObjectUrlFromFile( state, file );
-			const preview = state.root?.querySelector(
+			const preview = root?.querySelector(
 				'.clanspress-player-avatar__img'
 			);
 			if ( preview && preview.tagName === 'IMG' ) {
@@ -100,8 +111,12 @@ const { state, actions } = store( STORE_NAMESPACE, {
 		async save() {
 			const { ref } = getElement();
 			const { strings } = getContext();
+			const root = getClanspressIslandRootFromRef(
+				ref,
+				CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.playerAvatar
+			);
 
-			if ( ! state.root || ! ref ) {
+			if ( ! root || ! ref ) {
 				return;
 			}
 
@@ -110,7 +125,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 			ref.classList.add( 'saving' );
 
 			const data = {};
-			state.root
+			root
 				.querySelectorAll( 'input, select, textarea' )
 				.forEach( ( field ) => {
 					if ( ! field.name || field.disabled ) {
@@ -127,7 +142,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 					}
 				} );
 
-			const nonceInput = state.root.querySelector(
+			const nonceInput = root.querySelector(
 				'input[name="_clanspress_profile_settings_save_nonce"]'
 			);
 
@@ -145,7 +160,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 				formData.append( key, data[ key ] );
 			} );
 
-			const avatarInput = state.root.querySelector(
+			const avatarInput = root.querySelector(
 				'input[name="profile_avatar"]'
 			);
 			if ( avatarInput?.files[ 0 ] ) {
@@ -169,6 +184,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 						state,
 						json.data || {},
 						{
+							root,
 							items: [
 								{
 									urlKey: 'avatarUrl',
@@ -191,7 +207,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 							strings?.saveSuccess ||
 							'Your changes were saved successfully.',
 					} );
-					state.root
+					root
 						.querySelectorAll( '.clanspress-player-avatar__panel' )
 						.forEach( ( p ) => p.classList.remove( 'is-open' ) );
 					state.activePanel = null;
@@ -219,7 +235,11 @@ const { state, actions } = store( STORE_NAMESPACE, {
 		init() {
 			const { ref } = getElement();
 			if ( ref ) {
-				state.root = ref;
+				state.root =
+					getClanspressIslandRootFromRef(
+						ref,
+						CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.playerAvatar
+					) || ref;
 			}
 		},
 	},
