@@ -504,6 +504,19 @@ function clanspress_teams_get_display_team_avatar( int $team_id, bool $suppress_
 }
 
 /**
+ * URL of the plugin-bundled default team avatar (used when Teams -> default avatar is unset).
+ *
+ * @return string Empty when `clanspress()` is unavailable.
+ */
+function clanspress_teams_get_bundled_default_avatar_url(): string {
+	if ( ! function_exists( 'clanspress' ) ) {
+		return '';
+	}
+
+	return clanspress()->url . 'assets/img/avatars/default-team-avatar.png';
+}
+
+/**
  * Global default team avatar image URL (Teams settings, then bundled asset).
  *
  * @param int $team_id Team post ID for filters.
@@ -515,7 +528,7 @@ function clanspress_teams_get_default_avatar_url( int $team_id = 0 ): string {
 	$url = trim( $url );
 
 	if ( '' === $url ) {
-		$url = clanspress()->url . 'assets/img/avatars/default-avatar.png';
+		$url = clanspress_teams_get_bundled_default_avatar_url();
 	}
 
 	/**

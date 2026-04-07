@@ -123,7 +123,9 @@ class Admin extends Abstract_Settings {
 							'default'     => '',
 							'fallback_url' => function_exists( 'clanspress_teams_get_default_avatar_url' )
 								? \clanspress_teams_get_default_avatar_url( 0 )
-								: \clanspress()->url . 'assets/img/avatars/default-avatar.png',
+								: ( function_exists( 'clanspress_teams_get_bundled_default_avatar_url' )
+									? \clanspress_teams_get_bundled_default_avatar_url()
+									: '' ),
 							'sanitize'    => 'esc_url_raw',
 						),
 						'default_team_cover'  => array(
