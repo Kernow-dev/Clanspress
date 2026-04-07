@@ -48,8 +48,8 @@ if ( $team_id < 1 ) {
 $url = function_exists( 'clanspress_teams_get_display_team_avatar' )
 	? clanspress_teams_get_display_team_avatar( $team_id, false, '', 'team_avatar_block', $avatar_preset )
 	: '';
-if ( '' === $url && function_exists( 'clanspress' ) ) {
-	$url = clanspress()->url . 'assets/img/avatars/default-avatar.png';
+if ( '' === $url ) {
+	$url = clanspress_teams_get_bundled_default_avatar_url();
 }
 $url = trim( (string) $url );
 

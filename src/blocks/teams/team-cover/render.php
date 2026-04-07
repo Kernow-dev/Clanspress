@@ -145,13 +145,10 @@ if ( $team_id < 1 ) {
 
 $cover_id = (int) get_post_meta( $team_id, 'cp_team_cover_id', true );
 $url      = $cover_id ? wp_get_attachment_image_url( $cover_id, 'full' ) : '';
-if ( ! $url && function_exists( 'clanspress_teams_get_default_cover_url' ) ) {
+if ( ! $url ) {
 	$url = clanspress_teams_get_default_cover_url( $team_id );
 }
 $url = trim( (string) $url );
-if ( ! $url && function_exists( 'clanspress_teams_get_bundled_default_cover_url' ) ) {
-	$url = clanspress_teams_get_bundled_default_cover_url();
-}
 
 if ( ! $url ) {
 	$wrapper = get_block_wrapper_attributes(
