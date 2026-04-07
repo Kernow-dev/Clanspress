@@ -192,9 +192,6 @@ final class Wordban {
 			return $prepared_post;
 		}
 		$extra = self::get_team_name_extra_canonical_words();
-		if ( ! self::is_enabled() && array() === $extra ) {
-			return $prepared_post;
-		}
 		$title = isset( $prepared_post->post_title ) ? (string) $prepared_post->post_title : '';
 		$err   = self::validate_strict_name_text(
 			$title,
@@ -216,9 +213,6 @@ final class Wordban {
 			return $prepared_post;
 		}
 		$extra = self::get_group_name_extra_canonical_words();
-		if ( ! self::is_enabled() && array() === $extra ) {
-			return $prepared_post;
-		}
 		$title = isset( $prepared_post->post_title ) ? (string) $prepared_post->post_title : '';
 		$err   = self::validate_strict_name_text(
 			$title,
@@ -239,7 +233,8 @@ final class Wordban {
 		}
 
 		$wordset = self::get_merged_canonical_words( $extra_canonical_words );
-		return self::validate_strict_text_with_wordset( $text, $wordset );
+		$use_cached_maps = ( array() === $extra_canonical_words );
+		return self::validate_strict_text_with_wordset( $text, $wordset, $use_cached_maps );
 	}
 
 	/**
@@ -270,9 +265,12 @@ final class Wordban {
 	 * @param array<int, string> $wordset Canonical banned words/phrases.
 	 * @return \WP_Error|null
 	 */
-	private static function validate_strict_text_with_wordset( string $text, array $wordset ): ?WP_Error {
+	private static function validate_strict_text_with_wordset( string $text, array $wordset, bool $use_cached_maps = false ): ?WP_Error {
 		$tokens = self::tokenize_for_strict( $text );
-		$banned = self::build_single_token_map( $wordset );
+		$banned = $use_cached_maps
+			? self::get_single_token_map()
+			: self::build_single_token_map( $wordset );
+		$roots  = self::get_embedded_root_tokens( $banned );
 
 		foreach ( $tokens as $t ) {
 			if ( '' === $t || strlen( $t ) < 2 ) {
@@ -282,12 +280,15 @@ final class Wordban {
 				return self::blocked_error();
 			}
 			// Catch common bypasses like `cuntflaps` / `p155flaps` where a banned root is embedded in a longer token.
-			if ( self::token_contains_banned_root( $t, $banned ) ) {
+			if ( self::token_contains_banned_root( $t, $roots ) ) {
 				return self::blocked_error();
 			}
 		}
 
-		foreach ( self::build_phrases( $wordset ) as $phrase ) {
+		$phrases = $use_cached_maps
+			? self::get_phrases()
+			: self::build_phrases( $wordset );
+		foreach ( $phrases as $phrase ) {
 			if ( self::tokens_contain_phrase( $tokens, $phrase ) ) {
 				return self::blocked_error();
 			}
@@ -774,16 +775,27 @@ final class Wordban {
 	}
 
 	/**
-	 * @param string              $token  Canonical token to test.
 	 * @param array<string, true> $banned Single-token banned map.
-	 * @return bool
+	 * @return array<int, string>
 	 */
-	private static function token_contains_banned_root( string $token, array $banned ): bool {
+	private static function get_embedded_root_tokens( array $banned ): array {
+		$roots = array();
 		foreach ( array_keys( $banned ) as $root ) {
 			// Avoid excessive false positives for tiny roots like "ass" or "tit".
-			if ( strlen( $root ) < 4 ) {
-				continue;
+			if ( strlen( $root ) >= 4 ) {
+				$roots[] = (string) $root;
 			}
+		}
+		return $roots;
+	}
+
+	/**
+	 * @param string            $token Canonical token to test.
+	 * @param array<int, string> $roots Banned root tokens (length >= 4).
+	 * @return bool
+	 */
+	private static function token_contains_banned_root( string $token, array $roots ): bool {
+		foreach ( $roots as $root ) {
 			if ( strlen( $token ) <= strlen( $root ) ) {
 				continue;
 			}
