@@ -61,7 +61,27 @@ export const CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS = Object.freeze( {
 } );
 
 /**
- * DOM subtree used to query toolbar panels (prefers hydrated `state.root`, then island wrapper).
+ * Block island root for the current interactive element.
+ *
+ * Interactivity stores are per-namespace; multiple blocks share one `state`, so `state.root` is
+ * overwritten on each init. Always resolve the DOM root from `ref` for the active block.
+ *
+ * @param {Element|null|undefined} ref
+ * @param {string}                 islandRootSelector From {@link CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS}.
+ * @return {Element|null}
+ */
+export function getClanspressIslandRootFromRef( ref, islandRootSelector ) {
+	if ( ! ref || typeof ref.closest !== 'function' ) {
+		return null;
+	}
+	if ( ! islandRootSelector ) {
+		return null;
+	}
+	return ref.closest( islandRootSelector );
+}
+
+/**
+ * DOM subtree used to query toolbar panels (prefers island from `ref`, then hydrated `state.root`).
  *
  * @param {{ root?: Element|null }}              state
  * @param {Element|null|undefined}               ref
@@ -72,14 +92,14 @@ export function getClanspressToolbarScope( state, ref, islandRootSelector ) {
 	if ( ! ref ) {
 		return null;
 	}
-	if ( state?.root && typeof state.root.querySelector === 'function' ) {
-		return state.root;
-	}
 	if ( islandRootSelector && typeof ref.closest === 'function' ) {
 		const island = ref.closest( islandRootSelector );
 		if ( island ) {
 			return island;
 		}
+	}
+	if ( state?.root && typeof state.root.querySelector === 'function' ) {
+		return state.root;
 	}
 	const scopeRoot =
 		typeof ref.closest === 'function'

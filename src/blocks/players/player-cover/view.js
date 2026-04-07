@@ -9,6 +9,7 @@ import {
 	createClanspressShowToast,
 	createClanspressToolbarPanelToggler,
 	getClanspressInteractivityStateGetter,
+	getClanspressIslandRootFromRef,
 	getClanspressToolbarPanelId,
 	rejectClanspressInvalidImageFile,
 	setClanspressPreviewObjectUrlFromFile,
@@ -91,7 +92,11 @@ const { state, actions } = store( STORE_NAMESPACE, {
 		 * @param {FocusEvent} event
 		 */
 		handleToolbarFocusOut( event ) {
-			const root = state.root;
+			const { ref } = getElement();
+			const root = getClanspressIslandRootFromRef(
+				ref,
+				CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.playerCover
+			);
 			if ( ! root ) {
 				return;
 			}
@@ -109,14 +114,18 @@ const { state, actions } = store( STORE_NAMESPACE, {
 			event.preventDefault();
 
 			const { ref } = getElement();
-			if ( ! ref || ! state.root ) {
+			const root = getClanspressIslandRootFromRef(
+				ref,
+				CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.playerCover
+			);
+			if ( ! ref || ! root ) {
 				return;
 			}
 
 			ref.classList.add( 'is-dragging' );
 
 			const box = ref.closest( '.clanspress-player-cover__position-box' );
-			const image = state.root.querySelector(
+			const image = root.querySelector(
 				'.clanspress-player-cover__media'
 			);
 			if ( ! box || ! image ) {
@@ -125,10 +134,10 @@ const { state, actions } = store( STORE_NAMESPACE, {
 			}
 
 			const rect = box.getBoundingClientRect();
-			const coverXInput = state.root.querySelector(
+			const coverXInput = root.querySelector(
 				'input[name="profile_cover_position_x"]'
 			);
-			const coverYInput = state.root.querySelector(
+			const coverYInput = root.querySelector(
 				'input[name="profile_cover_position_y"]'
 			);
 			let posX = 50;
@@ -186,7 +195,12 @@ const { state, actions } = store( STORE_NAMESPACE, {
 		},
 
 		selectCover() {
-			state.root?.querySelector( 'input[name="profile_cover"]' )?.click();
+			const { ref } = getElement();
+			const root = getClanspressIslandRootFromRef(
+				ref,
+				CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.playerCover
+			);
+			root?.querySelector( 'input[name="profile_cover"]' )?.click();
 		},
 
 		updateCover( event ) {
@@ -204,8 +218,13 @@ const { state, actions } = store( STORE_NAMESPACE, {
 				return;
 			}
 
+			const { ref } = getElement();
+			const root = getClanspressIslandRootFromRef(
+				ref,
+				CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.playerCover
+			);
 			const url = setClanspressPreviewObjectUrlFromFile( state, file );
-			const preview = state.root?.querySelector(
+			const preview = root?.querySelector(
 				'.clanspress-player-cover__media'
 			);
 			if ( preview ) {
@@ -216,7 +235,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 				preview.style.pointerEvents = '';
 				preview.src = url;
 			}
-			const posBox = state.root?.querySelector(
+			const posBox = root?.querySelector(
 				'.clanspress-player-cover__position-box'
 			);
 			if ( posBox ) {
@@ -235,8 +254,12 @@ const { state, actions } = store( STORE_NAMESPACE, {
 		async save() {
 			const { ref } = getElement();
 			const { strings } = getContext();
+			const root = getClanspressIslandRootFromRef(
+				ref,
+				CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.playerCover
+			);
 
-			if ( ! state.root || ! ref ) {
+			if ( ! root || ! ref ) {
 				return;
 			}
 
@@ -245,7 +268,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 			ref.classList.add( 'saving' );
 
 			const data = {};
-			state.root
+			root
 				.querySelectorAll( 'input, select, textarea' )
 				.forEach( ( field ) => {
 					if ( ! field.name || field.disabled ) {
@@ -262,7 +285,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 					}
 				} );
 
-			const nonceInput = state.root.querySelector(
+			const nonceInput = root.querySelector(
 				'input[name="_clanspress_profile_settings_save_nonce"]'
 			);
 
@@ -280,10 +303,10 @@ const { state, actions } = store( STORE_NAMESPACE, {
 				formData.append( key, data[ key ] );
 			} );
 
-			const avatarInput = state.root.querySelector(
+			const avatarInput = root.querySelector(
 				'input[name="profile_avatar"]'
 			);
-			const coverInput = state.root.querySelector(
+			const coverInput = root.querySelector(
 				'input[name="profile_cover"]'
 			);
 			if ( avatarInput?.files[ 0 ] ) {
@@ -308,6 +331,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 					state.errors = {};
 					const payload = json.data || {};
 					applyClanspressInlineMediaSavePayload( state, payload, {
+						root,
 						items: [
 							{
 								urlKey: 'coverUrl',
@@ -315,8 +339,8 @@ const { state, actions } = store( STORE_NAMESPACE, {
 									'.clanspress-player-cover__media',
 								emptyClass:
 									'clanspress-player-cover__media--empty',
-								afterApply( root, url ) {
-									const posBox = root.querySelector(
+								afterApply( rootEl, url ) {
+									const posBox = rootEl.querySelector(
 										'.clanspress-player-cover__position-box'
 									);
 									if ( posBox ) {
@@ -341,7 +365,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 							strings?.saveSuccess ||
 							'Your changes were saved successfully.',
 					} );
-					state.root
+					root
 						.querySelectorAll( '.clanspress-player-cover__panel' )
 						.forEach( ( p ) => p.classList.remove( 'is-open' ) );
 					state.activePanel = null;
@@ -369,7 +393,11 @@ const { state, actions } = store( STORE_NAMESPACE, {
 		init() {
 			const { ref } = getElement();
 			if ( ref ) {
-				state.root = ref;
+				state.root =
+					getClanspressIslandRootFromRef(
+						ref,
+						CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.playerCover
+					) || ref;
 			}
 		},
 	},

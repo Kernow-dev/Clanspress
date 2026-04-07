@@ -8,6 +8,7 @@ import {
 	createClanspressShowToast,
 	createClanspressToolbarPanelToggler,
 	getClanspressInteractivityStateGetter,
+	getClanspressIslandRootFromRef,
 	getClanspressToolbarPanelId,
 	rejectClanspressInvalidImageFile,
 	setClanspressPreviewObjectUrlFromFile,
@@ -53,7 +54,12 @@ const { state, actions } = store( STORE_NAMESPACE, {
 		} ),
 
 		selectFile() {
-			state.root?.querySelector( 'input[name="team_cover"]' )?.click();
+			const { ref } = getElement();
+			const root = getClanspressIslandRootFromRef(
+				ref,
+				CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.teamCover
+			);
+			root?.querySelector( 'input[name="team_cover"]' )?.click();
 		},
 
 		updateImage( event ) {
@@ -69,8 +75,13 @@ const { state, actions } = store( STORE_NAMESPACE, {
 			) {
 				return;
 			}
+			const { ref } = getElement();
+			const root = getClanspressIslandRootFromRef(
+				ref,
+				CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.teamCover
+			);
 			const url = setClanspressPreviewObjectUrlFromFile( state, file );
-			const preview = state.root?.querySelector(
+			const preview = root?.querySelector(
 				'.clanspress-team-cover__media'
 			);
 			if ( preview ) {
@@ -88,8 +99,12 @@ const { state, actions } = store( STORE_NAMESPACE, {
 		async save() {
 			const { ref } = getElement();
 			const { ajaxUrl, teamId, strings } = getContext();
+			const root = getClanspressIslandRootFromRef(
+				ref,
+				CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.teamCover
+			);
 
-			if ( ! state.root || ! ref || ! ajaxUrl || ! teamId ) {
+			if ( ! root || ! ref || ! ajaxUrl || ! teamId ) {
 				return;
 			}
 
@@ -97,10 +112,10 @@ const { state, actions } = store( STORE_NAMESPACE, {
 			ref.classList.remove( 'saved', 'error' );
 			ref.classList.add( 'saving' );
 
-			const nonceInput = state.root.querySelector(
+			const nonceInput = root.querySelector(
 				'input[name="_clanspress_team_media_nonce"]'
 			);
-			const fileInput = state.root.querySelector(
+			const fileInput = root.querySelector(
 				'input[name="team_cover"]'
 			);
 
@@ -136,6 +151,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 				if ( json.success && json.data?.coverUrl ) {
 					ref.classList.add( 'saved' );
 					applyClanspressInlineMediaSavePayload( state, json.data, {
+						root,
 						items: [
 							{
 								urlKey: 'coverUrl',
@@ -152,7 +168,7 @@ const { state, actions } = store( STORE_NAMESPACE, {
 							strings?.saveSuccess ||
 							'Your changes were saved successfully.',
 					} );
-					state.root
+					root
 						.querySelectorAll( '.clanspress-team-cover__panel' )
 						.forEach( ( p ) => p.classList.remove( 'is-open' ) );
 					state.activePanel = null;
@@ -181,7 +197,11 @@ const { state, actions } = store( STORE_NAMESPACE, {
 		init() {
 			const { ref } = getElement();
 			if ( ref ) {
-				state.root = ref;
+				state.root =
+					getClanspressIslandRootFromRef(
+						ref,
+						CLANSPRESS_MEDIA_ISLAND_ROOT_SELECTORS.teamCover
+					) || ref;
 			}
 		},
 	},

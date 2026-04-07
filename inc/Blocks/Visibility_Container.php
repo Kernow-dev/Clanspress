@@ -58,14 +58,39 @@ final class Visibility_Container {
 	 * @return bool
 	 */
 	public static function should_show( array $attributes, $block = null ): bool {
-		$show_to   = isset( $attributes['showTo'] ) ? (string) $attributes['showTo'] : 'all';
-		$hide_from = isset( $attributes['hideFrom'] ) ? (string) $attributes['hideFrom'] : 'none';
+		// Block.json uses camelCase; some serializers may emit snake_case.
+		$show_to = 'all';
+		if ( isset( $attributes['showTo'] ) ) {
+			$show_to = (string) $attributes['showTo'];
+		} elseif ( isset( $attributes['show_to'] ) ) {
+			$show_to = (string) $attributes['show_to'];
+		}
 
-		$show_roles = isset( $attributes['showToRoles'] ) && is_array( $attributes['showToRoles'] )
-			? self::sanitize_role_slugs( $attributes['showToRoles'] )
+		$hide_from = 'none';
+		if ( isset( $attributes['hideFrom'] ) ) {
+			$hide_from = (string) $attributes['hideFrom'];
+		} elseif ( isset( $attributes['hide_from'] ) ) {
+			$hide_from = (string) $attributes['hide_from'];
+		}
+
+		$show_roles_raw = null;
+		if ( isset( $attributes['showToRoles'] ) ) {
+			$show_roles_raw = $attributes['showToRoles'];
+		} elseif ( isset( $attributes['show_to_roles'] ) ) {
+			$show_roles_raw = $attributes['show_to_roles'];
+		}
+		$show_roles = is_array( $show_roles_raw )
+			? self::sanitize_role_slugs( $show_roles_raw )
 			: array();
-		$hide_roles = isset( $attributes['hideFromRoles'] ) && is_array( $attributes['hideFromRoles'] )
-			? self::sanitize_role_slugs( $attributes['hideFromRoles'] )
+
+		$hide_roles_raw = null;
+		if ( isset( $attributes['hideFromRoles'] ) ) {
+			$hide_roles_raw = $attributes['hideFromRoles'];
+		} elseif ( isset( $attributes['hide_from_roles'] ) ) {
+			$hide_roles_raw = $attributes['hide_from_roles'];
+		}
+		$hide_roles = is_array( $hide_roles_raw )
+			? self::sanitize_role_slugs( $hide_roles_raw )
 			: array();
 
 		$logged_in  = is_user_logged_in();
