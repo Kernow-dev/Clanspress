@@ -196,6 +196,9 @@ function clanspress_get_profile_subpage( string $context, string $slug ): ?array
 /**
  * Subpages the current user may see in a profile nav (capability + `clanspress_profile_subpage_nav_visible`).
  *
+ * For `player` context, tabs default to the profile owner only; use `clanspress_profile_subpage_nav_visible` to
+ * expose a tab to other visitors.
+ *
  * Extensions should use this for custom navigation UIs; core blocks call it from render callbacks.
  *
  * @param string                               $context   Context slug (`player`, `team`, `group`, …).
@@ -222,16 +225,24 @@ function clanspress_profile_subpages_visible_for_nav( string $context, int $obje
 			continue;
 		}
 
+		$default_visible = true;
+		if ( 'player' === $context && (int) get_current_user_id() !== $object_id ) {
+			$default_visible = false;
+		}
+
 		/**
 		 * Whether a subpage tab is shown in profile navigation for this viewer and subject.
 		 *
-		 * @param bool   $visible    Default true after capability check.
+		 * For `player` context, the default is false when the viewer is not the profile owner (owner-only tabs).
+		 * Return true from this filter to expose a tab to other visitors (public subpage).
+		 *
+		 * @param bool   $visible    Default after capability and owner checks.
 		 * @param string $context    Context slug.
 		 * @param string $slug       Subpage slug.
 		 * @param int    $object_id  Subject id (meaning per context).
 		 * @param array  $config     Subpage config.
 		 */
-		$show = (bool) apply_filters( 'clanspress_profile_subpage_nav_visible', true, $context, $slug, $object_id, $config );
+		$show = (bool) apply_filters( 'clanspress_profile_subpage_nav_visible', $default_visible, $context, $slug, $object_id, $config );
 		if ( $show ) {
 			$visible[ $slug ] = $config;
 		}

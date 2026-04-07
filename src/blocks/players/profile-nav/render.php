@@ -81,10 +81,6 @@ $visible_subpages = function_exists( 'clanspress_profile_subpages_visible_for_na
 	? clanspress_profile_subpages_visible_for_nav( 'player', $player_id, $subpages )
 	: array();
 
-if ( empty( $visible_subpages ) && ! $show_settings_link ) {
-	return;
-}
-
 $wrapper = get_block_wrapper_attributes(
 	array(
 		'class'       => 'clanspress-player-profile-nav',

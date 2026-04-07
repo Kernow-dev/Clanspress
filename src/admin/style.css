@@ -505,3 +505,77 @@ border-radius: 0;
 	margin: 0 0 10px;
 }
 
+/* Post ID repeater (Social Kit default group/team joins, etc.) */
+.clanspress-field-post-id-list__label {
+	margin: 0 0 8px;
+}
+
+.clanspress-field-post-id-list__rows {
+	list-style: none;
+	margin: 0 0 12px;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.clanspress-field-post-id-list__row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 10px;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 10px;
+	background: rgba(0, 0, 0, 0.15);
+}
+
+.clanspress-field-post-id-list__name {
+	flex: 1;
+	min-width: 0;
+	font-weight: 500;
+}
+
+.clanspress-field-post-id-list__remove {
+	flex-shrink: 0;
+}
+
+.clanspress-field-post-id-list__suggestions {
+	list-style: none;
+	margin: 6px 0 0;
+	padding: 0;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 8px;
+	max-height: 220px;
+	overflow: auto;
+	background: #1f2128;
+}
+
+.clanspress-field-post-id-list__suggestion {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	text-align: left;
+	padding: 8px 10px;
+	margin: 0;
+	border: none;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+	font: inherit;
+}
+
+.clanspress-field-post-id-list__suggestion:hover:not( :disabled ),
+.clanspress-field-post-id-list__suggestion:focus-visible:not( :disabled ) {
+	background: rgba(255, 255, 255, 0.06);
+}
+
+.clanspress-field-post-id-list__suggestion:disabled {
+	cursor: not-allowed;
+	opacity: 0.55;
+}
+
+.clanspress-field-post-id-list__empty {
+	margin: 0 0 10px;
+}
+

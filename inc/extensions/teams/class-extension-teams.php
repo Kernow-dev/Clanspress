@@ -109,6 +109,9 @@ class Teams extends Skeleton {
 	public function run(): void {
 		$this->admin = new Admin();
 
+		add_action( 'user_register', array( $this, 'sync_default_team_rosters_on_user_register' ), 20 );
+		add_action( 'wp_login', array( $this, 'sync_default_team_rosters_on_wp_login' ), 10, 2 );
+
 		$team_mode = $this->get_team_mode();
 
 		/**
@@ -170,6 +173,85 @@ class Teams extends Skeleton {
 		add_action( 'wp_enqueue_scripts', array( $this, 'maybe_enqueue_team_manage_form_assets' ), 20 );
 
 		Team_Challenges::instance()->register();
+	}
+
+	/**
+	 * Add the user to configured default team rosters after registration.
+	 *
+	 * @param int|string $user_id New user ID.
+	 * @return void
+	 */
+	public function sync_default_team_rosters_on_user_register( $user_id ): void {
+		$this->sync_default_team_rosters_for_user( (int) $user_id );
+	}
+
+	/**
+	 * Re-apply default team rosters on login so existing accounts pick up newly configured teams.
+	 *
+	 * @param string   $user_login Username.
+	 * @param \WP_User $user       User object.
+	 * @return void
+	 */
+	public function sync_default_team_rosters_on_wp_login( $user_login, $user ): void {
+		unset( $user_login );
+		if ( ! $user instanceof \WP_User ) {
+			return;
+		}
+		$this->sync_default_team_rosters_for_user( (int) $user->ID );
+	}
+
+	/**
+	 * Apply default team roster membership for one user (member role), idempotently.
+	 *
+	 * @param int $user_id User ID.
+	 * @return void
+	 */
+	private function sync_default_team_rosters_for_user( int $user_id ): void {
+		if ( $user_id < 1 ) {
+			return;
+		}
+
+		/**
+		 * Whether to apply default team roster membership for this user.
+		 *
+		 * @param bool $run     Default true.
+		 * @param int  $user_id User ID.
+		 */
+		if ( ! (bool) apply_filters( 'clanspress_teams_should_auto_roster_sync_user', true, $user_id ) ) {
+			return;
+		}
+
+		$team_ids = clanspress_teams_global_auto_join_team_ids();
+		if ( $team_ids === array() ) {
+			return;
+		}
+
+		foreach ( $team_ids as $team_id ) {
+			$team_id = (int) $team_id;
+			if ( $team_id < 1 ) {
+				continue;
+			}
+			$post = get_post( $team_id );
+			if ( ! $post instanceof \WP_Post || 'cp_team' !== $post->post_type || 'publish' !== $post->post_status ) {
+				continue;
+			}
+
+			$role = $this->get_team_member_role( $team_id, $user_id );
+			if ( null !== $role ) {
+				continue;
+			}
+
+			$map             = $this->get_team_member_roles_map( $team_id );
+			$map[ $user_id ] = self::TEAM_ROLE_MEMBER;
+			$this->persist_team_roles_map( $team_id, $map );
+		}
+
+		/**
+		 * Fires after default team roster memberships are applied for a user.
+		 *
+		 * @param int $user_id User ID.
+		 */
+		do_action( 'clanspress_teams_auto_roster_synced', $user_id );
 	}
 
 	/**

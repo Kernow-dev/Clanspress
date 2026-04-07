@@ -56,6 +56,35 @@ function clanspress_teams_get_setting( string $key, $fallback = null ) {
 }
 
 /**
+ * `cp_team` post IDs every member is added to as roster member on register / login.
+ *
+ * Reads {@see clanspress_teams_settings} and falls back to legacy
+ * `clanspress_social_kit_global_auto_join_team_ids` when the Teams setting is unset or empty.
+ *
+ * @return int[]
+ */
+function clanspress_teams_global_auto_join_team_ids(): array {
+	$settings = get_option( 'clanspress_teams_settings', array() );
+	$raw      = array();
+	if ( is_array( $settings ) && isset( $settings['global_auto_join_team_ids'] ) && is_array( $settings['global_auto_join_team_ids'] ) ) {
+		$raw = $settings['global_auto_join_team_ids'];
+	} else {
+		$legacy = get_option( 'clanspress_social_kit_global_auto_join_team_ids', array() );
+		if ( is_array( $legacy ) ) {
+			$raw = $legacy;
+		}
+	}
+	$ids = array_values( array_unique( array_filter( array_map( 'absint', $raw ) ) ) );
+
+	/**
+	 * Filter default auto-join team post IDs.
+	 *
+	 * @param int[] $ids Sanitized team post IDs.
+	 */
+	return array_values( array_unique( array_map( 'absint', (array) apply_filters( 'clanspress_teams_global_auto_join_team_ids', $ids ) ) ) );
+}
+
+/**
  * Resolved global team mode (`single_team`, `multiple_teams`, `team_directories`).
  *
  * @return string

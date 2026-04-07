@@ -394,6 +394,280 @@ function UserIdListControl( { field, value, onChange } ) {
 	);
 }
 
+/**
+ * Plain-text label from a `wp/v2/*` post in the REST API.
+ *
+ * @param {{ title?: string|{ rendered?: string, raw?: string }, slug?: string }} p Post payload.
+ * @return {string} Title text, slug, or empty string.
+ */
+function restPostTitleText( p ) {
+	if ( ! p ) {
+		return '';
+	}
+	const t = p.title;
+	if ( typeof t === 'string' ) {
+		return t;
+	}
+	if ( t && typeof t === 'object' ) {
+		const raw = t.rendered || t.raw || '';
+		return String( raw )
+			.replace( /<[^>]+>/g, '' )
+			.trim();
+	}
+	return p.slug ? String( p.slug ) : '';
+}
+
+/**
+ * Multi-select list of post IDs (teams, groups, etc.) for extension settings.
+ *
+ * @param {Object}             props          Props.
+ * @param {Object}             props.field    Field schema from PHP (`post_id_list`).
+ * @param {number[]|undefined} props.value   Selected post IDs.
+ * @param {Function}           props.onChange `( fieldId, nextIds ) => void`.
+ * @return {import('react').ReactNode} Field UI.
+ */
+function PostIdListControl( { field, value, onChange } ) {
+	const fid = field.id;
+	const searchPathRaw =
+		field.postSearchPath || field.post_search_path || 'wp/v2/posts';
+	const searchPath = String( searchPathRaw ).replace( /\/$/, '' );
+
+	const ids = Array.isArray( value )
+		? [
+				...new Set(
+					value
+						.map( ( v ) => parseInt( v, 10 ) )
+						.filter( ( n ) => n > 0 )
+				),
+		  ]
+		: [];
+
+	const [ query, setQuery ] = useState( '' );
+	const [ suggestions, setSuggestions ] = useState( [] );
+	const [ loading, setLoading ] = useState( false );
+	const [ details, setDetails ] = useState( {} );
+	const searchRequestIdRef = useRef( 0 );
+
+	const idsKey = ids
+		.slice()
+		.sort( ( a, b ) => a - b )
+		.join( ',' );
+
+	useEffect( () => {
+		if ( ! idsKey ) {
+			return;
+		}
+		let cancelled = false;
+		( async () => {
+			try {
+				const path = `${ searchPath }?include=${ encodeURIComponent(
+					ids.join( ',' )
+				) }&per_page=100&_fields=id,title,slug`;
+				const posts = await apiFetch( { path } );
+				if ( cancelled || ! Array.isArray( posts ) ) {
+					return;
+				}
+				setDetails( ( prev ) => {
+					const next = { ...prev };
+					for ( const p of posts ) {
+						const pid = parseInt( p.id, 10 );
+						if ( ! pid ) {
+							continue;
+						}
+						const title = restPostTitleText( p );
+						next[ pid ] = {
+							name:
+								title ||
+								p.slug ||
+								/* translators: %d: post ID */
+								sprintf( __( 'Item %d', 'clanspress' ), pid ),
+						};
+					}
+					return next;
+				} );
+			} catch {
+				// Leave placeholders for display names.
+			}
+		} )();
+		return () => {
+			cancelled = true;
+		};
+	}, [ idsKey, searchPath ] );
+
+	useEffect( () => {
+		const q = query.trim();
+		if ( q.length < 2 ) {
+			setSuggestions( [] );
+			return;
+		}
+		const handle = setTimeout( async () => {
+			const reqId = ++searchRequestIdRef.current;
+			setLoading( true );
+			try {
+				const posts = await apiFetch( {
+					path: `${ searchPath }?search=${ encodeURIComponent(
+						q
+					) }&per_page=10&_fields=id,title,slug`,
+				} );
+				if ( reqId !== searchRequestIdRef.current ) {
+					return;
+				}
+				setSuggestions( Array.isArray( posts ) ? posts : [] );
+			} catch {
+				if ( reqId !== searchRequestIdRef.current ) {
+					return;
+				}
+				setSuggestions( [] );
+			} finally {
+				if ( reqId === searchRequestIdRef.current ) {
+					setLoading( false );
+				}
+			}
+		}, 300 );
+		return () => {
+			clearTimeout( handle );
+			searchRequestIdRef.current += 1;
+		};
+	}, [ query, searchPath ] );
+
+	const addPost = ( p ) => {
+		const pid = parseInt( p.id, 10 );
+		if ( ! pid || ids.includes( pid ) ) {
+			return;
+		}
+		const title = restPostTitleText( p );
+		setDetails( ( d ) => ( {
+			...d,
+			[ pid ]: {
+				name:
+					title ||
+					p.slug ||
+					/* translators: %d: post ID */
+					sprintf( __( 'Item %d', 'clanspress' ), pid ),
+			},
+		} ) );
+		onChange( fid, [ ...ids, pid ] );
+		setQuery( '' );
+		setSuggestions( [] );
+	};
+
+	const removePost = ( pid ) => {
+		onChange(
+			fid,
+			ids.filter( ( x ) => x !== pid )
+		);
+	};
+
+	return (
+		<div className="clanspress-field-post-id-list">
+			{ field.label ? (
+				<p className="clanspress-field-post-id-list__label">
+					<strong>{ field.label }</strong>
+				</p>
+			) : null }
+			{ ids.length ? (
+				<ul
+					className="clanspress-field-post-id-list__rows"
+					aria-label={ __( 'Selected items', 'clanspress' ) }
+				>
+					{ ids.map( ( pid ) => {
+						const row = details[ pid ];
+						let label;
+						if ( row?.name ) {
+							label = row.name;
+						} else {
+							/* translators: %d: post ID */
+							label = sprintf( __( 'Item %d', 'clanspress' ), pid );
+						}
+						return (
+							<li
+								key={ pid }
+								className="clanspress-field-post-id-list__row"
+							>
+								<span className="clanspress-field-post-id-list__name">
+									{ label }
+								</span>
+								<Button
+									variant="tertiary"
+									isDestructive
+									onClick={ () => removePost( pid ) }
+									className="clanspress-field-post-id-list__remove"
+								>
+									{ __( 'Remove', 'clanspress' ) }
+								</Button>
+							</li>
+						);
+					} ) }
+				</ul>
+			) : (
+				<p className="description clanspress-field-post-id-list__empty">
+					{ __( 'No items added yet.', 'clanspress' ) }
+				</p>
+			) }
+			<div className="clanspress-field-post-id-list__search">
+				<TextControl
+					label={ __( 'Add item', 'clanspress' ) }
+					value={ query }
+					onChange={ setQuery }
+					placeholder={ __(
+						'Search by title or slug…',
+						'clanspress'
+					) }
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
+					autoComplete="off"
+				/>
+				{ loading ? (
+					<p className="description">
+						{ __( 'Searching…', 'clanspress' ) }
+					</p>
+				) : null }
+				{ suggestions.length ? (
+					<ul
+						className="clanspress-field-post-id-list__suggestions"
+						role="listbox"
+						aria-label={ __( 'Matching items', 'clanspress' ) }
+					>
+						{ suggestions.map( ( p ) => {
+							const pid = parseInt( p.id, 10 );
+							const disabled = ! pid || ids.includes( pid );
+							const title = restPostTitleText( p );
+							const name =
+								title ||
+								p.slug ||
+								/* translators: %d: post ID */
+								sprintf( __( 'Item %d', 'clanspress' ), pid );
+							return (
+								<li key={ pid || p.slug } role="option">
+									<button
+										type="button"
+										className="clanspress-field-post-id-list__suggestion"
+										disabled={ disabled }
+										onClick={ () => addPost( p ) }
+									>
+										<span>{ name }</span>
+										{ disabled ? (
+											<span className="description">
+												{ __(
+													'(already added)',
+													'clanspress'
+												) }
+											</span>
+										) : null }
+									</button>
+								</li>
+							);
+						} ) }
+					</ul>
+				) : null }
+			</div>
+			{ field.description ? (
+				<p className="description">{ field.description }</p>
+			) : null }
+		</div>
+	);
+}
+
 function FieldControl( { field, value, onChange } ) {
 	const id = field.id;
 	const common = {
@@ -405,6 +679,14 @@ function FieldControl( { field, value, onChange } ) {
 		case 'user_id_list':
 			return (
 				<UserIdListControl
+					field={ field }
+					value={ value }
+					onChange={ onChange }
+				/>
+			);
+		case 'post_id_list':
+			return (
+				<PostIdListControl
 					field={ field }
 					value={ value }
 					onChange={ onChange }

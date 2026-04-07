@@ -32,6 +32,7 @@ class Admin extends Abstract_Settings {
 				'default_team_avatar'            => '',
 				'default_team_cover'             => '',
 				'team_name_wordban_custom_list'  => '',
+				'global_auto_join_team_ids'      => \clanspress_teams_global_auto_join_team_ids(),
 				'events_profile_subpage'         => true,
 				'team_avatar_image_size_large'   => 'clanspress-team-avatar-large',
 				'team_avatar_image_size_medium'  => 'clanspress-team-avatar-medium',
@@ -62,6 +63,19 @@ class Admin extends Abstract_Settings {
 							'default'     => 'multiple',
 							'options'     => $this->get_player_team_membership_options(),
 							'sanitize'    => array( $this, 'sanitize_player_team_membership' ),
+						),
+						'global_auto_join_team_ids' => array(
+							'label'              => __( 'Default team joins', 'clanspress' ),
+							'type'               => 'post_id_list',
+							'post_search_path'   => 'wp/v2/cp_team',
+							'description'        => __( 'Every player is added to these team rosters as a member when they register or log in.', 'clanspress' ),
+							'default'            => array(),
+							'sanitize'           => static function ( $value ): array {
+								if ( ! is_array( $value ) ) {
+									return array();
+								}
+								return array_values( array_unique( array_filter( array_map( 'absint', $value ) ) ) );
+							},
 						),
 						'team_name_wordban_custom_list' => array(
 							'label'       => __( 'Additional banned words for team names', 'clanspress' ),

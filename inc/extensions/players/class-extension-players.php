@@ -138,6 +138,7 @@ class Players extends Skeleton {
 		add_action( 'template_redirect', array( $this, 'maybe_redirect_author_archives_to_players' ), 3 );
 		add_action( 'template_redirect', array( $this, 'maybe_canonicalize_player_profile_subpage' ), 4 );
 		add_filter( 'template_include', array( $this, 'maybe_load_player_profile_template' ), 100 );
+		add_filter( 'get_block_templates', array( $this, 'prefer_plugin_players_directory_block_template' ), 100, 3 );
 		add_filter( 'get_block_templates', array( $this, 'prefer_plugin_players_player_profile_block_template' ), 100, 3 );
 		add_filter( 'get_block_templates', array( $this, 'prefer_plugin_player_subpage_block_template' ), 100, 3 );
 		add_filter( 'pre_get_block_file_template', array( $this, 'filter_pre_get_block_file_template_player_profile_header' ), 10, 3 );
@@ -939,10 +940,10 @@ class Players extends Skeleton {
 	}
 
 	/**
-	 * Redirect invalid player subpages to the profile root.
+	 * Redirect invalid or inaccessible player subpages to the profile root.
 	 *
 	 * The root URL (/players/{username}/) is the default profile view.
-	 * Only redirect if a subpage was requested but doesn't exist.
+	 * Redirects when the slug is unknown or when the current viewer may not view that tab (owner-only by default).
 	 *
 	 * @return void
 	 */
@@ -958,20 +959,30 @@ class Players extends Skeleton {
 			return;
 		}
 
-		// Check if the requested subpage exists.
-		$subpages = function_exists( '\clanspress_get_player_subpages' ) ? \clanspress_get_player_subpages() : array();
-		if ( isset( $subpages[ $requested ] ) ) {
-			return;
-		}
-
-		// Invalid subpage requested - redirect to profile root.
 		$user = get_queried_object();
 		if ( ! $user instanceof \WP_User ) {
 			return;
 		}
 
+		$subpages = function_exists( '\clanspress_get_player_subpages' ) ? \clanspress_get_player_subpages() : array();
+
+		// Unknown subpage slug — redirect to profile root.
+		if ( ! isset( $subpages[ $requested ] ) ) {
+			$url = trailingslashit( home_url( '/players/' . $user->user_nicename ) );
+			wp_safe_redirect( $url, 301 );
+			exit;
+		}
+
+		$visible = function_exists( '\clanspress_profile_subpages_visible_for_nav' )
+			? \clanspress_profile_subpages_visible_for_nav( 'player', (int) $user->ID, $subpages )
+			: array();
+
+		if ( isset( $visible[ $requested ] ) ) {
+			return;
+		}
+
 		$url = trailingslashit( home_url( '/players/' . $user->user_nicename ) );
-		wp_safe_redirect( $url, 301 );
+		wp_safe_redirect( $url, 302 );
 		exit;
 	}
 
@@ -991,7 +1002,12 @@ class Players extends Skeleton {
 		// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Core global `$_wp_current_template_id` for block theme / Site Editor resolution.
 		global $_wp_current_template_id;
 
-		if ( (int) get_query_var( 'cp_players_directory' ) ) {
+		$path = $this->get_canonical_request_path();
+		$is_players_directory = (int) get_query_var( 'cp_players_directory' )
+			|| 'players' === $path
+			|| ( $path !== '' && preg_match( '#^players/page/[0-9]+/?$#', $path ) );
+
+		if ( $is_players_directory ) {
 			$_wp_current_template_id = 'clanspress//players-directory';
 		} elseif ( get_query_var( 'players_settings' ) ) {
 			$_wp_current_template_id = 'clanspress//player-settings';
@@ -1005,6 +1021,55 @@ class Players extends Skeleton {
 		}
 
 		// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals
+	}
+
+	/**
+	 * Prefer the plugin `players-directory` block template when resolving that slug (e.g. Site Editor preview).
+	 *
+	 * @param \WP_Block_Template[] $query_result  Block templates.
+	 * @param array<string, mixed> $query         Query args.
+	 * @param string               $template_type Template type.
+	 * @return \WP_Block_Template[]
+	 */
+	public function prefer_plugin_players_directory_block_template( $query_result, $query, $template_type ) {
+		if ( 'wp_template' !== $template_type || empty( $query['slug__in'] ) || ! in_array( 'players-directory', $query['slug__in'], true ) ) {
+			return $query_result;
+		}
+
+		if ( ! is_array( $query_result ) ) {
+			return $query_result;
+		}
+
+		$filtered = array();
+		foreach ( $query_result as $t ) {
+			if ( ! $t instanceof \WP_Block_Template ) {
+				continue;
+			}
+			if ( 'players-directory' !== $t->slug ) {
+				$filtered[] = $t;
+				continue;
+			}
+			if ( ! empty( $t->is_custom ) ) {
+				$filtered[] = $t;
+				continue;
+			}
+			if ( isset( $t->id ) && 'clanspress//players-directory' === $t->id ) {
+				$filtered[] = $t;
+			}
+		}
+
+		foreach ( $filtered as $t ) {
+			if ( $t instanceof \WP_Block_Template && 'players-directory' === $t->slug ) {
+				return $filtered;
+			}
+		}
+
+		$plugin = \get_block_template( 'clanspress//players-directory' );
+		if ( $plugin instanceof \WP_Block_Template ) {
+			$filtered[] = $plugin;
+		}
+
+		return $filtered;
 	}
 
 	/**

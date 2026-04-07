@@ -385,6 +385,12 @@ abstract class Abstract_Settings {
 						: 'wp/v2/users';
 				}
 
+				if ( 'post_id_list' === $row['type'] ) {
+					$row['post_search_path'] = isset( $field['post_search_path'] ) && is_string( $field['post_search_path'] )
+						? $field['post_search_path']
+						: 'wp/v2/posts';
+				}
+
 				$fields_out[] = $row;
 			}
 
