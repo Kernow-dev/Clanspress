@@ -84,9 +84,11 @@ final class Visibility_Container {
 				$show_match = $logged_in;
 				break;
 			case 'roles':
-				$show_match = $logged_in && self::user_has_any_role( $show_roles, $user_roles );
+				// Empty role list would hide the block for everyone; treat as unrestricted (same as "all").
 				if ( empty( $show_roles ) ) {
-					$show_match = false;
+					$show_match = true;
+				} else {
+					$show_match = $logged_in && self::user_has_any_role( $show_roles, $user_roles );
 				}
 				break;
 			case 'all':

@@ -174,7 +174,7 @@ export default function Edit( { attributes, setAttributes } ) {
 					{ showTo === 'roles' && showToRoles.length === 0 && (
 						<Notice status="warning" isDismissible={ false }>
 							{ __(
-								'Pick at least one role, or nobody will see this block.',
+								'Pick at least one role. Until you do, the block is shown to everyone (same as “Everyone”).',
 								'clanspress'
 							) }
 						</Notice>
