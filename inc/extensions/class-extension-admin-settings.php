@@ -336,6 +336,87 @@ abstract class Abstract_Settings {
 	}
 
 	/**
+	 * Export one field definition for the React admin (supports nested `repeater` fields).
+	 *
+	 * @param string               $field_id Stable field key (top-level map key or nested `id`).
+	 * @param array<string, mixed> $field    Field config.
+	 * @return array<string, mixed>
+	 */
+	protected function export_field_for_rest_schema( string $field_id, array $field ): array {
+		$row = array(
+			'id'          => (string) $field_id,
+			'label'       => (string) ( $field['label'] ?? '' ),
+			'type'        => (string) ( $field['type'] ?? 'text' ),
+			'description' => (string) ( $field['description'] ?? '' ),
+			'default'     => $field['default'] ?? null,
+		);
+
+		if ( isset( $field['fallback_url'] ) ) {
+			$row['fallback_url'] = (string) $field['fallback_url'];
+		}
+
+		if ( isset( $field['depends_on'] ) && is_array( $field['depends_on'] ) ) {
+			$row['depends_on'] = $field['depends_on'];
+		}
+
+		if ( isset( $field['media_title'] ) ) {
+			$row['mediaTitle'] = (string) $field['media_title'];
+		}
+
+		if ( isset( $field['media_button_text'] ) ) {
+			$row['mediaButtonText'] = (string) $field['media_button_text'];
+		}
+
+		if ( 'select' === $row['type'] && ! empty( $field['options'] ) && is_array( $field['options'] ) ) {
+			$opts = array();
+			foreach ( $field['options'] as $opt_val => $opt_label ) {
+				$opts[] = array(
+					'value' => (string) $opt_val,
+					'label' => (string) $opt_label,
+				);
+			}
+			$row['options'] = $opts;
+		}
+
+		if ( 'user_id_list' === $row['type'] ) {
+			$row['user_search_path'] = isset( $field['user_search_path'] ) && is_string( $field['user_search_path'] )
+				? $field['user_search_path']
+				: 'wp/v2/users';
+		}
+
+		if ( 'post_id_list' === $row['type'] ) {
+			$row['post_search_path'] = isset( $field['post_search_path'] ) && is_string( $field['post_search_path'] )
+				? $field['post_search_path']
+				: 'wp/v2/posts';
+		}
+
+		if ( 'repeater' === $row['type'] && ! empty( $field['fields'] ) && is_array( $field['fields'] ) ) {
+			$nested = array();
+			foreach ( $field['fields'] as $sub_field ) {
+				if ( ! is_array( $sub_field ) ) {
+					continue;
+				}
+				$sub_id = isset( $sub_field['id'] ) ? (string) $sub_field['id'] : '';
+				if ( '' === $sub_id ) {
+					continue;
+				}
+				$nested[] = $this->export_field_for_rest_schema( $sub_id, $sub_field );
+			}
+			$row['fields'] = $nested;
+
+			if ( isset( $field['add_label'] ) ) {
+				$row['add_label'] = (string) $field['add_label'];
+			}
+
+			if ( isset( $field['default_row'] ) && is_array( $field['default_row'] ) ) {
+				$row['default_row'] = $field['default_row'];
+			}
+		}
+
+		return $row;
+	}
+
+	/**
 	 * Schema for the React settings UI (sections + fields).
 	 *
 	 * @return array<int, array<string, mixed>>
@@ -352,46 +433,7 @@ abstract class Abstract_Settings {
 					continue;
 				}
 
-				$row = array(
-					'id'          => (string) $field_id,
-					'label'       => (string) ( $field['label'] ?? '' ),
-					'type'        => (string) ( $field['type'] ?? 'text' ),
-					'description' => (string) ( $field['description'] ?? '' ),
-					'default'     => $field['default'] ?? null,
-				);
-
-				if ( isset( $field['fallback_url'] ) ) {
-					$row['fallback_url'] = (string) $field['fallback_url'];
-				}
-
-				if ( isset( $field['depends_on'] ) && is_array( $field['depends_on'] ) ) {
-					$row['depends_on'] = $field['depends_on'];
-				}
-
-				if ( 'select' === $row['type'] && ! empty( $field['options'] ) && is_array( $field['options'] ) ) {
-					$opts = array();
-					foreach ( $field['options'] as $opt_val => $opt_label ) {
-						$opts[] = array(
-							'value' => (string) $opt_val,
-							'label' => (string) $opt_label,
-						);
-					}
-					$row['options'] = $opts;
-				}
-
-				if ( 'user_id_list' === $row['type'] ) {
-					$row['user_search_path'] = isset( $field['user_search_path'] ) && is_string( $field['user_search_path'] )
-						? $field['user_search_path']
-						: 'wp/v2/users';
-				}
-
-				if ( 'post_id_list' === $row['type'] ) {
-					$row['post_search_path'] = isset( $field['post_search_path'] ) && is_string( $field['post_search_path'] )
-						? $field['post_search_path']
-						: 'wp/v2/posts';
-				}
-
-				$fields_out[] = $row;
+				$fields_out[] = $this->export_field_for_rest_schema( (string) $field_id, $field );
 			}
 
 			$out[] = array(

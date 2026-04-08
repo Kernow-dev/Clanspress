@@ -430,6 +430,8 @@ class Loader {
 			'cp_social_kit'    => 'Kernowdev\ClanspressSocialKit\Extension\Social_Kit',
 			// Official first-party extension shipped in the separate Clanspress Forums plugin (not core-bundled).
 			'cp_forums'        => 'Kernowdev\ClanspressForums\Extension\Forums',
+			// Official first-party extension shipped in the separate Clanspress Points plugin (not core-bundled).
+			'cp_points'        => 'Kernowdev\ClanspressPoints\Extension\Points',
 		);
 
 		/**

@@ -2122,6 +2122,13 @@ class Players extends Skeleton {
 			if ( ! is_wp_error( $attachment_id ) ) {
 				update_user_meta( $user_id, 'cp_player_avatar_id', $attachment_id );
 				update_user_meta( $user_id, 'cp_player_avatar', wp_get_attachment_url( (int) $attachment_id ) );
+				/**
+				 * Fires after the player successfully uploads a new profile avatar attachment.
+				 *
+				 * @param int $user_id        Profile owner user ID.
+				 * @param int $attachment_id New attachment ID.
+				 */
+				do_action( 'clanspress_player_avatar_updated', $user_id, (int) $attachment_id );
 			} else {
 				$errors['profile_avatar'] = $attachment_id->get_error_message();
 			}
@@ -2149,6 +2156,13 @@ class Players extends Skeleton {
 			if ( ! is_wp_error( $attachment_id ) ) {
 				update_user_meta( $user_id, 'cp_player_cover_id', $attachment_id );
 				update_user_meta( $user_id, 'cp_player_cover', wp_get_attachment_image_url( (int) $attachment_id, 'clanspress-cover' ) );
+				/**
+				 * Fires after the player successfully uploads a new profile cover attachment.
+				 *
+				 * @param int $user_id        Profile owner user ID.
+				 * @param int $attachment_id New attachment ID.
+				 */
+				do_action( 'clanspress_player_cover_updated', $user_id, (int) $attachment_id );
 			} else {
 				$errors['profile_cover'] = $attachment_id->get_error_message();
 			}

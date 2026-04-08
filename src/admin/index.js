@@ -668,6 +668,129 @@ function PostIdListControl( { field, value, onChange } ) {
 	);
 }
 
+/**
+ * Nested repeaters for extension settings (e.g. Points types + rules).
+ *
+ * @param {Object}   props
+ * @param {Object}   props.field   Field schema (`fields`, `add_label`, `default_row`).
+ * @param {unknown}  props.value   Expected array of row objects.
+ * @param {Function} props.onChange ( fieldId, nextRows ) => void
+ * @return {import('react').ReactNode}
+ */
+function RepeaterControl( { field, value, onChange } ) {
+	const id = field.id;
+	const rows = Array.isArray( value ) ? value : [];
+	const subFields = field.fields || [];
+	const addLabel =
+		field.addLabel ||
+		field.add_label ||
+		__( 'Add row', 'clanspress' );
+
+	const defaultRowFromSchema = () => {
+		const dr = field.defaultRow || field.default_row;
+		if ( dr && typeof dr === 'object' && ! Array.isArray( dr ) ) {
+			return { ...dr };
+		}
+		/** @type {Record<string, unknown>} */
+		const row = {};
+		for ( const sub of subFields ) {
+			if ( ! sub?.id ) {
+				continue;
+			}
+			if ( sub.type === 'repeater' ) {
+				row[ sub.id ] = Array.isArray( sub.default ) ? [ ...sub.default ] : [];
+			} else if ( sub.default !== undefined && sub.default !== null ) {
+				row[ sub.id ] = sub.default;
+			} else if ( sub.type === 'checkbox' ) {
+				row[ sub.id ] = false;
+			} else if ( sub.type === 'number' ) {
+				row[ sub.id ] = 0;
+			} else {
+				row[ sub.id ] = '';
+			}
+		}
+		return row;
+	};
+
+	const setRows = ( next ) => onChange( id, next );
+
+	const addRow = () => setRows( [ ...rows, defaultRowFromSchema() ] );
+
+	const removeRow = ( index ) =>
+		setRows( rows.filter( ( _, i ) => i !== index ) );
+
+	const updateCell = ( rowIndex, subId, subValue ) => {
+		setRows(
+			rows.map( ( r, i ) =>
+				i === rowIndex ? { ...r, [ subId ]: subValue } : r
+			)
+		);
+	};
+
+	return (
+		<div className="clanspress-field-repeater">
+			<fieldset>
+				<legend className="clanspress-field-repeater__legend">
+					{ field.label }
+				</legend>
+				{ field.description ? (
+					<p className="description">{ field.description }</p>
+				) : null }
+				{ rows.map( ( row, rowIndex ) => (
+					<div
+						key={ rowIndex }
+						className="clanspress-field-repeater__row"
+					>
+						<div className="clanspress-field-repeater__row-head">
+							<span className="clanspress-field-repeater__row-label">
+								{ sprintf(
+									/* translators: %d: 1-based row index */
+									__( 'Row %d', 'clanspress' ),
+									rowIndex + 1
+								) }
+							</span>
+							<Button
+								isDestructive
+								variant="tertiary"
+								onClick={ () => removeRow( rowIndex ) }
+							>
+								{ __( 'Remove', 'clanspress' ) }
+							</Button>
+						</div>
+						{ subFields.map( ( sub ) => (
+							<div
+								key={ sub.id }
+								className="clanspress-field-repeater__cell"
+							>
+								{ sub.type === 'repeater' ? (
+									<RepeaterControl
+										field={ sub }
+										value={ row[ sub.id ] }
+										onChange={ ( fid, v ) =>
+											updateCell( rowIndex, fid, v )
+										}
+									/>
+								) : (
+									<FieldControl
+										field={ sub }
+										value={ row[ sub.id ] }
+										onChange={ ( fid, v ) =>
+											updateCell( rowIndex, fid, v )
+										}
+									/>
+								) }
+							</div>
+						) ) }
+					</div>
+				) ) }
+				<Button variant="secondary" onClick={ addRow }>
+					{ addLabel }
+				</Button>
+			</fieldset>
+		</div>
+	);
+}
+
 function FieldControl( { field, value, onChange } ) {
 	const id = field.id;
 	const common = {
@@ -676,6 +799,14 @@ function FieldControl( { field, value, onChange } ) {
 	};
 
 	switch ( field.type ) {
+		case 'repeater':
+			return (
+				<RepeaterControl
+					field={ field }
+					value={ value }
+					onChange={ onChange }
+				/>
+			);
 		case 'user_id_list':
 			return (
 				<UserIdListControl
@@ -780,6 +911,28 @@ function FieldControl( { field, value, onChange } ) {
 					rows={ 4 }
 				/>
 			);
+		case 'number': {
+			const n = value === '' || value === null || value === undefined
+				? ''
+				: String( value );
+			return (
+				<TextControl
+					{ ...common }
+					type="number"
+					value={ n }
+					onChange={ ( v ) => {
+						if ( v === '' || v === null ) {
+							onChange( id, 0 );
+							return;
+						}
+						const parsed = parseInt( String( v ), 10 );
+						onChange( id, Number.isFinite( parsed ) ? parsed : 0 );
+					} }
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
+				/>
+			);
+		}
 		default:
 			return (
 				<TextControl

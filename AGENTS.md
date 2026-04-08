@@ -109,6 +109,7 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 | Events extension | `inc/extensions/events/class-extension-events.php`, `Kernowdev\Clanspress\Extensions\Events` | Official slug `cp_events` (optional; one-time default-on migration). **Requires** `cp_players`. `run()` boots `Kernowdev\Clanspress\Events\Events` only (no extension settings tab). Profile Events subpages are toggled from **Players**, **Teams**, and **Groups** settings (`clanspress_events_subpage_*_enabled()` in `inc/extensions/events/functions.php`). Uninstaller deletes `cp_event` posts and drops the RSVP table. |
 | Events runtime | `inc/events/` (`Events`, `Event_Post_Type`, `Event_Entity_Rest_Controller`, `Event_Permissions`) | Loads only when `cp_events` is installed. `cp_event` is scoped to **teams** or **groups**. **Players do not create events** — only team/group managers (see REST + `event-create-form`). A **player “my events” / calendar** UI is for the **profile owner only** (the logged-in user viewing their own player profile): aggregate visible events from their memberships; do not treat it as a public calendar of another user’s combined schedule unless product requirements explicitly call for that and privacy is addressed. |
 | Forums extension (companion plugin) | `clanspress-forums` → `Kernowdev\ClanspressForums\Extension\Forums` | Official slug `cp_forums` (separate plugin; whitelisted like Social Kit). **Requires** `cp_players`. Custom tables (`Schema`), REST `clanspress-forums/v1`, front blocks `clanspress-forums/forums-index`, `clanspress-forums/forum-topics`, `clanspress-forums/forum-topic` (shared Interactivity store `clanspress-forums/board`), plugin FSE templates `clanspress//forums-index`, `clanspress//forum-topics`, `clanspress//forum-topic` + `Forums\Template_Router` on the router page, player settings tab for **forum signature** (`cp_forum_signature` user meta), topic follow + `clanspress_notify( …, 'forum_reply', … )` when **Notifications** is enabled. Site cap: `manage_clanspress_forums`. |
+| Points extension (companion plugin) | `clanspress-points` → `Kernowdev\ClanspressPoints\Extension\Points` | Official slug `cp_points` (separate plugin; whitelisted like Social Kit). **Requires** `cp_players`. Ledger table `{$wpdb->prefix}clanspress_points_ledger`, option `clanspress_points_settings` (repeaters in unified admin), user meta `clanspress_points_balances` (per-type totals). Block `clanspress-points/points-balance`. Procedural: `clanspress_points_award()`, `clanspress_points_get_balance()`, `clanspress_points_get_user_rank_label()`, `clanspress_points_extension_active()`. |
 
 ### Hook Reference (Core Extension Flow)
 **Filters**
@@ -172,6 +173,7 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 - `clanspress_forums_user_can_create_topic` — Final gate for creating a topic: `(bool $can, int $forum_id, int $user_id)`.
 - `clanspress_forums_user_can_reply` — Whether the user may reply: `(bool $can, int $topic_id, int $user_id, object $topic_row)`.
 - `clanspress_forums_block_initial_forum_slug` / `clanspress_forums_block_initial_topic_slug` / `clanspress_forums_block_initial_reply_id` — Deep-link defaults for the forums block (with query vars `cp_forums_*`).
+- `clanspress_points_actions` — Register earning-action slugs for the Points admin UI: `(array $actions)` keyed by slug, values `array( 'label' => string )`.
 
 **Actions**
 - `clanspress_team_challenge_created` — `(int $challenge_id, int $challenged_team_id)`.
@@ -191,6 +193,9 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 - `clanspress_after_social_networks_fields` — After that section: `(int $user_id)`.
 - `clanspress_player_avatar_img_before` — Before building the player avatar `<img>` (URL resolved): `(int $user_id, array $args, string $url)`.
 - `clanspress_player_avatar_img_after` — After the `<img>` string is built: `(int $user_id, array $args, string $url, string $html)`.
+- `clanspress_points_awarded` — After ledger insert and balance meta update: `(int $user_id, string $points_type_key, string $action_key, int $amount, int $ledger_id, array $context)`.
+- `clanspress_player_avatar_updated` — After successful player-settings avatar upload: `(int $user_id, int $attachment_id)`.
+- `clanspress_player_cover_updated` — After successful player-settings cover upload: `(int $user_id, int $attachment_id)`.
 
 Extension-specific hooks (e.g. teams, players) belong in PHPDoc next to each `apply_filters` / `do_action` in the relevant class.
 

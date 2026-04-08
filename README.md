@@ -602,6 +602,8 @@ Official extensions that ship outside the main package register on **`clanspress
 
 **Example — Clanspress Social Kit (`cp_social_kit`):** the separate plugin registers the extension and may mirror domain events (matches, RSVPs, team actions) into an activity feed using the same hooks documented for third-party integrations (`clanspress_match_*`, `clanspress_event_rsvp_updated`, team lifecycle actions, etc.). There is no second registration API — only `clanspress_official_registered_extensions` plus the whitelist entry in `Loader::get_official_extensions()`.
 
+**Example — Clanspress Points (`cp_points`):** the separate plugin adds configurable point types, per-action earning rules with caps, rank ladders, and a `clanspress-points/points-balance` block. Companion features award points via `clanspress_points_award()` and may register action labels through `clanspress_points_actions`.
+
 ### Community extensions
 
 Unaffiliated or custom extensions register on **`clanspress_registered_extensions`**, own their blocks and FSE templates, and document their own hooks.
@@ -694,6 +696,16 @@ When adding new features, expose logical hooks around:
 - extension install and runtime checks
 - settings sanitization and persistence
 - admin interface decision points
+
+### Clanspress Points (companion plugin)
+
+With the **Clanspress Points** plugin and the `cp_points` extension enabled:
+
+- **`clanspress_points_actions`** — `(array $actions)` keyed by action slug; each value is `array( 'label' => string )`. Merge additional slugs so site owners can attach rules in **Clanspress → Points**.
+- **`clanspress_points_award( int $user_id, string $action_key, array $context = array() )`** — procedural helper; awards according to configured rules and caps.
+- **`clanspress_points_awarded`** — action: `( int $user_id, string $points_type_key, string $action_key, int $amount, int $ledger_id, array $context )` after the ledger row is stored and balance meta is updated.
+
+Core **Players** also fires **`clanspress_player_avatar_updated`** and **`clanspress_player_cover_updated`** with `( int $user_id, int $attachment_id )` after a successful profile avatar or cover upload (used by Points built-in actions; available to other integrations).
 
 ### Settings Extensibility
 All extension settings can be extended or customized by third parties.
