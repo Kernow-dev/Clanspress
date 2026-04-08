@@ -299,10 +299,14 @@ class Players extends Skeleton {
 	}
 
 	/**
-	 * Supplies `clanspress/playerId` to Social Kit feed/composer blocks when `feedContext` is `profile`.
+	 * Supplies `clanspress/playerId` to Social Kit blocks on player-profile routes.
 	 *
 	 * The `players-player-profile` template renders `post-content` without a `player-query` ancestor, so
-	 * those blocks would otherwise miss profile owner context. They declare `usesContext` for this key.
+	 * blocks that declare `usesContext: [ "clanspress/playerId" ]` would otherwise get `0` and render empty.
+	 *
+	 * - **Feed / composer:** still requires `feedContext` `profile` (same as before).
+	 * - **Player stats / add friend:** always receive the profile owner when this resolves (no `feedContext` gate).
+	 *
 	 * Resolves the profile owner user ID at most once per request (static cache) because this filter runs
 	 * for every block.
 	 *
@@ -316,13 +320,19 @@ class Players extends Skeleton {
 
 		static $cached_profile_owner_id = null;
 
-		$allowed_blocks = array(
+		$name = (string) ( $parsed_block['blockName'] ?? '' );
+
+		$feed_blocks = array(
 			'clanspress-social/social-feed',
 			'clanspress-social/social-composer',
 		);
+		$profile_context_blocks = array(
+			'clanspress-social/player-friends-count',
+			'clanspress-social/player-post-count',
+			'clanspress-social/player-add-friend',
+		);
 
-		$name = (string) ( $parsed_block['blockName'] ?? '' );
-		if ( ! in_array( $name, $allowed_blocks, true ) ) {
+		if ( ! in_array( $name, array_merge( $feed_blocks, $profile_context_blocks ), true ) ) {
 			return $context;
 		}
 
@@ -330,10 +340,13 @@ class Players extends Skeleton {
 		if ( ! is_array( $attrs ) ) {
 			$attrs = array();
 		}
-		$feed = $attrs['feedContext'] ?? 'home';
-		$feed = is_string( $feed ) ? $feed : 'home';
-		if ( 'profile' !== $feed ) {
-			return $context;
+
+		if ( in_array( $name, $feed_blocks, true ) ) {
+			$feed = $attrs['feedContext'] ?? 'home';
+			$feed = is_string( $feed ) ? $feed : 'home';
+			if ( 'profile' !== $feed ) {
+				return $context;
+			}
 		}
 
 		if ( ! empty( $context['clanspress/playerId'] ) && (int) $context['clanspress/playerId'] > 0 ) {
