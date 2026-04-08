@@ -117,7 +117,9 @@ $render_cover_toolbar = static function ( string $panel_id, string $file_input_i
 				<input
 					type="file"
 					accept="image/png,image/jpeg"
-					hidden
+					class="clanspress-inline-media-file-input"
+					aria-hidden="true"
+					tabindex="-1"
 					data-wp-on--change="actions.updateCover"
 					id="<?php echo esc_attr( $file_input_id ); ?>"
 					name="profile_cover"

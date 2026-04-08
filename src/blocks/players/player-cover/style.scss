@@ -1,6 +1,7 @@
 // Front-end: align with team-cover layout; minimal WP-admin-style toolbar when inline edit is enabled.
 
 @use '../../shared/clanspress-media-stacking' as *;
+@use '../../shared/clanspress-inline-media-file-input';
 @use '../../shared/clanspress-cover-toast' as cp-cover-toast;
 
 .wp-block-clanspress-player-cover.clanspress-player-cover-block {
@@ -110,16 +111,9 @@
 		gap: 0.25rem;
 	}
 
-	// Match `player-avatar` toolbar controls + neutralize theme `button` rules (tap target + look).
+	// Match `player-avatar` toolbar controls (same rules as `.clanspress-player-avatar__toggle`).
 	.clanspress-player-cover__toggle,
 	.clanspress-player-cover__panel-action {
-		-webkit-appearance: none;
-		appearance: none;
-		box-sizing: border-box;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		margin: 0;
 		font: inherit;
 		font-size: 0.75rem;
 		line-height: 1.4;
@@ -130,7 +124,6 @@
 		color: #1d2327;
 		cursor: pointer;
 		box-shadow: 0 1px 0 rgb(0 0 0 / 5%);
-		text-align: center;
 	}
 
 	.clanspress-player-cover__toggle:hover,

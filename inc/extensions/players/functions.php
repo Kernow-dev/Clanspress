@@ -1040,6 +1040,146 @@ function clanspress_players_get_display_website( int $player_id = 0, bool $suppr
 }
 
 /**
+ * Meta key for a player social profile field (user meta).
+ *
+ * @param string $slug Sanitized key from {@see clanspress_players_get_social_profile_field_definitions()}.
+ * @return string
+ */
+function clanspress_players_social_profile_meta_key( string $slug ): string {
+	return 'cp_player_social_' . sanitize_key( $slug );
+}
+
+/**
+ * Registered social profile fields for player settings and user meta.
+ *
+ * Keys are stable slugs (`facebook`, `x`, …). Extend or replace fields via
+ * {@see 'clanspress_players_social_profile_field_definitions'}.
+ *
+ * @return array<string, array{label: string, placeholder: string}>
+ */
+function clanspress_players_get_social_profile_field_definitions(): array {
+	$definitions = array(
+		'facebook'  => array(
+			'label'       => __( 'Facebook', 'clanspress' ),
+			'placeholder' => __( 'Profile URL or username', 'clanspress' ),
+		),
+		'x'         => array(
+			'label'       => __( 'X', 'clanspress' ),
+			'placeholder' => __( 'Profile URL or @handle', 'clanspress' ),
+		),
+		'instagram' => array(
+			'label'       => __( 'Instagram', 'clanspress' ),
+			'placeholder' => __( 'Profile URL or @handle', 'clanspress' ),
+		),
+		'youtube'   => array(
+			'label'       => __( 'YouTube', 'clanspress' ),
+			'placeholder' => __( 'Channel URL or @handle', 'clanspress' ),
+		),
+		'twitch'    => array(
+			'label'       => __( 'Twitch', 'clanspress' ),
+			'placeholder' => __( 'Channel URL or username', 'clanspress' ),
+		),
+		'discord'   => array(
+			'label'       => __( 'Discord', 'clanspress' ),
+			'placeholder' => __( 'Username, invite, or server link', 'clanspress' ),
+		),
+		'steam'     => array(
+			'label'       => __( 'Steam', 'clanspress' ),
+			'placeholder' => __( 'Profile URL or custom ID', 'clanspress' ),
+		),
+		'linkedin'  => array(
+			'label'       => __( 'LinkedIn', 'clanspress' ),
+			'placeholder' => __( 'Profile URL', 'clanspress' ),
+		),
+		'tiktok'    => array(
+			'label'       => __( 'TikTok', 'clanspress' ),
+			'placeholder' => __( 'Profile URL or @handle', 'clanspress' ),
+		),
+		'bluesky'   => array(
+			'label'       => __( 'Bluesky', 'clanspress' ),
+			'placeholder' => __( 'Profile URL or handle', 'clanspress' ),
+		),
+		'reddit'    => array(
+			'label'       => __( 'Reddit', 'clanspress' ),
+			'placeholder' => __( 'Profile URL or u/username', 'clanspress' ),
+		),
+		'github'    => array(
+			'label'       => __( 'GitHub', 'clanspress' ),
+			'placeholder' => __( 'Profile URL or username', 'clanspress' ),
+		),
+		'mastodon'  => array(
+			'label'       => __( 'Mastodon', 'clanspress' ),
+			'placeholder' => __( 'Full profile URL (@user@instance)', 'clanspress' ),
+		),
+	);
+
+	/**
+	 * Filters social profile fields shown in player settings and registered as user meta.
+	 *
+	 * @param array<string, array{label: string, placeholder: string}> $definitions Slug => label and placeholder.
+	 */
+	return (array) apply_filters( 'clanspress_players_social_profile_field_definitions', $definitions );
+}
+
+/**
+ * Sanitizes a stored social profile field (URL, @handle, or plain text).
+ *
+ * @param mixed $value Raw input (stringable).
+ * @return string
+ */
+function clanspress_players_sanitize_social_profile_value( $value ): string {
+	$value = wp_strip_all_tags( (string) $value );
+	$value = sanitize_text_field( $value );
+
+	if ( function_exists( 'mb_substr' ) ) {
+		$value = mb_substr( $value, 0, 500 );
+	} else {
+		$value = substr( $value, 0, 500 );
+	}
+
+	return $value;
+}
+
+/**
+ * Returns a single social profile value for display or editing.
+ *
+ * @param string $slug            Key from {@see clanspress_players_get_social_profile_field_definitions()}.
+ * @param int    $player_id       User ID.
+ * @param bool   $suppress_filters When true, skip {@see 'clanspress_players_get_display_social'}.
+ * @return string
+ */
+function clanspress_players_get_display_social( string $slug, int $player_id = 0, bool $suppress_filters = false ): string {
+	$slug = sanitize_key( $slug );
+	if ( '' === $slug ) {
+		return '';
+	}
+
+	$definitions = clanspress_players_get_social_profile_field_definitions();
+	if ( ! isset( $definitions[ $slug ] ) ) {
+		return '';
+	}
+
+	if ( ! $player_id ) {
+		$player_id = get_current_user_id();
+	}
+
+	$value = (string) get_user_meta( $player_id, clanspress_players_social_profile_meta_key( $slug ), true );
+
+	if ( $suppress_filters ) {
+		return $value;
+	}
+
+	/**
+	 * Filters a player’s social profile field after reading user meta.
+	 *
+	 * @param string $value     Stored value.
+	 * @param string $slug      Field slug (e.g. `facebook`, `x`).
+	 * @param int    $player_id User ID.
+	 */
+	return (string) apply_filters( 'clanspress_players_get_display_social', $value, $slug, $player_id );
+}
+
+/**
  * Returns the players display country.
  *
  * @param int    $player_id The Player/User unique identifier.

@@ -1,0 +1,16 @@
+// Visually hide file inputs for inline avatar/cover pickers. Do **not** use the `hidden` attribute:
+// `display: none` prevents programmatic `HTMLInputElement.click()` from opening the file dialog
+// in Safari and several other browsers.
+
+.clanspress-inline-media-file-input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(1px, 1px, 1px, 1px);
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}

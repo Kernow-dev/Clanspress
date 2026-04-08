@@ -162,7 +162,9 @@ $avatar_media      = $avatar_clip_open . $img_inner . $avatar_clip_close;
 					<input
 						type="file"
 						accept="image/png,image/jpeg"
-						hidden
+						class="clanspress-inline-media-file-input"
+						aria-hidden="true"
+						tabindex="-1"
 						data-wp-on--change="actions.updateAvatar"
 						id="<?php echo esc_attr( $avatar_file_input_id ); ?>"
 						name="profile_avatar"

@@ -132,6 +132,9 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 - `clanspress_load_players_directory_template` — Resolved PHP template path for `/players/`: `(string $path, string $located_theme_path)`.
 - `clanspress_players_directory_per_page` — User-query page size on the players directory shortcode: `(int $per_page)`.
 - `clanspress_redirect_author_archive_to_players_url` — 301 target for `/author/…` and `?author=` → `/players/…`: `(string $target, \WP_User $user)`.
+- `clanspress_players_social_profile_field_definitions` — Social fields on **Profile → Social Networks** and matching user meta keys: `(array $definitions)` map of slug → `label` / `placeholder`.
+- `clanspress_players_get_display_social` — Single social field after user meta: `(string $value, string $slug, int $player_id)`.
+- `clanspress_player_settings_update_social_profile_value` — Mutate or reject a value before save (return `WP_Error` to block): `(string|WP_Error $value, string $slug, int $user_id)`.
 - `clanspress_players_get_display_avatar` — Player avatar image URL after attachment/default resolution: `(string $url, int $user_id, string|array $size, string $context, string $avatar_preset)`. `$avatar_preset` is `large`, `medium`, `small`, or empty when an explicit `$size` was used (presets map to **Players → Player avatar image sizes**). Use `$context` to vary behaviour by surface (`player_avatar_block`, `user_nav`, `notifications`, `profile_settings_rest`, etc.). Pair with `clanspress_players_get_display_avatar_id` for attachment-based logic.
 - `clanspress_players_resolve_player_avatar_image_size` — Maps preset to registered size slug before URL resolution: `(string $size, string $preset, string $raw, string $fallback)`.
 - `clanspress_players_image_size_choices_for_settings` — Slug → label map for Players/Teams avatar size dropdowns: `(array $choices)`.
@@ -165,7 +168,8 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 - `clanspress_event_member_outreach_user_ids` — Final recipient list after core resolves team roster or group filter: `(array $user_ids, int $event_id, string $scope, int $team_id, int $group_id, string $mode)`.
 - `clanspress_forums_topic_public_url` — Notification/share URL for a topic (and optional reply): `(string $url, string $forum_slug, string $topic_slug, int $reply_id)`.
 - `clanspress_forums_reply_notification_recipients` — User IDs to notify on a new reply: `(array $user_ids, int $topic_id, int $reply_id, int $actor_id)`.
-- `clanspress_forums_user_can_create_topic` — Whether the user may create a topic in a forum: `(bool $can, int $forum_id, int $user_id)`.
+- `clanspress_forums_user_can_post_topic` — After core “who can post topics” policy and forum read checks (staff still bypass in core): `(bool $can, int $viewer_id, object $forum, string $policy)`. Chained before `clanspress_forums_user_can_create_topic` in REST and in serialized forum `viewer_can_post_topic`.
+- `clanspress_forums_user_can_create_topic` — Final gate for creating a topic: `(bool $can, int $forum_id, int $user_id)`.
 - `clanspress_forums_user_can_reply` — Whether the user may reply: `(bool $can, int $topic_id, int $user_id, object $topic_row)`.
 - `clanspress_forums_block_initial_forum_slug` / `clanspress_forums_block_initial_topic_slug` / `clanspress_forums_block_initial_reply_id` — Deep-link defaults for the forums block (with query vars `cp_forums_*`).
 
@@ -183,6 +187,8 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 - `clanspress_extension_run_{slug}` — Main runtime hook: register CPTs, routes, blocks, etc.
 - `clanspress_forums_init` — Companion plugin loaded and Clanspress available: `( \Kernowdev\ClanspressForums\Plugin $plugin )`.
 - `clanspress_forums_rest_api_init` — After forums REST routes register: `( \Kernowdev\ClanspressForums\Extension\Forums $extension )`.
+- `clanspress_before_social_networks_fields` — Before **Profile → Social Networks** markup on player settings: `(int $user_id)`.
+- `clanspress_after_social_networks_fields` — After that section: `(int $user_id)`.
 - `clanspress_player_avatar_img_before` — Before building the player avatar `<img>` (URL resolved): `(int $user_id, array $args, string $url)`.
 - `clanspress_player_avatar_img_after` — After the `<img>` string is built: `(int $user_id, array $args, string $url, string $html)`.
 

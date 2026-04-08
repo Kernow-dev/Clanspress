@@ -1,6 +1,7 @@
 // Front-end: match team-avatar / core-adjacent simplicity; optional toolbar only when block attribute is on.
 
 @use '../../shared/clanspress-media-stacking' as *;
+@use '../../shared/clanspress-inline-media-file-input';
 
 .wp-block-clanspress-player-avatar.clanspress-player-avatar-block {
 	position: relative;

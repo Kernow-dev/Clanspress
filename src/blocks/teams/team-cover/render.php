@@ -85,7 +85,9 @@ $render_toolbar = static function ( int $tid, string $panel_id, string $file_id 
 				<input
 					type="file"
 					accept="image/png,image/jpeg"
-					hidden
+					class="clanspress-inline-media-file-input"
+					aria-hidden="true"
+					tabindex="-1"
 					data-wp-on--change="actions.updateImage"
 					id="<?php echo esc_attr( $file_id ); ?>"
 					name="team_cover"

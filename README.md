@@ -535,9 +535,11 @@ The **Player settings** block (`clanspress/player-settings`) uses the Interactiv
 | `rest_nonce` | Nonce for `wp_rest` (sent as `X-WP-Nonce` on plugin actions). |
 | `settings_url_base` | (Player settings page only.) Trailing-slash base URL, e.g. `https://example.com/players/settings/`. |
 | `settings_initial_nav` | (Player settings page only.) Resolved parent tab slug (`profile`, `account`, `teams`, …). |
-| `settings_initial_panel` | (Player settings page only.) Resolved panel slug (`profile-info`, `account-info`, …). |
+| `settings_initial_panel` | (Player settings page only.) Resolved panel slug (`profile-info`, `social-networks`, `account-info`, …). |
 
 **Profile save AJAX (`clanspress_save_player_settings`).** POST to `ajax_url` with `action` set to `clanspress_save_player_settings`, the nonce in `nonce` (same value as localized `nonce`, verified with `clanspress_profile_settings_save_action`), plus the form fields your UI collects (including optional multipart `profile_avatar` / `profile_cover` when uploading inline). Domain saving is delegated to `clanspress_save_player_settings` and related filters; the handler itself does not persist fields.
+
+**Social profiles** — Under **Profile → Social Networks**, core saves one text field per network as user meta `cp_player_social_{slug}` (e.g. `cp_player_social_facebook`) from POST keys `profile_social_{slug}`. Read values with **`clanspress_players_get_display_social( $slug, $user_id )`**; customize the field list with **`clanspress_players_social_profile_field_definitions`**.
 
 On **success**, the JSON body matches `wp_send_json_success()`: `success` is true and `data` is an object with at least:
 
