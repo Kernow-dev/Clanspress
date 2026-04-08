@@ -1,6 +1,6 @@
 import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, ToggleControl, SelectControl } from '@wordpress/components';
+import { PanelBody, SelectControl } from '@wordpress/components';
 import { EntityLinkInspector } from '../../shared/entity-link-inspector';
 import './editor.scss';
 
@@ -20,7 +20,7 @@ const AVATAR_PRESET_OPTIONS = [
 ];
 
 export default function Edit( { attributes, setAttributes } ) {
-	const { allowFrontEndMediaEdit, avatarPreset } = attributes;
+	const { avatarPreset } = attributes;
 
 	return (
 		<>
@@ -41,24 +41,6 @@ export default function Edit( { attributes, setAttributes } ) {
 						}
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
-					/>
-				</PanelBody>
-				<PanelBody
-					title={ __( 'Team media', 'clanspress' ) }
-					initialOpen={ false }
-				>
-					<ToggleControl
-						label={ __( 'Allow front-end editing', 'clanspress' ) }
-						help={ __(
-							'When enabled, team managers can change the avatar from this block on the front end.',
-							'clanspress'
-						) }
-						checked={ !! allowFrontEndMediaEdit }
-						onChange={ ( value ) =>
-							setAttributes( {
-								allowFrontEndMediaEdit: value,
-							} )
-						}
 					/>
 				</PanelBody>
 			</InspectorControls>

@@ -307,8 +307,8 @@ class Players extends Skeleton {
 	 * - **Feed / composer:** still requires `feedContext` `profile` (same as before).
 	 * - **Player stats / add friend:** always receive the profile owner when this resolves (no `feedContext` gate).
 	 *
-	 * Resolves the profile owner user ID at most once per request (static cache) because this filter runs
-	 * for every block.
+	 * Caches a positive profile owner ID only after the first successful resolution so an early `0` from
+	 * this filter never blocks later blocks on the same request.
 	 *
 	 * @param array<string, mixed>      $context      Default block context.
 	 * @param array<string, mixed>      $parsed_block Parsed block (core shape).
@@ -318,7 +318,7 @@ class Players extends Skeleton {
 	public function filter_render_block_context_social_on_player_profile( array $context, array $parsed_block, $parent_block ): array {
 		unset( $parent_block );
 
-		static $cached_profile_owner_id = null;
+		static $cached_positive_profile_owner_id = null;
 
 		$name = (string) ( $parsed_block['blockName'] ?? '' );
 
@@ -353,17 +353,23 @@ class Players extends Skeleton {
 			return $context;
 		}
 
-		if ( null === $cached_profile_owner_id ) {
-			$cached_profile_owner_id = function_exists( 'clanspress_player_profile_context_user_id' )
+		$profile_owner_id = 0;
+		if ( null !== $cached_positive_profile_owner_id && $cached_positive_profile_owner_id > 0 ) {
+			$profile_owner_id = (int) $cached_positive_profile_owner_id;
+		} else {
+			$profile_owner_id = function_exists( 'clanspress_player_profile_context_user_id' )
 				? (int) clanspress_player_profile_context_user_id()
 				: 0;
+			if ( $profile_owner_id > 0 ) {
+				$cached_positive_profile_owner_id = $profile_owner_id;
+			}
 		}
 
-		if ( $cached_profile_owner_id <= 0 ) {
+		if ( $profile_owner_id <= 0 ) {
 			return $context;
 		}
 
-		$context['clanspress/playerId'] = $cached_profile_owner_id;
+		$context['clanspress/playerId'] = $profile_owner_id;
 
 		return $context;
 	}
@@ -1443,7 +1449,7 @@ class Players extends Skeleton {
 	 * Whether to print `CLANSPRESSPLAYERSETTINGS` for this front request.
 	 *
 	 * Defaults avoid per-request nonce generation and inline script output on pages that
-	 * never mount player settings / inline avatar / cover editing (most cached views).
+	 * never mount player settings (most cached views).
 	 *
 	 * @return bool
 	 */
@@ -1467,8 +1473,6 @@ class Players extends Skeleton {
 				if ( $post instanceof \WP_Post ) {
 					$player_blocks = array(
 						'clanspress/player-settings',
-						'clanspress/player-avatar',
-						'clanspress/player-cover',
 					);
 					foreach ( $player_blocks as $block_name ) {
 						if ( has_block( $block_name, $post ) ) {
@@ -1485,7 +1489,7 @@ class Players extends Skeleton {
 		 *
 		 * Return true if a custom template or block needs REST/ajax nonces outside the
 		 * default routes (player settings URL, author profile, or singular posts that
-		 * contain player-settings / avatar / cover blocks).
+		 * contain the player-settings block).
 		 *
 		 * @param bool $enqueue Default decision from core heuristics.
 		 */

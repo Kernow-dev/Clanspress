@@ -7,10 +7,9 @@ import {
 	useInnerBlocksProps,
 	store as blockEditorStore,
 	BlockControls,
-	InspectorControls,
 	__experimentalBlockAlignmentMatrixControl as BlockAlignmentMatrixControl,
 } from '@wordpress/block-editor';
-import { Placeholder, PanelBody, ToggleControl } from '@wordpress/components';
+import { Placeholder } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import clsx from 'clsx';
@@ -20,8 +19,7 @@ import { getPositionClassName, isContentPositionCenter } from './utils';
 import './editor.scss';
 
 export default function Edit( { attributes, clientId, setAttributes } ) {
-	const { allowFrontEndMediaEdit, contentPosition, templateLock } =
-		attributes;
+	const { contentPosition, templateLock } = attributes;
 
 	const hasInnerBlocks = useSelect(
 		( select ) =>
@@ -53,26 +51,6 @@ export default function Edit( { attributes, clientId, setAttributes } ) {
 
 	return (
 		<>
-			<InspectorControls>
-				<PanelBody
-					title={ __( 'Team media', 'clanspress' ) }
-					initialOpen={ false }
-				>
-					<ToggleControl
-						label={ __( 'Allow front-end editing', 'clanspress' ) }
-						help={ __(
-							'When enabled, team managers can change the cover from this block on the front end.',
-							'clanspress'
-						) }
-						checked={ !! allowFrontEndMediaEdit }
-						onChange={ ( value ) =>
-							setAttributes( {
-								allowFrontEndMediaEdit: value,
-							} )
-						}
-					/>
-				</PanelBody>
-			</InspectorControls>
 			<BlockControls group="block">
 				<BlockAlignmentMatrixControl
 					label={ __( 'Change content position', 'clanspress' ) }

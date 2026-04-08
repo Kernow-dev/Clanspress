@@ -548,7 +548,7 @@ On **success**, the JSON body matches `wp_send_json_success()`: `success` is tru
 | `avatarUrl` | Resolved display URL for the logged-in user’s avatar (attachments + defaults, after `clanspress_players_get_display_avatar` filters; REST save uses context `profile_settings_rest`). |
 | `coverUrl` | Resolved display URL for the logged-in user’s cover (`clanspress_players_get_display_cover`). |
 
-The **player-avatar** and **player-cover** interactivity modules use these values after save to point `<img>` / background previews at the server URL and revoke temporary object URLs.
+The player settings screen and related client-side flows can use `avatarUrl` / `coverUrl` after save to refresh previews without a full reload.
 
 On **failure**, `wp_send_json_error()` returns `success: false` and `data` typically includes an `errors` object from `clanspress_save_player_settings_errors`.
 

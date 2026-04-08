@@ -37,16 +37,16 @@ $wrapper_attributes = get_block_wrapper_attributes(
 
 if ( ! function_exists( 'clanspress_country_block_inner_html' ) ) {
 	if ( '' === $code ) {
-		$inner = esc_html__( '—', 'clanspress' );
+		$inner = '';
 	} else {
-		$inner = esc_html( $label );
+		$inner = '<span class="clanspress-country-display__label">' . esc_html( $label ) . '</span>';
 	}
-	echo '<div ' . $wrapper_attributes . '><span class="clanspress-country-display__label">' . $inner . '</span></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $wrapper_attributes from get_block_wrapper_attributes(); $inner escaped.
+	echo '<div ' . $wrapper_attributes . '>' . $inner . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $wrapper_attributes from get_block_wrapper_attributes(); $inner escaped.
 	return;
 }
 
 if ( '' === $code ) {
-	$inner = '<span class="clanspress-country-display__label">' . esc_html__( '—', 'clanspress' ) . '</span>';
+	$inner = '';
 } else {
 	$inner = clanspress_country_block_inner_html(
 		$attributes,
@@ -58,7 +58,7 @@ if ( '' === $code ) {
 	);
 }
 
-if ( '' === $inner ) {
+if ( '' === $inner && '' !== $code ) {
 	$inner = '<span class="clanspress-country-display__label">' . esc_html__( '—', 'clanspress' ) . '</span>';
 }
 

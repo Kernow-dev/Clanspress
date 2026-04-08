@@ -6,11 +6,9 @@ import {
 	useInnerBlocksProps,
 	store as blockEditorStore,
 	BlockControls,
-	InspectorControls,
 	__experimentalBlockAlignmentMatrixControl as BlockAlignmentMatrixControl,
 	__experimentalBlockFullHeightAligmentControl as FullHeightAlignmentControl,
 } from '@wordpress/block-editor';
-import { PanelBody, ToggleControl } from '@wordpress/components';
 import { useRef, useMemo, useState } from '@wordpress/element';
 import { Placeholder } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
@@ -53,15 +51,8 @@ export default function Edit( {
 	setAttributes,
 	toggleSelection,
 } ) {
-	const {
-		allowFrontEndMediaEdit,
-		contentPosition,
-		id,
-		minHeight,
-		minHeightUnit,
-		allowedBlocks,
-		templateLock,
-	} = attributes;
+	const { contentPosition, id, minHeight, minHeightUnit, allowedBlocks, templateLock } =
+		attributes;
 
 	const [ prevMinHeightValue, setPrevMinHeightValue ] = useState( minHeight );
 	const [ prevMinHeightUnit, setPrevMinHeightUnit ] =
@@ -143,26 +134,6 @@ export default function Edit( {
 
 	return (
 		<>
-			<InspectorControls>
-				<PanelBody
-					title={ __( 'Profile media', 'clanspress' ) }
-					initialOpen={ false }
-				>
-					<ToggleControl
-						label={ __( 'Allow front-end editing', 'clanspress' ) }
-						help={ __(
-							'When enabled, the profile owner can change their cover image from this block on the front end.',
-							'clanspress'
-						) }
-						checked={ !! allowFrontEndMediaEdit }
-						onChange={ ( value ) =>
-							setAttributes( {
-								allowFrontEndMediaEdit: value,
-							} )
-						}
-					/>
-				</PanelBody>
-			</InspectorControls>
 			<BlockControls group="block">
 				<BlockAlignmentMatrixControl
 					label={ __( 'Change content position' ) }

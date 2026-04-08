@@ -1,6 +1,4 @@
-@use '../../shared/clanspress-media-stacking' as *;
-@use '../../shared/clanspress-inline-media-file-input';
-@use '../../shared/clanspress-cover-toast' as cp-cover-toast;
+// Team cover + inner blocks (no inline editing).
 
 .wp-block-clanspress-team-cover {
 	position: relative;
@@ -8,8 +6,7 @@
 	display: flex;
 	justify-content: center;
 	align-items: flex-end;
-	// Allow the edit toolbar + panel to extend past the cover bounds (overflow would clip them).
-	overflow: visible;
+	overflow: hidden;
 	box-sizing: border-box;
 	width: 100%;
 	isolation: isolate;
@@ -76,86 +73,6 @@
 		pointer-events: none;
 	}
 
-	.clanspress-team-cover__toolbar {
-		position: absolute;
-		top: 0;
-		right: 0;
-		// Stacking: see `_clanspress-media-stacking.scss` (aligned with player-cover toolbar).
-		z-index: $clanspress-media-cover-toolbar-z;
-		padding: 0.5rem;
-		pointer-events: none;
-		opacity: 0;
-		transition: opacity 0.15s ease;
-	}
-
-	&:is(:hover, :focus-within) .clanspress-team-cover__toolbar {
-		opacity: 1;
-		pointer-events: auto;
-	}
-
-	.clanspress-team-cover__toolbar-inner {
-		pointer-events: auto;
-		display: flex;
-		flex-direction: column;
-		align-items: flex-end;
-		gap: 0.25rem;
-	}
-
-	.clanspress-team-cover__toggle,
-	.clanspress-team-cover__panel-action {
-		font: inherit;
-		font-size: 0.75rem;
-		line-height: 1.4;
-		padding: 0.25rem 0.5rem;
-		border-radius: 2px;
-		border: 1px solid #c3c4c7;
-		background: #fff;
-		color: #1d2327;
-		cursor: pointer;
-		box-shadow: 0 1px 0 rgb(0 0 0 / 5%);
-	}
-
-	.clanspress-team-cover__toggle:hover,
-	.clanspress-team-cover__panel-action:hover {
-		background: #f6f7f7;
-	}
-
-	.clanspress-team-cover__panel-action--primary {
-		border-color: #2271b1;
-		color: #fff;
-		background: #2271b1;
-	}
-
-	.clanspress-team-cover__panel-action--primary:hover {
-		background: #135e96;
-		border-color: #135e96;
-		color: #fff;
-	}
-
-	.clanspress-team-cover__panel {
-		display: none;
-		flex-direction: column;
-		align-items: stretch;
-		gap: 0.35rem;
-		min-width: 11rem;
-		padding: 0.5rem;
-		border: 1px solid #c3c4c7;
-		border-radius: 2px;
-		background: #fff;
-		box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
-	}
-
-	.clanspress-team-cover__panel.is-open {
-		display: flex;
-	}
-
-	.clanspress-team-cover__panel-action.saving,
-	.clanspress-team-cover__panel-action.saved,
-	.clanspress-team-cover__panel-action.error {
-		pointer-events: none;
-		opacity: 0.65;
-	}
-
 	.team-cover__content-container {
 		position: relative;
 		z-index: 2;
@@ -163,12 +80,6 @@
 		padding: 16px;
 		margin-block-start: 0;
 		box-sizing: border-box;
-	}
-
-	.toast-box.clanspress-team-cover__toast {
-		@include cp-cover-toast.clanspress-cover-toast-placement( $clanspress-media-toast-z );
-		@include cp-cover-toast.clanspress-cover-toast-visibility;
-		@include cp-cover-toast.clanspress-cover-toast-chrome;
 	}
 }
 

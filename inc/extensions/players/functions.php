@@ -396,7 +396,52 @@ function clanspress_get_player_subpage( string $slug ): ?array {
 }
 
 /**
- * User ID for player profile header/nav (author archive or `/players/settings/`).
+ * Resolve a player user ID from the canonical `/players/{nicename}/…` path (see rewrite rules).
+ *
+ * Uses {@see clanspress_get_canonical_request_path()} so subdirectory installs and `home_path` prefixes
+ * match the same routes as {@see \Kernowdev\Clanspress\Extensions\Players::filter_request_for_players_virtual_routes()}.
+ *
+ * @return int User ID or 0 when the path is not a member profile (directory, settings, etc.).
+ */
+function clanspress_player_user_id_from_canonical_request_path(): int {
+	if ( ! function_exists( 'clanspress_get_canonical_request_path' ) ) {
+		return 0;
+	}
+
+	$path = clanspress_get_canonical_request_path();
+	if ( '' === $path ) {
+		return 0;
+	}
+
+	// Players directory — not a single profile.
+	if ( 'players' === $path || preg_match( '#^players/page/[0-9]+/?$#', $path ) ) {
+		return 0;
+	}
+
+	if ( str_starts_with( $path, 'players/settings' ) || 'players/settings' === $path ) {
+		return 0;
+	}
+
+	$nicename = '';
+	if ( preg_match( '#^players/(?!settings(?:/|$))([^/]+)/page/([0-9]+)/?$#', $path, $m ) ) {
+		$nicename = $m[1];
+	} elseif ( preg_match( '#^players/(?!settings(?:/|$))([^/]+)/([^/]+)/?$#', $path, $m ) ) {
+		$nicename = $m[1];
+	} elseif ( preg_match( '#^players/(?!settings(?:/|$))([^/]+)/?$#', $path, $m ) ) {
+		$nicename = $m[1];
+	}
+
+	if ( '' === $nicename ) {
+		return 0;
+	}
+
+	$user = get_user_by( 'slug', $nicename );
+
+	return ( $user instanceof \WP_User ) ? (int) $user->ID : 0;
+}
+
+/**
+ * User ID for player profile header/nav (author archive, `/players/settings/`, or canonical `/players/{nicename}/`).
  *
  * @return int
  */
@@ -411,7 +456,9 @@ function clanspress_player_profile_context_user_id(): int {
 		return (int) get_queried_object()->ID;
 	}
 
-	return 0;
+	$from_path = clanspress_player_user_id_from_canonical_request_path();
+
+	return $from_path > 0 ? $from_path : 0;
 }
 
 /**

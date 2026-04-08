@@ -16,10 +16,6 @@
 			"default": "large",
 			"enum": [ "large", "medium", "small" ]
 		},
-		"allowFrontEndMediaEdit": {
-			"type": "boolean",
-			"default": false
-		},
 		"width": {
 			"type": "number",
 			"default": 120
@@ -54,14 +50,12 @@
 			"text": true,
 			"background": true
 		},
-		"html": false,
-		"interactivity": true
+		"html": false
 	},
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
 	"style": "file:./style-index.css",
 	"render": "file:./render.php",
-	"viewScriptModule": "file:./view.js",
 	"selectors": {
 		"root": ".wp-block-clanspress-team-avatar",
 		"color": {

@@ -1,7 +1,4 @@
-// Front-end: match team-avatar / core-adjacent simplicity; optional toolbar only when block attribute is on.
-
-@use '../../shared/clanspress-media-stacking' as *;
-@use '../../shared/clanspress-inline-media-file-input';
+// Front-end: circular avatar display (no inline editing).
 
 .wp-block-clanspress-player-avatar.clanspress-player-avatar-block {
 	position: relative;
@@ -19,7 +16,6 @@
 	max-width: 100%;
 }
 
-// Circular mask applies only to the image so the edit toolbar can sit outside the disc.
 .clanspress-player-avatar__clip {
 	position: relative;
 	display: inline-block;
@@ -47,8 +43,7 @@
 	border-radius: inherit;
 }
 
-.clanspress-player-avatar__img--placeholder,
-.clanspress-player-avatar__img--empty {
+.clanspress-player-avatar__img--placeholder {
 	box-sizing: border-box;
 	min-width: 80px;
 	min-height: 80px;
@@ -62,182 +57,4 @@
 	padding: 0.25rem;
 	color: #646970;
 	background: #f0f0f1;
-}
-
-.clanspress-player-avatar__img--empty {
-	object-fit: cover;
-	padding: 0;
-}
-
-// Toolbar sits in normal flow under the clipped circle so the block hover area includes the gap
-// between avatar and controls (absolute + margin created a dead zone that hid the bar mid-move).
-.clanspress-player-avatar__toolbar {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	justify-content: flex-start;
-	padding: 0;
-	pointer-events: none;
-	opacity: 0;
-	transition: opacity 0.15s ease;
-	z-index: $clanspress-media-avatar-toolbar-z;
-}
-
-.wp-block-clanspress-player-avatar.clanspress-player-avatar-block:is(
-		:hover,
-		:focus-within
-	)
-	.clanspress-player-avatar__toolbar {
-	opacity: 1;
-}
-
-.clanspress-player-avatar__toolbar-inner {
-	position: relative;
-	z-index: 1;
-	pointer-events: auto;
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	gap: 0.25rem;
-}
-
-.clanspress-player-avatar__toggle,
-.clanspress-player-avatar__panel-action {
-	font: inherit;
-	font-size: 0.75rem;
-	line-height: 1.4;
-	padding: 0.25rem 0.5rem;
-	border-radius: 2px;
-	border: 1px solid #c3c4c7;
-	background: #fff;
-	color: #1d2327;
-	cursor: pointer;
-	box-shadow: 0 1px 0 rgb(0 0 0 / 5%);
-}
-
-.clanspress-player-avatar__toggle:hover,
-.clanspress-player-avatar__panel-action:hover {
-	background: #f6f7f7;
-}
-
-.clanspress-player-avatar__panel-action--primary {
-	border-color: #2271b1;
-	color: #fff;
-	background: #2271b1;
-}
-
-.clanspress-player-avatar__panel-action--primary:hover {
-	background: #135e96;
-	border-color: #135e96;
-	color: #fff;
-}
-
-.clanspress-player-avatar__panel {
-	display: none;
-	position: absolute;
-	top: 100%;
-	right: 0;
-	margin-top: 0.35rem;
-	z-index: 6;
-	flex-direction: column;
-	align-items: stretch;
-	gap: 0.35rem;
-	min-width: 10rem;
-	padding: 0.5rem;
-	border: 1px solid #c3c4c7;
-	border-radius: 2px;
-	background: #fff;
-	box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
-}
-
-.clanspress-player-avatar__panel.is-open {
-	display: flex;
-}
-
-.clanspress-player-avatar__panel-action.saving,
-.clanspress-player-avatar__panel-action.saved,
-.clanspress-player-avatar__panel-action.error {
-	pointer-events: none;
-	opacity: 0.65;
-}
-
-.toast-box.clanspress-player-avatar__toast {
-	display: flex;
-	justify-content: flex-start;
-	align-items: flex-start;
-	gap: 0.65rem;
-	position: absolute;
-	right: 0;
-	top: 0;
-	z-index: $clanspress-media-toast-z;
-	max-width: min(100%, 20rem);
-	opacity: 0;
-	transform: translateY(6px);
-	transition:
-		opacity 0.25s ease,
-		transform 0.25s ease;
-	padding: 0.45rem 0.65rem;
-	border-radius: 8px;
-	font-size: 0.875rem;
-	line-height: 1.4;
-	color: #1d2327;
-	box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
-
-	&:not([hidden]) {
-		opacity: 1;
-		transform: translateY(0);
-	}
-
-	.toast-box-icon::before {
-		display: block;
-		content: '';
-		width: 1.25rem;
-		height: 1.25rem;
-		mask-repeat: no-repeat;
-		mask-position: center;
-		mask-size: contain;
-		background-color: currentColor;
-		opacity: 0.9;
-	}
-
-	.toast-box-text {
-		min-width: 0;
-
-		> * {
-			margin: 0;
-			padding: 0;
-		}
-
-		.toast-heading:empty {
-			display: none;
-		}
-
-		.toast-heading {
-			font-size: 0.9375rem;
-			font-weight: 650;
-		}
-
-		.toast-description {
-			font-size: 0.875rem;
-			opacity: 0.95;
-		}
-	}
-
-	&.success {
-		background: color-mix(in srgb, #00a32a 12%, transparent);
-		border: 1px solid color-mix(in srgb, #00a32a 25%, transparent);
-
-		.toast-box-icon::before {
-			mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='black' d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417L5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z'/></svg>");
-		}
-	}
-
-	&.error {
-		background: color-mix(in srgb, #b32d2e 12%, transparent);
-		border: 1px solid color-mix(in srgb, #b32d2e 28%, transparent);
-
-		.toast-box-icon::before {
-			mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='black' d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z'/></svg>");
-		}
-	}
 }

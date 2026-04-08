@@ -10,10 +10,6 @@
 	"example": {},
 	"textdomain": "clanspress",
 	"attributes": {
-		"allowFrontEndMediaEdit": {
-			"type": "boolean",
-			"default": false
-		},
 		"id": {
 			"type": "number"
 		},
@@ -93,7 +89,6 @@
 		"layout": {
 			"allowJustification": false
 		},
-		"interactivity": true,
 		"filter": {
 			"duotone": true
 		},
@@ -114,6 +109,5 @@
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
 	"style": "file:./style-index.css",
-	"render": "file:./render.php",
-	"viewScriptModule": "file:./view.js"
+	"render": "file:./render.php"
 }
