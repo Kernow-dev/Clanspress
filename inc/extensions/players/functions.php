@@ -878,7 +878,8 @@ function clanspress_players_apply_player_avatar_display_markup( string $inner, i
  * @return array{
  *     clip_inner: string,
  *     after_clip: string,
- *     avatar_extra_class: string
+ *     avatar_extra_class: string,
+ *     rank_overlay_html: string
  * }
  */
 function clanspress_players_apply_player_avatar_block_parts( string $display_inner, int $user_id, array $args ): array {
@@ -886,6 +887,7 @@ function clanspress_players_apply_player_avatar_block_parts( string $display_inn
 		'clip_inner'          => $display_inner,
 		'after_clip'          => '',
 		'avatar_extra_class'  => '',
+		'rank_overlay_html'   => '',
 	);
 	/**
 	 * Filters layout parts for the player avatar block when preset is `large`.
@@ -894,6 +896,7 @@ function clanspress_players_apply_player_avatar_block_parts( string $display_inn
 	 *     @type string $clip_inner           Markup inside `.clanspress-player-avatar__clip`.
 	 *     @type string $after_clip           Sibling markup after the clip (e.g. rank progress).
 	 *     @type string $avatar_extra_class   Extra classes on `.clanspress-player-avatar` (space-separated).
+	 *     @type string $rank_overlay_html    Rank icons outside the circular clip (sibling in `.clanspress-player-avatar__media`).
 	 * }
 	 * @param int                  $user_id       User ID.
 	 * @param array<string, mixed> $args          Avatar args from the block.
@@ -907,6 +910,7 @@ function clanspress_players_apply_player_avatar_block_parts( string $display_inn
 		'clip_inner'          => (string) ( $filtered['clip_inner'] ?? $display_inner ),
 		'after_clip'          => (string) ( $filtered['after_clip'] ?? '' ),
 		'avatar_extra_class'  => trim( (string) ( $filtered['avatar_extra_class'] ?? '' ) ),
+		'rank_overlay_html'   => (string) ( $filtered['rank_overlay_html'] ?? '' ),
 	);
 }
 

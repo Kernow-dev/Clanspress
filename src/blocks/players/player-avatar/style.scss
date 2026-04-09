@@ -2,6 +2,7 @@
 
 .wp-block-clanspress-player-avatar.clanspress-player-avatar-block {
 	position: relative;
+	overflow: visible;
 	margin: 0;
 	line-height: 0;
 }
@@ -17,13 +18,41 @@
 }
 
 .clanspress-player-avatar--block-aside {
+	position: relative;
 	flex-direction: row;
-	align-items: center;
-	gap: 0.75rem;
+	align-items: flex-start;
 }
 
-.clanspress-player-avatar--block-aside .clanspress-player-avatar__clip {
+.clanspress-player-avatar--block-aside .clanspress-player-avatar__media {
 	flex-shrink: 0;
+}
+
+.clanspress-player-avatar__media {
+	position: relative;
+	display: inline-block;
+	line-height: 0;
+	vertical-align: top;
+}
+
+.clanspress-player-avatar__media .clanspress-player-avatar__link {
+	display: block;
+	line-height: 0;
+}
+
+.clanspress-player-avatar__rank-overlay {
+	position: absolute;
+	right: -4px;
+	bottom: -6px;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	align-items: flex-end;
+	gap: 4px;
+	max-width: 58%;
+	z-index: 2;
+	pointer-events: none;
+	box-sizing: border-box;
 }
 
 .clanspress-player-avatar__clip {
