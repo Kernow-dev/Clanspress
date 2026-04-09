@@ -16,6 +16,16 @@
 	max-width: 100%;
 }
 
+.clanspress-player-avatar--block-aside {
+	flex-direction: row;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.clanspress-player-avatar--block-aside .clanspress-player-avatar__clip {
+	flex-shrink: 0;
+}
+
 .clanspress-player-avatar__clip {
 	position: relative;
 	display: inline-block;

@@ -72,6 +72,16 @@ if ( function_exists( 'clanspress_players_apply_player_avatar_display_markup' ) 
 	$img_inner = clanspress_players_apply_player_avatar_display_markup( $img_inner, $user_id, $avatar_display_args );
 }
 
+$clip_inner           = $img_inner;
+$after_clip           = '';
+$avatar_extra_classes = '';
+if ( 'large' === $avatar_preset && function_exists( 'clanspress_players_apply_player_avatar_block_parts' ) ) {
+	$avatar_parts         = clanspress_players_apply_player_avatar_block_parts( $img_inner, $user_id, $avatar_display_args );
+	$clip_inner           = $avatar_parts['clip_inner'];
+	$after_clip           = $avatar_parts['after_clip'];
+	$avatar_extra_classes = $avatar_parts['avatar_extra_class'];
+}
+
 if ( ! empty( $attributes['isLink'] ) && function_exists( 'clanspress_block_player_profile_url' ) && function_exists( 'clanspress_block_entity_link_url' ) ) {
 	$href = clanspress_block_entity_link_url(
 		clanspress_block_player_profile_url( $user_id ),
@@ -83,20 +93,24 @@ if ( ! empty( $attributes['isLink'] ) && function_exists( 'clanspress_block_play
 		$target = ( isset( $attributes['linkTarget'] ) && '_blank' === $attributes['linkTarget'] ) ? ' target="_blank"' : '';
 		$rel    = function_exists( 'clanspress_block_entity_link_rel' ) ? clanspress_block_entity_link_rel( $attributes ) : '';
 		$rel_at = '' !== $rel ? ' rel="' . esc_attr( $rel ) . '"' : '';
-		$img_inner = '<a class="clanspress-player-avatar__link" href="' . esc_url( $href ) . '"' . $target . $rel_at . '>' . $img_inner . '</a>';
+		$clip_inner = '<a class="clanspress-player-avatar__link" href="' . esc_url( $href ) . '"' . $target . $rel_at . '>' . $clip_inner . '</a>';
 	}
 }
 
-$avatar_clip_open  = '<div class="clanspress-player-avatar__clip">';
-$avatar_clip_close = '</div>';
-$avatar_media      = $avatar_clip_open . $img_inner . $avatar_clip_close;
+$avatar_classes = 'clanspress-player-avatar';
+if ( '' !== $avatar_extra_classes ) {
+	$avatar_classes .= ' ' . trim( $avatar_extra_classes );
+}
 
 ?>
 <div
 	<?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns escaped HTML attributes. ?>
 >
-	<div class="clanspress-player-avatar">
-		<?php echo $avatar_media; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built with esc_url/esc_attr/esc_html. ?>
+	<div class="<?php echo esc_attr( $avatar_classes ); ?>">
+		<div class="clanspress-player-avatar__clip"><?php echo $clip_inner; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built with esc_url/esc_attr/esc_html. ?></div>
+		<?php if ( '' !== $after_clip ) : ?>
+			<?php echo $after_clip; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- extension HTML. ?>
+		<?php endif; ?>
 	</div>
 </div>
 <?php

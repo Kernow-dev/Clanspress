@@ -870,6 +870,47 @@ function clanspress_players_apply_player_avatar_display_markup( string $inner, i
 }
 
 /**
+ * Splits large player-avatar block output so markup can sit beside the circular clip (not inside it).
+ *
+ * @param string               $display_inner Full HTML from {@see clanspress_players_apply_player_avatar_display_markup()}.
+ * @param int                  $user_id       User ID.
+ * @param array<string, mixed> $args          Avatar args (`context`, `preset`, etc.).
+ * @return array{
+ *     clip_inner: string,
+ *     after_clip: string,
+ *     avatar_extra_class: string
+ * }
+ */
+function clanspress_players_apply_player_avatar_block_parts( string $display_inner, int $user_id, array $args ): array {
+	$defaults = array(
+		'clip_inner'          => $display_inner,
+		'after_clip'          => '',
+		'avatar_extra_class'  => '',
+	);
+	/**
+	 * Filters layout parts for the player avatar block when preset is `large`.
+	 *
+	 * @param array<string, string> $parts {
+	 *     @type string $clip_inner           Markup inside `.clanspress-player-avatar__clip`.
+	 *     @type string $after_clip           Sibling markup after the clip (e.g. rank progress).
+	 *     @type string $avatar_extra_class   Extra classes on `.clanspress-player-avatar` (space-separated).
+	 * }
+	 * @param int                  $user_id       User ID.
+	 * @param array<string, mixed> $args          Avatar args from the block.
+	 * @param string               $display_inner Markup before splitting (same as default `clip_inner`).
+	 */
+	$filtered = apply_filters( 'clanspress_players_player_avatar_block_parts', $defaults, $user_id, $args, $display_inner );
+	if ( ! is_array( $filtered ) ) {
+		return $defaults;
+	}
+	return array(
+		'clip_inner'          => (string) ( $filtered['clip_inner'] ?? $display_inner ),
+		'after_clip'          => (string) ( $filtered['after_clip'] ?? '' ),
+		'avatar_extra_class'  => trim( (string) ( $filtered['avatar_extra_class'] ?? '' ) ),
+	);
+}
+
+/**
  * Returns the players display cover.
  *
  * @param int          $player_id The Player/User unique identifier.
