@@ -54,6 +54,9 @@ class Settings {
 			if ( ! $extension instanceof Skeleton ) {
 				continue;
 			}
+			if ( ! $loader->is_extension_installed( $slug ) ) {
+				continue;
+			}
 			$admin = $extension->get_settings_admin();
 			if ( $admin instanceof Abstract_Settings ) {
 				$this->settings_registry[ $admin->get_option_key() ] = $admin;
@@ -149,6 +152,14 @@ class Settings {
 		$deps       = is_array( $asset['dependencies'] ?? null ) ? $asset['dependencies'] : array();
 		$ver        = isset( $asset['version'] ) ? (string) $asset['version'] : (string) filemtime( $rel );
 
+		// Register media scripts first, then load the app after `media-editor` so `window.wp.media` exists.
+		if ( function_exists( 'wp_enqueue_media' ) ) {
+			wp_enqueue_media();
+		}
+		if ( ! in_array( 'media-editor', $deps, true ) ) {
+			$deps[] = 'media-editor';
+		}
+
 		wp_enqueue_script(
 			$handle,
 			$url,
@@ -156,11 +167,6 @@ class Settings {
 			$ver,
 			true
 		);
-
-		// Ensure media frame is available for image fields in settings UI.
-		if ( function_exists( 'wp_enqueue_media' ) ) {
-			wp_enqueue_media();
-		}
 
 		wp_enqueue_style( 'wp-components' );
 
@@ -171,9 +177,11 @@ class Settings {
 			$handle,
 			'clanspressAdmin',
 			array(
-				'restUrl' => esc_url_raw( rest_url( 'clanspress/v1/' ) ),
-				'nonce'   => wp_create_nonce( 'wp_rest' ),
-				'logoUrl' => \clanspress()->url . 'assets/img/logos/clanspress-logo-small.svg',
+				'restUrl'        => esc_url_raw( rest_url( 'clanspress/v1/' ) ),
+				'nonce'          => wp_create_nonce( 'wp_rest' ),
+				'logoUrl'        => \clanspress()->url . 'assets/img/logos/clanspress-logo-small.svg',
+				'iconPacks'      => Admin_Rest::get_unified_icon_packs(),
+				'iconPickerI18n' => Admin_Rest::get_default_icon_picker_i18n(),
 			)
 		);
 	}

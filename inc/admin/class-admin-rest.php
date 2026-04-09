@@ -77,6 +77,316 @@ class Admin_Rest {
 	}
 
 	/**
+	 * Default icon picker strings (REST bootstrap + localized script data).
+	 *
+	 * @return array<string, string>
+	 */
+	public static function get_default_icon_picker_i18n(): array {
+		$icon_picker_i18n = array(
+			'title'        => __( 'Choose icon', 'clanspress' ),
+			'none'         => __( 'No icon', 'clanspress' ),
+			'noIcons'      => __( 'No icon packs registered yet.', 'clanspress' ),
+			'chooseIcon'   => __( 'Choose icon', 'clanspress' ),
+			'mediaLibrary' => __( 'Media Library…', 'clanspress' ),
+			'clear'        => __( 'Clear', 'clanspress' ),
+		);
+
+		return (array) apply_filters( 'clanspress_admin_icon_picker_i18n', $icon_picker_i18n );
+	}
+
+	/**
+	 * Icon packs for the unified admin (same data as REST `iconPacks`).
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function get_unified_icon_packs(): array {
+		return self::collect_bootstrap_icon_packs();
+	}
+
+	/**
+	 * Load companion Icon_Packs classes when the plugin constants exist but autoload missed them (REST vs admin edge cases).
+	 *
+	 * @return void
+	 */
+	protected static function require_companion_icon_pack_classes(): void {
+		if ( ! class_exists( \Kernowdev\ClanspressPoints\Points\Icon_Packs::class, false )
+			&& defined( 'CLANSPRESS_POINTS_PATH' ) ) {
+			$file = \CLANSPRESS_POINTS_PATH . 'inc/Points/Icon_Packs.php';
+			if ( is_readable( $file ) ) {
+				require_once $file;
+			}
+		}
+		if ( ! class_exists( \Kernowdev\ClanspressRanks\Ranks\Icon_Packs::class, false )
+			&& defined( 'CLANSPRESS_RANKS_PATH' ) ) {
+			$file = \CLANSPRESS_RANKS_PATH . 'inc/Ranks/Icon_Packs.php';
+			if ( is_readable( $file ) ) {
+				require_once $file;
+			}
+		}
+	}
+
+	/**
+	 * Guess which extension a pack belongs to (used when `scope` is not set on the pack).
+	 *
+	 * @param string $id Sanitized pack id.
+	 * @return string `points`, `ranks`, or `all`.
+	 */
+	protected static function infer_icon_pack_scope_from_id( string $id ): string {
+		$id = sanitize_key( $id );
+		if ( '' === $id ) {
+			return 'all';
+		}
+		if ( 'clanspress-points-starter' === $id || str_starts_with( $id, 'clanspress-points-' ) ) {
+			return 'points';
+		}
+		if ( 'clanspress-starter' === $id || str_starts_with( $id, 'clanspress-starter-' ) ) {
+			return 'ranks';
+		}
+		if ( str_starts_with( $id, 'clanspress-ranks-' ) || str_starts_with( $id, 'clanspress-rank-' ) ) {
+			return 'ranks';
+		}
+
+		return 'all';
+	}
+
+	/**
+	 * Ensure each pack has a `scope` key for the React admin (`points` | `ranks` | `all`).
+	 *
+	 * @param array<string, mixed> $pack Normalized pack row.
+	 * @return array<string, mixed>
+	 */
+	protected static function attach_icon_pack_scope( array $pack ): array {
+		if ( isset( $pack['scope'] ) && is_string( $pack['scope'] ) ) {
+			$candidate = sanitize_key( $pack['scope'] );
+			if ( in_array( $candidate, array( 'points', 'ranks', 'all' ), true ) ) {
+				$pack['scope'] = $candidate;
+				return $pack;
+			}
+		}
+		$id            = sanitize_key( (string) ( $pack['id'] ?? '' ) );
+		$pack['scope'] = self::infer_icon_pack_scope_from_id( $id );
+
+		return $pack;
+	}
+
+	/**
+	 * Normalize icon pack rows for JSON (numeric keys → JS array; same rules as companion Icon_Packs::get_icon_packs).
+	 *
+	 * @param array<int, array<string, mixed>> $packs Raw packs.
+	 * @return array<int, array<string, mixed>>
+	 */
+	protected static function normalize_bootstrap_icon_packs( array $packs ): array {
+		$out = array();
+		foreach ( $packs as $pack ) {
+			if ( ! is_array( $pack ) ) {
+				continue;
+			}
+			$id    = sanitize_key( (string) ( $pack['id'] ?? '' ) );
+			$label = sanitize_text_field( (string) ( $pack['label'] ?? '' ) );
+			$icons = isset( $pack['icons'] ) && is_array( $pack['icons'] ) ? $pack['icons'] : array();
+			if ( '' === $id || '' === $label || array() === $icons ) {
+				continue;
+			}
+			$normalized_icons = array();
+			foreach ( $icons as $icon ) {
+				if ( ! is_array( $icon ) ) {
+					continue;
+				}
+				$icon_id    = sanitize_key( (string) ( $icon['id'] ?? '' ) );
+				$icon_label = sanitize_text_field( (string) ( $icon['label'] ?? $icon_id ) );
+				$icon_url   = esc_url_raw( (string) ( $icon['url'] ?? '' ) );
+				if ( '' === $icon_id || '' === $icon_url ) {
+					continue;
+				}
+				$normalized_icons[] = array(
+					'id'    => $icon_id,
+					'label' => '' !== $icon_label ? $icon_label : $icon_id,
+					'url'   => $icon_url,
+				);
+			}
+			if ( array() === $normalized_icons ) {
+				continue;
+			}
+			$out[] = array(
+				'id'    => $id,
+				'label' => $label,
+				'icons' => $normalized_icons,
+			);
+		}
+		return $out;
+	}
+
+	/**
+	 * Last-resort starter packs built from companion plugin paths (skips `clanspress_*_icon_packs` filters).
+	 *
+	 * Used when every icon row was stripped (hostile filters, empty `get_icon_packs()`) but SVGs exist on disk.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	protected static function get_emergency_starter_packs_normalized(): array {
+		$raw = array();
+
+		if ( defined( 'CLANSPRESS_POINTS_FILE' ) ) {
+			$check = dirname( CLANSPRESS_POINTS_FILE ) . '/assets/point-icons/starter/coin-bronze.svg';
+			if ( is_readable( $check ) ) {
+				$base = trailingslashit( plugins_url( 'assets/point-icons/starter', CLANSPRESS_POINTS_FILE ) );
+				$raw[] = array(
+					'id'    => 'clanspress-points-starter',
+					'label' => __( 'Clanspress Points Starter', 'clanspress' ),
+					'icons' => array(
+						array(
+							'id'    => 'coin-bronze',
+							'label' => __( 'Bronze Coin', 'clanspress' ),
+							'url'   => $base . 'coin-bronze.svg',
+						),
+						array(
+							'id'    => 'coin-silver',
+							'label' => __( 'Silver Coin', 'clanspress' ),
+							'url'   => $base . 'coin-silver.svg',
+						),
+						array(
+							'id'    => 'coin-gold',
+							'label' => __( 'Gold Coin', 'clanspress' ),
+							'url'   => $base . 'coin-gold.svg',
+						),
+						array(
+							'id'    => 'gem-blue',
+							'label' => __( 'Blue Gem', 'clanspress' ),
+							'url'   => $base . 'gem-blue.svg',
+						),
+						array(
+							'id'    => 'gem-purple',
+							'label' => __( 'Purple Gem', 'clanspress' ),
+							'url'   => $base . 'gem-purple.svg',
+						),
+						array(
+							'id'    => 'star-token',
+							'label' => __( 'Star Token', 'clanspress' ),
+							'url'   => $base . 'star-token.svg',
+						),
+					),
+				);
+			}
+		}
+
+		if ( defined( 'CLANSPRESS_RANKS_FILE' ) ) {
+			$check = dirname( CLANSPRESS_RANKS_FILE ) . '/assets/rank-icons/starter/wood.svg';
+			if ( is_readable( $check ) ) {
+				$base = trailingslashit( plugins_url( 'assets/rank-icons/starter', CLANSPRESS_RANKS_FILE ) );
+				$raw[] = array(
+					'id'    => 'clanspress-starter',
+					'label' => __( 'Clanspress Starter', 'clanspress' ),
+					'icons' => array(
+						array(
+							'id'    => 'wood',
+							'label' => __( 'Wood', 'clanspress' ),
+							'url'   => $base . 'wood.svg',
+						),
+						array(
+							'id'    => 'bronze',
+							'label' => __( 'Bronze', 'clanspress' ),
+							'url'   => $base . 'bronze.svg',
+						),
+						array(
+							'id'    => 'silver',
+							'label' => __( 'Silver', 'clanspress' ),
+							'url'   => $base . 'silver.svg',
+						),
+						array(
+							'id'    => 'gold',
+							'label' => __( 'Gold', 'clanspress' ),
+							'url'   => $base . 'gold.svg',
+						),
+						array(
+							'id'    => 'platinum',
+							'label' => __( 'Platinum', 'clanspress' ),
+							'url'   => $base . 'platinum.svg',
+						),
+						array(
+							'id'    => 'diamond',
+							'label' => __( 'Diamond', 'clanspress' ),
+							'url'   => $base . 'diamond.svg',
+						),
+					),
+				);
+			}
+		}
+
+		return self::normalize_bootstrap_icon_packs( $raw );
+	}
+
+	/**
+	 * Normalized icon packs for the unified admin (points + ranks starter SVGs, etc.).
+	 *
+	 * Merges `clanspress_admin_icon_packs` with packs from companion plugins when those
+	 * classes exist, deduped by pack id. Filter-only results that are empty after
+	 * normalization, or invalid associative shapes, still get starter packs from Points/Ranks.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	protected static function collect_bootstrap_icon_packs(): array {
+		self::require_companion_icon_pack_classes();
+
+		$raw = apply_filters( 'clanspress_admin_icon_packs', array() );
+		if ( ! is_array( $raw ) ) {
+			$raw = array();
+		}
+		// Force a JSON array (associative filter output breaks `Array.isArray` in the React admin).
+		$raw = array_values( array_filter( $raw, 'is_array' ) );
+
+		$from_filter = self::normalize_bootstrap_icon_packs( $raw );
+
+		$seen   = array();
+		$merged = array();
+		foreach ( $from_filter as $pack ) {
+			$id = sanitize_key( (string) ( $pack['id'] ?? '' ) );
+			if ( '' === $id || isset( $seen[ $id ] ) ) {
+				continue;
+			}
+			$seen[ $id ] = true;
+			$merged[]    = $pack;
+		}
+
+		$fallback = array();
+		if ( class_exists( \Kernowdev\ClanspressPoints\Points\Icon_Packs::class ) ) {
+			$fallback = array_merge(
+				$fallback,
+				\Kernowdev\ClanspressPoints\Points\Icon_Packs::get_icon_packs()
+			);
+		}
+		if ( class_exists( \Kernowdev\ClanspressRanks\Ranks\Icon_Packs::class ) ) {
+			$fallback = array_merge(
+				$fallback,
+				\Kernowdev\ClanspressRanks\Ranks\Icon_Packs::get_icon_packs()
+			);
+		}
+		foreach ( $fallback as $pack ) {
+			if ( ! is_array( $pack ) ) {
+				continue;
+			}
+			$id = sanitize_key( (string) ( $pack['id'] ?? '' ) );
+			if ( '' === $id || isset( $seen[ $id ] ) ) {
+				continue;
+			}
+			$seen[ $id ] = true;
+			$merged[]    = $pack;
+		}
+
+		if ( array() === $merged ) {
+			$merged = self::get_emergency_starter_packs_normalized();
+		}
+
+		$scoped = array();
+		foreach ( $merged as $pack ) {
+			if ( is_array( $pack ) ) {
+				$scoped[] = self::attach_icon_pack_scope( $pack );
+			}
+		}
+
+		return $scoped;
+	}
+
+	/**
 	 * @return \WP_REST_Response|WP_Error
 	 */
 	public function rest_bootstrap() {
@@ -97,6 +407,8 @@ class Admin_Rest {
 				'optionSchemas'    => $schemas,
 				'extensions'       => $this->build_extensions_payload( $loader, $extensions ),
 				'generalOptionKey' => General_Settings::OPTION_KEY,
+				'iconPacks'        => self::get_unified_icon_packs(),
+				'iconPickerI18n'   => self::get_default_icon_picker_i18n(),
 				'plugin'           => array(
 					'version' => (string) \clanspress()->get_version(),
 				),
@@ -159,6 +471,8 @@ class Admin_Rest {
 
 		$added = array();
 
+		$loader = Loader::instance();
+
 		foreach ( $extensions as $slug => $ext ) {
 			if ( ! $ext instanceof Skeleton ) {
 				continue;
@@ -166,8 +480,11 @@ class Admin_Rest {
 			if ( '' !== (string) ( $ext->parent_slug ?? '' ) ) {
 				continue;
 			}
+			if ( ! $loader->is_extension_installed( $slug ) ) {
+				continue;
+			}
 
-			$groups = $this->section_groups_for_extension_tree( $slug, $ext, $by_slug, $children_by_parent );
+			$groups = $this->section_groups_for_extension_tree( $slug, $ext, $by_slug, $children_by_parent, $loader );
 			if ( empty( $groups ) ) {
 				continue;
 			}
@@ -189,6 +506,9 @@ class Admin_Rest {
 			}
 			$parent = (string) ( $ext->parent_slug ?? '' );
 			if ( '' === $parent || isset( $by_slug[ $parent ] ) ) {
+				continue;
+			}
+			if ( ! $loader->is_extension_installed( $slug ) ) {
 				continue;
 			}
 			$admin = $ext->get_settings_admin();
@@ -221,11 +541,12 @@ class Admin_Rest {
 	}
 
 	/**
-	 * @param array<string, Skeleton>        $by_slug
+	 * @param array<string, Skeleton>           $by_slug
 	 * @param array<string, array<int, string>> $children_by_parent
+	 * @param Loader                              $loader Extension install state.
 	 * @return array<int, array<string, mixed>>
 	 */
-	protected function section_groups_for_extension_tree( string $root_slug, Skeleton $root, array $by_slug, array $children_by_parent ): array {
+	protected function section_groups_for_extension_tree( string $root_slug, Skeleton $root, array $by_slug, array $children_by_parent, Loader $loader ): array {
 		$groups = array();
 
 		$root_admin = $root->get_settings_admin();
@@ -247,6 +568,9 @@ class Admin_Rest {
 		}
 
 		foreach ( $children_by_parent[ $root_slug ] as $child_slug ) {
+			if ( ! $loader->is_extension_installed( $child_slug ) ) {
+				continue;
+			}
 			if ( ! isset( $by_slug[ $child_slug ] ) ) {
 				continue;
 			}

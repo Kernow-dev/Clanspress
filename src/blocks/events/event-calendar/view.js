@@ -278,10 +278,7 @@ async function fetchEvents( ctx, start, end ) {
 	const url = raw.startsWith( 'http' )
 		? new URL( raw )
 		: new URL( raw.replace( /^\/+/, '' ), window.location.origin );
-	url.searchParams.set(
-		'per_page',
-		String( ctx.rangePerPage || 200 )
-	);
+	url.searchParams.set( 'per_page', String( ctx.rangePerPage || 200 ) );
 	url.searchParams.set( 'order', 'asc' );
 	url.searchParams.set( 'time_scope', 'all' );
 	url.searchParams.set( 'starts_after', start.toISOString() );

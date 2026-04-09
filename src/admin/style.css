@@ -96,7 +96,6 @@
 }
 
 .clanspress-settings-fields {
-	max-width: 640px;
 	margin-top: 1rem;
 }
 
@@ -590,37 +589,199 @@ border-radius: 0;
 	font-weight: 600;
 }
 
-.clanspress-field-repeater__row {
-	border: 1px solid rgba(255, 255, 255, 0.12);
-	border-radius: 8px;
-	padding: 12px;
-	margin-bottom: 12px;
-	background: rgba(0, 0, 0, 0.15);
+.clanspress-field-repeater__table {
+	margin-top: 8px;
+	width: 100%;
 }
 
-.clanspress-field-repeater__row-head {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 10px;
-	gap: 8px;
+.clanspress-field-repeater__table th,
+.clanspress-field-repeater__table td {
+	vertical-align: middle;
 }
 
-.clanspress-field-repeater__row-label {
-	font-size: 12px;
-	font-weight: 600;
-	opacity: 0.85;
+.clanspress-field-repeater__actions-cell {
+	white-space: nowrap;
+}
+
+.clanspress-field-repeater__row-edit {
+	padding-top: 4px;
 }
 
 .clanspress-field-repeater__cell {
 	margin-bottom: 10px;
 }
 
-.clanspress-field-repeater__cell:last-child {
+.clanspress-field-repeater .clanspress-field-repeater {
 	margin-bottom: 0;
 }
 
-.clanspress-field-repeater .clanspress-field-repeater {
-	margin-bottom: 0;
+.clanspress-field-repeater__modal-actions {
+	margin-top: 14px;
+	padding-top: 12px;
+	border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.clanspress-admin-main .components-modal__frame {
+	background: #292b31;
+	color: #ffffff;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 12px;
+}
+
+.clanspress-admin-main .components-modal__header {
+	border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+	background: #292b31;
+}
+
+.clanspress-admin-main .components-modal__content {
+	background: #292b31;
+	color: #ffffff;
+}
+
+/*
+ * WP <Modal> portals to body, outside .clanspress-admin-main — repeat shell styles on Clanspress screens.
+ */
+body.toplevel_page_clanspress .components-modal__frame,
+body.clanspress_page_clanspress .components-modal__frame {
+	background: #292b31;
+	color: #ffffff;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 12px;
+}
+
+body.toplevel_page_clanspress .components-modal__header,
+body.clanspress_page_clanspress .components-modal__header {
+	border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+	background: #292b31;
+}
+
+body.toplevel_page_clanspress .components-modal__content,
+body.clanspress_page_clanspress .components-modal__content {
+	background: #292b31;
+	color: #ffffff;
+}
+
+/* Modal chrome: @wordpress/components uses dark text; our frame is dark. */
+body.toplevel_page_clanspress .components-modal__header .components-modal__header-heading,
+body.clanspress_page_clanspress .components-modal__header .components-modal__header-heading {
+	color: #ffffff !important;
+}
+
+body.toplevel_page_clanspress .components-modal__header .components-button,
+body.clanspress_page_clanspress .components-modal__header .components-button {
+	color: #ffffff !important;
+}
+
+body.toplevel_page_clanspress .components-modal__header .components-button svg,
+body.toplevel_page_clanspress .components-modal__header .components-button .dashicon,
+body.clanspress_page_clanspress .components-modal__header .components-button svg,
+body.clanspress_page_clanspress .components-modal__header .components-button .dashicon {
+	fill: #ffffff !important;
+	color: #ffffff !important;
+}
+
+body.toplevel_page_clanspress .components-modal__frame .components-base-control__label,
+body.clanspress_page_clanspress .components-modal__frame .components-base-control__label {
+	color: #ffffff;
+}
+
+body.toplevel_page_clanspress .components-modal__frame .components-base-control__help,
+body.clanspress_page_clanspress .components-modal__frame .components-base-control__help {
+	color: rgba(255, 255, 255, 0.75);
+}
+
+body.toplevel_page_clanspress .components-modal__frame .components-button.is-secondary,
+body.clanspress_page_clanspress .components-modal__frame .components-button.is-secondary {
+	color: #ffffff;
+	border-color: rgba(255, 255, 255, 0.35);
+	background: rgba(255, 255, 255, 0.08);
+}
+
+body.toplevel_page_clanspress .components-modal__frame .components-button.is-secondary:hover,
+body.toplevel_page_clanspress .components-modal__frame .components-button.is-secondary:focus-visible,
+body.clanspress_page_clanspress .components-modal__frame .components-button.is-secondary:hover,
+body.clanspress_page_clanspress .components-modal__frame .components-button.is-secondary:focus-visible {
+	background: rgba(255, 255, 255, 0.14);
+}
+
+body.toplevel_page_clanspress .components-modal__frame .components-button.is-tertiary.is-destructive,
+body.clanspress_page_clanspress .components-modal__frame .components-button.is-tertiary.is-destructive {
+	color: #fca5a5;
+}
+
+.clanspress-field-icon-url__preview {
+	margin-bottom: 8px;
+}
+
+.clanspress-field-icon-url__preview img {
+	width: 48px;
+	height: 48px;
+	object-fit: contain;
+	display: block;
+	border-radius: 6px;
+	background: rgba(255, 255, 255, 0.06);
+	padding: 6px;
+}
+
+.clanspress-field-icon-url__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.clanspress-icon-picker-modal__inner {
+	max-height: min(70vh, 520px);
+	overflow: auto;
+}
+
+.clanspress-icon-picker-pack {
+	margin-top: 16px;
+}
+
+.clanspress-icon-picker-pack:first-of-type {
+	margin-top: 0;
+}
+
+.clanspress-icon-picker-pack__title {
+	margin: 0 0 10px;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.clanspress-icon-picker-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+	gap: 10px;
+}
+
+.clanspress-icon-picker-grid__item {
+	border: 1px solid rgba(255, 255, 255, 0.14);
+	border-radius: 8px;
+	padding: 8px;
+	background: rgba(255, 255, 255, 0.04);
+	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	color: inherit;
+	font: inherit;
+	text-align: center;
+}
+
+.clanspress-icon-picker-grid__item:hover {
+	background: rgba(255, 255, 255, 0.08);
+}
+
+.clanspress-icon-picker-grid__item img {
+	width: 48px;
+	height: 48px;
+	object-fit: contain;
+}
+
+.clanspress-icon-picker-grid__item span {
+	font-size: 12px;
+	line-height: 1.3;
 }
 

@@ -51,8 +51,14 @@ export default function Edit( {
 	setAttributes,
 	toggleSelection,
 } ) {
-	const { contentPosition, id, minHeight, minHeightUnit, allowedBlocks, templateLock } =
-		attributes;
+	const {
+		contentPosition,
+		id,
+		minHeight,
+		minHeightUnit,
+		allowedBlocks,
+		templateLock,
+	} = attributes;
 
 	const [ prevMinHeightValue, setPrevMinHeightValue ] = useState( minHeight );
 	const [ prevMinHeightUnit, setPrevMinHeightUnit ] =

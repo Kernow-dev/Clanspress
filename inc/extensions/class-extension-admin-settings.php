@@ -359,6 +359,17 @@ abstract class Abstract_Settings {
 			$row['depends_on'] = $field['depends_on'];
 		}
 
+		if ( ! empty( $field['icon_picker'] ) ) {
+			$row['iconPicker'] = true;
+		}
+
+		if ( isset( $field['icon_pack_scope'] ) && is_string( $field['icon_pack_scope'] ) ) {
+			$scope = sanitize_key( $field['icon_pack_scope'] );
+			if ( in_array( $scope, array( 'points', 'ranks', 'all' ), true ) ) {
+				$row['iconPackScope'] = $scope;
+			}
+		}
+
 		if ( isset( $field['media_title'] ) ) {
 			$row['mediaTitle'] = (string) $field['media_title'];
 		}

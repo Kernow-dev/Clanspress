@@ -31,6 +31,7 @@ class Admin extends Abstract_Settings {
 				'default_avatar'                  => '',
 				'default_cover'                   => '',
 				'events_profile_subpage'          => true,
+				'rank_status_updates_enabled'     => true,
 				'player_avatar_image_size_large'  => 'clanspress-avatar-large',
 				'player_avatar_image_size_medium' => 'clanspress-avatar-medium',
 				'player_avatar_image_size_small'  => 'clanspress-avatar-small',
@@ -39,9 +40,7 @@ class Admin extends Abstract_Settings {
 	}
 
 	protected function get_sections(): array {
-		return apply_filters(
-			'clanspress_players_sections',
-			array(
+		$sections = array(
 				'general'  => array(
 					'title'  => __( 'General', 'clanspress' ),
 					'fields' => array(
@@ -130,8 +129,34 @@ class Admin extends Abstract_Settings {
 						),
 					),
 				),
-			)
-		);
+			);
+
+		if ( $this->is_ranks_extension_available() ) {
+			$sections['integrations']['fields']['rank_status_updates_enabled'] = array(
+				'label'       => __( 'Player profile: rank achievement status updates', 'clanspress' ),
+				'type'        => 'checkbox',
+				'description' => __( 'When the Ranks extension is enabled, allow rank promotions and manual assignments to publish a social status post for the player.', 'clanspress' ),
+				'default'     => true,
+				'sanitize'    => 'rest_sanitize_boolean',
+			);
+		}
+
+		return apply_filters( 'clanspress_players_sections', $sections );
+	}
+
+	/**
+	 * Whether the Ranks extension is currently installed in Clanspress.
+	 *
+	 * @return bool
+	 */
+	protected function is_ranks_extension_available(): bool {
+		if ( ! class_exists( \Kernowdev\Clanspress\Extensions\Loader::class ) ) {
+			return false;
+		}
+
+		$installed = \Kernowdev\Clanspress\Extensions\Loader::instance()->get_installed_extensions();
+
+		return is_array( $installed ) && array_key_exists( 'cp_ranks', $installed );
 	}
 
 	public function render_page(): void {
