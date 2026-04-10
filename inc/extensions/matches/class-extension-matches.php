@@ -73,8 +73,9 @@ class Matches extends Skeleton {
 	 * @param string $slug        Unique slug.
 	 * @param string $description Short description.
 	 * @param string $parent_slug Parent extension slug, or empty string for a root extension.
-	 * @param string $version     Semantic version `x.y.z`.
-	 * @param array  $requires    Required extension slugs.
+	 * @param string $version              Semantic version `x.y.z`.
+	 * @param array  $requires             Required extension slugs.
+	 * @param string $requires_clanspress  Minimum Clanspress core version (`x.y.z`).
 	 * @return void
 	 */
 	public function setup_extension(
@@ -83,7 +84,8 @@ class Matches extends Skeleton {
 		string $description,
 		string $parent_slug,
 		string $version,
-		array $requires
+		array $requires,
+		string $requires_clanspress = ''
 	): void {
 		parent::setup_extension(
 			$name,
@@ -91,7 +93,8 @@ class Matches extends Skeleton {
 			$description,
 			$parent_slug,
 			$version,
-			$requires
+			$requires,
+			$requires_clanspress
 		);
 
 		remove_filter( 'clanspress_registered_extensions', array( $this, 'register_extension' ) );

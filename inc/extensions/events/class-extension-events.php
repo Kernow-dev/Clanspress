@@ -44,8 +44,9 @@ class Events extends Skeleton {
 	 * @param string $slug        Unique slug.
 	 * @param string $description Short description.
 	 * @param string $parent_slug Parent extension slug, or empty.
-	 * @param string $version     Semantic version.
-	 * @param array  $requires    Required extension slugs.
+	 * @param string $version              Semantic version.
+	 * @param array  $requires             Required extension slugs.
+	 * @param string $requires_clanspress  Minimum Clanspress core version (`x.y.z`).
 	 */
 	public function setup_extension(
 		string $name,
@@ -53,7 +54,8 @@ class Events extends Skeleton {
 		string $description,
 		string $parent_slug,
 		string $version,
-		array $requires
+		array $requires,
+		string $requires_clanspress = ''
 	): void {
 		parent::setup_extension(
 			$name,
@@ -61,7 +63,8 @@ class Events extends Skeleton {
 			$description,
 			$parent_slug,
 			$version,
-			$requires
+			$requires,
+			$requires_clanspress
 		);
 
 		remove_filter( 'clanspress_registered_extensions', array( $this, 'register_extension' ) );

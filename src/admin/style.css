@@ -114,6 +114,16 @@
 	color: #d0d2da;
 }
 
+.clanspress-extension-requires-cell .description {
+	margin-top: 0.35rem;
+	margin-bottom: 0;
+}
+
+.clanspress-extension-requires-core-miss,
+.clanspress-extension-requires-core-miss-label {
+	color: #f0b849;
+}
+
 .clanspress-admin-global-notice {
 	margin-bottom: 1rem;
 }

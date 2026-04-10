@@ -337,6 +337,7 @@ $wrapper = get_block_wrapper_attributes( array( 'class' => implode( ' ', $wrappe
 		class="clanspress-event-create-form__success"
 		role="status"
 		tabindex="-1"
+		hidden
 		data-wp-bind--hidden="!state.showSuccessScreen()"
 	>
 		<p class="clanspress-event-create-form__success-title">

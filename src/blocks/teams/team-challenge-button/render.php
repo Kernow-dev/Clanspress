@@ -121,6 +121,7 @@ $wrapper = get_block_wrapper_attributes(
 
 	<div
 		class="clanspress-team-challenge__backdrop"
+		hidden
 		data-wp-bind--hidden="!context.open"
 		data-wp-on--click="actions.closeBackdrop"
 	>

@@ -11,6 +11,11 @@
 	align-items: center;
 	justify-content: center;
 	padding: 1rem;
+
+	/* Author `display: flex` wins over the UA [hidden] rule without this. */
+	&[hidden] {
+		display: none !important;
+	}
 }
 
 .clanspress-team-challenge__dialog {

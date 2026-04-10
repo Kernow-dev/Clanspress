@@ -616,18 +616,20 @@ class Admin_Rest {
 				continue;
 			}
 			$out[] = array(
-				'slug'           => $slug,
-				'name'           => $ext->name,
-				'description'    => $ext->description,
-				'version'        => $ext->version,
-				'type'           => $ext->type,
-				'parentSlug'     => (string) ( $ext->parent_slug ?? '' ),
-				'requires'       => array_values( $ext->requires ),
-				'isOfficial'     => isset( $official[ $slug ] ),
-				'isCoreBundled'  => in_array( $slug, $core_bundle, true ),
-				'isInstalled'    => isset( $installed[ $slug ] ),
-				'canInstall'     => $ext->can_install(),
-				'isRequired'     => in_array( $slug, $required, true ),
+				'slug'                    => $slug,
+				'name'                    => $ext->name,
+				'description'             => $ext->description,
+				'version'                 => $ext->version,
+				'type'                    => $ext->type,
+				'parentSlug'              => (string) ( $ext->parent_slug ?? '' ),
+				'requires'                => array_values( $ext->requires ),
+				'requiresClanspress'      => $ext->get_requires_clanspress_version(),
+				'meetsClanspressVersion'  => $ext->meets_clanspress_version_requirement(),
+				'isOfficial'              => isset( $official[ $slug ] ),
+				'isCoreBundled'           => in_array( $slug, $core_bundle, true ),
+				'isInstalled'             => isset( $installed[ $slug ] ),
+				'canInstall'              => $ext->can_install(),
+				'isRequired'              => in_array( $slug, $required, true ),
 			);
 		}
 
