@@ -3,6 +3,8 @@
 namespace Kernowdev\Clanspress\Extensions;
 defined( 'ABSPATH' ) || exit;
 
+use Kernowdev\Clanspress\Main;
+
 /**
  * Extension skeleton.
  *
@@ -64,6 +66,20 @@ class Skeleton {
 	public array $requires;
 
 	/**
+	 * Minimum Clanspress plugin version (`x.y.z`), or empty when not applicable (core-bundled extensions).
+	 *
+	 * Non-core extensions with an empty string use {@see Skeleton::DEFAULT_REQUIRES_CLANSPRESS_VERSION}.
+	 *
+	 * @var string
+	 */
+	public string $requires_clanspress = '';
+
+	/**
+	 * Default minimum Clanspress version for extensions that are not core-bundled when none is declared.
+	 */
+	public const DEFAULT_REQUIRES_CLANSPRESS_VERSION = '1.0.0';
+
+	/**
 	 * Data store implementation for extension-specific records.
 	 *
 	 * @var Extension_Data_Store
@@ -76,9 +92,10 @@ class Skeleton {
 	 * @param string $name Extension name.
 	 * @param string $slug Extension slug.
 	 * @param string $description Extension description.
-	 * @param string $parent_slug Extensions parent slug.
-	 * @param string $version Extension version.
-	 * @param array  $requires An array of required extensions.
+	 * @param string $parent_slug          Extensions parent slug.
+	 * @param string $version              Extension version.
+	 * @param array  $requires             An array of required extensions.
+	 * @param string $requires_clanspress Minimum Clanspress core version (`x.y.z`); ignored for core-bundled slugs. Empty uses {@see Skeleton::DEFAULT_REQUIRES_CLANSPRESS_VERSION} for other extensions.
 	 */
 	protected function __construct(
 		string $name,
@@ -86,7 +103,8 @@ class Skeleton {
 		string $description,
 		string $parent_slug,
 		string $version = '1.0.0',
-		array $requires = array()
+		array $requires = array(),
+		string $requires_clanspress = ''
 	) {
 		$this->setup_extension(
 			$name,
@@ -94,7 +112,8 @@ class Skeleton {
 			$description,
 			$parent_slug,
 			$version,
-			$requires
+			$requires,
+			$requires_clanspress
 		);
 	}
 
@@ -104,9 +123,10 @@ class Skeleton {
 	 * @param string $name        The human-readable name of the extension.
 	 * @param string $slug        The extensions slug.
 	 * @param string $description The extensions description.
-	 * @param string $parent_slug The slug of the parent extension.
-	 * @param string $version     The extension version.
-	 * @param array  $requires    An array of required extensions.
+	 * @param string $parent_slug          The slug of the parent extension.
+	 * @param string $version              The extension version.
+	 * @param array  $requires             An array of required extensions.
+	 * @param string $requires_clanspress  Minimum Clanspress core version (`x.y.z`); empty allowed.
 	 *
 	 * @return void
 	 */
@@ -116,15 +136,17 @@ class Skeleton {
 		string $description,
 		string $parent_slug,
 		string $version,
-		array $requires
+		array $requires,
+		string $requires_clanspress = ''
 	): void {
 		// Setup basic extension data.
-		$this->name        = $this->validate_name( $name );
-		$this->slug        = $this->validate_slug( $slug );
-		$this->description = $description;
-		$this->parent_slug = $this->validate_parent_slug( $parent_slug );
-		$this->version     = $this->validate_version( $version );
-		$this->requires    = $this->validate_requires( $requires );
+		$this->name                 = $this->validate_name( $name );
+		$this->slug                 = $this->validate_slug( $slug );
+		$this->description          = $description;
+		$this->parent_slug          = $this->validate_parent_slug( $parent_slug );
+		$this->version              = $this->validate_version( $version );
+		$this->requires             = $this->validate_requires( $requires );
+		$this->requires_clanspress  = $this->validate_requires_clanspress( $requires_clanspress );
 		/**
 		 * Filter the extension data store implementation.
 		 *
@@ -235,6 +257,53 @@ class Skeleton {
 	}
 
 	/**
+	 * Validate minimum Clanspress core version (empty = use default for non-core extensions).
+	 *
+	 * @param string $version Version string.
+	 * @return string
+	 */
+	protected function validate_requires_clanspress( string $version ): string {
+		$version = trim( $version );
+		if ( '' === $version ) {
+			return '';
+		}
+		if ( ! preg_match( '/^\d+\.\d+\.\d+$/', $version ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message; translated for localized error UI.
+			throw new \InvalidArgumentException( __( 'Minimum Clanspress version must be empty or in format x.y.z.', 'clanspress' ) );
+		}
+
+		return $version;
+	}
+
+	/**
+	 * Minimum Clanspress version this extension needs (empty = no check; core-bundled only).
+	 *
+	 * @return string `x.y.z` or '' when the check does not apply.
+	 */
+	public function get_requires_clanspress_version(): string {
+		if ( in_array( $this->slug, Loader::get_core_bundled_extension_slugs(), true ) ) {
+			return '';
+		}
+		return '' !== $this->requires_clanspress
+			? $this->requires_clanspress
+			: self::DEFAULT_REQUIRES_CLANSPRESS_VERSION;
+	}
+
+	/**
+	 * Whether the running Clanspress core satisfies {@see Skeleton::get_requires_clanspress_version()}.
+	 *
+	 * @return bool
+	 */
+	public function meets_clanspress_version_requirement(): bool {
+		$required = $this->get_requires_clanspress_version();
+		if ( '' === $required ) {
+			return true;
+		}
+
+		return version_compare( Main::VERSION, $required, '>=' );
+	}
+
+	/**
 	 * Register extension.
 	 *
 	 * @param array $extensions Array of registered extensions.
@@ -276,14 +345,18 @@ class Skeleton {
 	 * @return bool
 	 */
 	public function can_install_with_slugs( array $installed_slugs ): bool {
-		$present     = array_fill_keys( $installed_slugs, true );
-		$can_install = true;
+		if ( ! $this->meets_clanspress_version_requirement() ) {
+			$can_install = false;
+		} else {
+			$present     = array_fill_keys( $installed_slugs, true );
+			$can_install = true;
 
-		if ( ! empty( $this->requires ) ) {
-			foreach ( $this->requires as $require ) {
-				if ( ! isset( $present[ $require ] ) ) {
-					$can_install = false;
-					break;
+			if ( ! empty( $this->requires ) ) {
+				foreach ( $this->requires as $require ) {
+					if ( ! isset( $present[ $require ] ) ) {
+						$can_install = false;
+						break;
+					}
 				}
 			}
 		}
@@ -291,7 +364,7 @@ class Skeleton {
 		/**
 		 * Allows more specific checks to run to determine if an extension can be installed or ran.
 		 *
-		 * @param bool     $can_install Current install status (requires satisfied against `$installed_slugs`).
+		 * @param bool     $can_install Current install status (core version, then requires satisfied against `$installed_slugs`).
 		 * @param Skeleton $extension   Extension object.
 		 */
 		return (bool) apply_filters( "clanspress_can_install_{$this->slug}_extension", $can_install, $this );

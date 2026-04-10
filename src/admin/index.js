@@ -1444,13 +1444,24 @@ function SettingsSections( { sections, optionKey, values, onFieldChange } ) {
  * Lists required extension names; flags dependencies that are not currently installed.
  *
  * @param {Object}   props
- * @param {string[]} props.requires       Slugs from the server (`ext.requires`).
- * @param {Object[]} props.allExtensions  Full `bootstrap.extensions` list.
- * @param {string[]} props.installedSlugs Currently toggled-on slugs in the UI.
+ * @param {string[]} props.requires                 Slugs from the server (`ext.requires`).
+ * @param {Object[]} props.allExtensions          Full `bootstrap.extensions` list.
+ * @param {string[]} props.installedSlugs         Currently toggled-on slugs in the UI.
+ * @param {string}   props.requiresClanspress     Minimum core version (`x.y.z`) or empty.
+ * @param {boolean}  props.meetsClanspressVersion Whether core satisfies `requiresClanspress`.
  * @return {import('react').ReactNode}
  */
-function ExtensionRequiresCell( { requires, allExtensions, installedSlugs } ) {
-	if ( ! requires?.length ) {
+function ExtensionRequiresCell( {
+	requires,
+	allExtensions,
+	installedSlugs,
+	requiresClanspress,
+	meetsClanspressVersion,
+} ) {
+	const hasExtReqs = requires?.length > 0;
+	const hasCoreReq = Boolean( requiresClanspress );
+
+	if ( ! hasExtReqs && ! hasCoreReq ) {
 		return (
 			<span
 				className="description"
@@ -1462,43 +1473,108 @@ function ExtensionRequiresCell( { requires, allExtensions, installedSlugs } ) {
 	}
 
 	return (
-		<ul className="clanspress-extension-requires">
-			{ requires.map( ( reqSlug ) => {
-				const reqExt = allExtensions.find(
-					( e ) => e.slug === reqSlug
-				);
-				const label = reqExt?.name || reqSlug;
-				const isInstalled = installedSlugs.includes( reqSlug );
-				return (
-					<li key={ reqSlug }>
-						{ label }
-						{ ! isInstalled ? (
-							<span className="description">
-								({ __( 'not installed', 'clanspress' ) })
+		<div className="clanspress-extension-requires-cell">
+			{ hasExtReqs ? (
+				<ul className="clanspress-extension-requires">
+					{ requires.map( ( reqSlug ) => {
+						const reqExt = allExtensions.find(
+							( e ) => e.slug === reqSlug
+						);
+						const label = reqExt?.name || reqSlug;
+						const isInstalled = installedSlugs.includes( reqSlug );
+						return (
+							<li key={ reqSlug }>
+								{ label }
+								{ ! isInstalled ? (
+									<span className="description">
+										({ __( 'not installed', 'clanspress' ) })
+									</span>
+								) : null }
+							</li>
+						);
+					} ) }
+				</ul>
+			) : null }
+			{ hasCoreReq ? (
+				<p
+					className={ `description${
+						meetsClanspressVersion
+							? ''
+							: ' clanspress-extension-requires-core-miss'
+					}` }
+				>
+					{ sprintf(
+						/* translators: %s: minimum Clanspress version (x.y.z). */
+						__( 'Requires Clanspress %s or newer.', 'clanspress' ),
+						requiresClanspress
+					) }
+					{ ! meetsClanspressVersion ? (
+						<>
+							{ ' ' }
+							<span className="clanspress-extension-requires-core-miss-label">
+								{ __(
+									'(current Clanspress is too old)',
+									'clanspress'
+								) }
 							</span>
-						) : null }
-					</li>
-				);
-			} ) }
-		</ul>
+						</>
+					) : null }
+				</p>
+			) : null }
+		</div>
 	);
 }
 
 /**
  * Whether an extension may be switched on given the current checkbox/toggle state (not yet saved).
- * Extensions with no `requires` still respect server `canInstall` (e.g. custom filters).
+ * Respects server `canInstall` (core version, extension dependencies, and custom filters) as well as pending dependency toggles.
  *
  * @param {Object}   ext                   Extension row from bootstrap.
  * @param {string[]} pendingInstalledSlugs Slugs currently toggled on in the UI.
  * @return {boolean}
  */
 function extensionCanBeTurnedOn( ext, pendingInstalledSlugs ) {
-	if ( ext.requires?.length ) {
-		return ext.requires.every( ( slug ) =>
+	const depsOk =
+		! ext.requires?.length ||
+		ext.requires.every( ( slug ) =>
 			pendingInstalledSlugs.includes( slug )
 		);
+	return depsOk && ext.canInstall;
+}
+
+/**
+ * Help text when an extension toggle is disabled.
+ *
+ * @param {Object}  ext                  Extension row from bootstrap.
+ * @param {boolean} isRequired           Whether the extension cannot be turned off.
+ * @param {boolean} versionBlocksInstall Core version below `requiresClanspress`.
+ * @return {string} Localized message.
+ */
+function getExtensionToggleDisabledMessage(
+	ext,
+	isRequired,
+	versionBlocksInstall
+) {
+	if ( isRequired ) {
+		return __(
+			'This extension is required and cannot be disabled.',
+			'clanspress'
+		);
 	}
-	return ext.canInstall;
+	if ( versionBlocksInstall ) {
+		return sprintf(
+			/* translators: %s: minimum Clanspress version (x.y.z). */
+			__( 'Requires Clanspress %s or newer.', 'clanspress' ),
+			ext.requiresClanspress
+		);
+	}
+	if ( ext.requires?.length ) {
+		return __(
+			'Turn on all required extensions first (you can save everything in one step).',
+			'clanspress'
+		);
+	}
+	return __( 'This extension cannot be enabled.', 'clanspress' );
 }
 
 function App() {
@@ -1929,6 +2005,12 @@ function App() {
 																isRequired ||
 																( ! isOn &&
 																	! canTurnOn );
+															const versionBlocksInstall =
+																Boolean(
+																	ext.requiresClanspress
+																) &&
+																ext.meetsClanspressVersion ===
+																	false;
 															return (
 																<tr
 																	key={
@@ -2022,6 +2104,14 @@ function App() {
 																			installedSlugs={
 																				installed
 																			}
+																			requiresClanspress={
+																				ext.requiresClanspress ||
+																				''
+																			}
+																			meetsClanspressVersion={
+																				ext.meetsClanspressVersion !==
+																				false
+																			}
 																		/>
 																	</td>
 																	<td>
@@ -2075,22 +2165,11 @@ function App() {
 																		/>
 																		{ toggleDisabled ? (
 																			<p className="description">
-																				{ isRequired
-																					? __(
-																							'This extension is required and cannot be disabled.',
-																							'clanspress'
-																					  )
-																					: ext
-																							.requires
-																							?.length
-																					? __(
-																							'Turn on all required extensions first (you can save everything in one step).',
-																							'clanspress'
-																					  )
-																					: __(
-																							'This extension cannot be enabled.',
-																							'clanspress'
-																					  ) }
+																				{ getExtensionToggleDisabledMessage(
+																					ext,
+																					isRequired,
+																					versionBlocksInstall
+																				) }
 																			</p>
 																		) : null }
 																	</td>

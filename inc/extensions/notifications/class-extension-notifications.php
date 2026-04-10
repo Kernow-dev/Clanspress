@@ -51,8 +51,9 @@ class Notifications extends Skeleton {
 	 * @param string $slug        Extension slug.
 	 * @param string $description Description.
 	 * @param string $parent_slug Parent slug.
-	 * @param string $version     Version.
-	 * @param array  $requires    Required extension slugs.
+	 * @param string $version              Version.
+	 * @param array  $requires             Required extension slugs.
+	 * @param string $requires_clanspress  Minimum Clanspress core version (`x.y.z`).
 	 */
 	public function setup_extension(
 		string $name,
@@ -60,7 +61,8 @@ class Notifications extends Skeleton {
 		string $description,
 		string $parent_slug,
 		string $version,
-		array $requires
+		array $requires,
+		string $requires_clanspress = ''
 	): void {
 		parent::setup_extension(
 			$name,
@@ -68,7 +70,8 @@ class Notifications extends Skeleton {
 			$description,
 			$parent_slug,
 			$version,
-			$requires
+			$requires,
+			$requires_clanspress
 		);
 
 		remove_filter( 'clanspress_registered_extensions', array( $this, 'register_extension' ) );

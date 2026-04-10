@@ -54,8 +54,9 @@ class Players extends Skeleton {
 	 * @param string $slug        The extensions slug.
 	 * @param string $description The extensions description.
 	 * @param string $parent_slug The slug of the parent extension.
-	 * @param string $version     The extension version.
-	 * @param array  $requires    An array of required extensions.
+	 * @param string $version              The extension version.
+	 * @param array  $requires             An array of required extensions.
+	 * @param string $requires_clanspress  Minimum Clanspress core version (`x.y.z`).
 	 */
 	public function setup_extension(
 		string $name,
@@ -63,7 +64,8 @@ class Players extends Skeleton {
 		string $description,
 		string $parent_slug,
 		string $version,
-		array $requires
+		array $requires,
+		string $requires_clanspress = ''
 	): void {
 		parent::setup_extension(
 			$name,
@@ -71,7 +73,8 @@ class Players extends Skeleton {
 			$description,
 			$parent_slug,
 			$version,
-			$requires
+			$requires,
+			$requires_clanspress
 		);
 
 		// Built-in extensions register as official, not third-party.
