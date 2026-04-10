@@ -827,7 +827,9 @@ final class Wordban {
 			);
 			$chunks[] = '(?:' . implode( '|', $quoted ) . ')';
 		}
-		$body = implode( '[^\p{L}\p{N}]*', $chunks );
+		// Do not allow whitespace between letters: otherwise patterns can span word boundaries
+		// (e.g. "tits" matching across "bit its"). Gaps are for leet/punctuation only.
+		$body = implode( '[^\p{L}\p{N}\s]*', $chunks );
 		if ( $with_boundaries ) {
 			return '/(?<![\p{L}\p{N}])' . $body . '(?![\p{L}\p{N}])/iu';
 		}
