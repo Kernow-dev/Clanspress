@@ -197,6 +197,10 @@
 		box-shadow: 0 1px 4px color-mix(in srgb, currentColor 8%, transparent);
 		padding: 1rem 1.15rem 1.15rem;
 
+		&[hidden] {
+			display: none !important;
+		}
+
 		.panel-content {
 			display: flex;
 			flex-direction: column;
@@ -461,6 +465,10 @@
 		z-index: 50;
 		max-width: min(100%, 22rem);
 		opacity: 0;
+
+		&[hidden] {
+			display: none !important;
+		}
 		transform: translateY(6px);
 		transition:
 			opacity 0.25s ease,

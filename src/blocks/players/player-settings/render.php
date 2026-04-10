@@ -88,6 +88,7 @@ $nav_items = (array) apply_filters( 'clanspress_players_settings_nav_items', arr
 				?>
 			<div
 				class="settings-panel <?php echo esc_attr( $nav_sub_item . '-panel' ); ?>"
+				hidden
 				data-wp-bind--hidden="!state.isPanelActive"
 				id="<?php echo esc_attr( 'panel-' . $nav_sub_item ); ?>"
 			>
@@ -107,6 +108,7 @@ $nav_items = (array) apply_filters( 'clanspress_players_settings_nav_items', arr
 		role="status"
 		aria-live="polite"
 		aria-atomic="true"
+		hidden
 		data-wp-bind--hidden="!state.toast.visible"
 		data-wp-class--success="state.isToastSuccess"
 		data-wp-class--error="state.isToastError"
