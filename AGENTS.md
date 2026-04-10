@@ -135,6 +135,9 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 - `clanspress_redirect_author_archive_to_players_url` — 301 target for `/author/…` and `?author=` → `/players/…`: `(string $target, \WP_User $user)`.
 - `clanspress_players_social_profile_field_definitions` — Social fields on **Profile → Social Networks** and matching user meta keys: `(array $definitions)` map of slug → `label` / `placeholder`.
 - `clanspress_players_get_display_social` — Single social field after user meta: `(string $value, string $slug, int $player_id)`.
+- `clanspress_players_social_profile_link_url` — Final resolved URL for **Player social links** / helpers: `(string $url, string $slug, int $player_id, string $raw_meta)`.
+- `clanspress_players_social_profile_svg_icon` — Inline SVG for a social slug in the **Player social links** block: `(string $svg_markup, string $slug)`.
+- `clanspress_player_social_links_block_items` — Ordered link rows before render: `(array $items, int $user_id, \WP_Block $block)` each item `slug`, `url`, `label`.
 - `clanspress_player_settings_update_social_profile_value` — Mutate or reject a value before save (return `WP_Error` to block): `(string|WP_Error $value, string $slug, int $user_id)`.
 - `clanspress_players_get_display_avatar` — Player avatar image URL after attachment/default resolution: `(string $url, int $user_id, string|array $size, string $context, string $avatar_preset)`. `$avatar_preset` is `large`, `medium`, `small`, or empty when an explicit `$size` was used (presets map to **Players → Player avatar image sizes**). Use `$context` to vary behaviour by surface (`player_avatar_block`, `user_nav`, `notifications`, `profile_settings_rest`, etc.). Pair with `clanspress_players_get_display_avatar_id` for attachment-based logic.
 - `clanspress_players_resolve_player_avatar_image_size` — Maps preset to registered size slug before URL resolution: `(string $size, string $preset, string $raw, string $fallback)`.

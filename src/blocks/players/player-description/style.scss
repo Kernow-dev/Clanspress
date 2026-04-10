@@ -1,0 +1,29 @@
+.wp-block-clanspress-player-description {
+	margin: 0;
+}
+
+.clanspress-player-description__content {
+	line-height: 1.5;
+
+	p {
+		margin: 0 0 1em;
+	}
+
+	p:last-child {
+		margin-bottom: 0;
+	}
+
+	ul,
+	ol {
+		margin: 0 0 1em 1.25em;
+		padding: 0;
+	}
+}
+
+.clanspress-player-description--placeholder {
+	border: 1px dashed #c3c4c7;
+	padding: 0.75rem;
+	border-radius: 4px;
+	color: #646970;
+	font-size: 0.875rem;
+}

@@ -304,6 +304,53 @@ One-off override example (uses CSS variables instead of `var:preset|…`):
 					"fontSize": "var:preset|font-size|cp-scaffold-m"
 				}
 			},
+			"clanspress/player-tagline": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/player-description": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg",
+					"link": "var:preset|color|cp-scaffold-accent"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/player-website": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg",
+					"link": "var:preset|color|cp-scaffold-accent"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/player-city": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
+			"clanspress/player-birthday": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
 			"clanspress/player-profile-nav": {
 				"color": {
 					"text": "var:preset|color|cp-scaffold-text",
@@ -539,7 +586,7 @@ The **Player settings** block (`clanspress/player-settings`) uses the Interactiv
 
 **Profile save AJAX (`clanspress_save_player_settings`).** POST to `ajax_url` with `action` set to `clanspress_save_player_settings`, the nonce in `nonce` (same value as localized `nonce`, verified with `clanspress_profile_settings_save_action`), plus the form fields your UI collects (including optional multipart `profile_avatar` / `profile_cover` when uploading inline). Domain saving is delegated to `clanspress_save_player_settings` and related filters; the handler itself does not persist fields.
 
-**Social profiles** — Under **Profile → Social Networks**, core saves one text field per network as user meta `cp_player_social_{slug}` (e.g. `cp_player_social_facebook`) from POST keys `profile_social_{slug}`. Read values with **`clanspress_players_get_display_social( $slug, $user_id )`**; customize the field list with **`clanspress_players_social_profile_field_definitions`**.
+**Social profiles** — Under **Profile → Social Networks**, core saves one text field per network as user meta `cp_player_social_{slug}` (e.g. `cp_player_social_facebook`) from POST keys `profile_social_{slug}`. Read values with **`clanspress_players_get_display_social( $slug, $user_id )`**; resolve a shareable URL with **`clanspress_players_get_social_profile_link_url( $slug, $user_id )`** (and **`clanspress_players_normalize_social_profile_link_url( $slug, $raw )`** for raw strings). The **`clanspress/player-social-links`** block prints icon links on profiles and inside **`clanspress/player-template`** loops. Customize the field list with **`clanspress_players_social_profile_field_definitions`**.
 
 On **success**, the JSON body matches `wp_send_json_success()`: `success` is true and `data` is an object with at least:
 

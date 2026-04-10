@@ -1,0 +1,51 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/player-social-links",
+	"version": "1.0.0",
+	"title": "Player social links",
+	"category": "clanspress-players",
+	"icon": "share",
+	"description": "Shows the player’s social profile links from Profile → Social Networks as icon buttons.",
+	"textdomain": "clanspress",
+	"usesContext": [ "postId", "postType", "clanspress/playerId" ],
+	"attributes": {
+		"iconSize": {
+			"type": "string",
+			"default": "medium",
+			"enum": [ "small", "medium", "large" ]
+		}
+	},
+	"supports": {
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": true
+		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": true
+		},
+		"html": false,
+		"align": true
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./editor.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php",
+	"selectors": {
+		"root": ".wp-block-clanspress-player-social-links",
+		"color": {
+			"text": ".wp-block-clanspress-player-social-links .clanspress-player-social-links__link",
+			"background": ".wp-block-clanspress-player-social-links"
+		},
+		"border": ".wp-block-clanspress-player-social-links"
+	}
+}

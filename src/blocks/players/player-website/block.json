@@ -1,0 +1,78 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/player-website",
+	"version": "1.0.0",
+	"title": "Player website",
+	"category": "clanspress-players",
+	"icon": "admin-links",
+	"description": "Displays the player public website when set. Optional link to the URL.",
+	"textdomain": "clanspress",
+	"usesContext": [ "postId", "postType", "clanspress/playerId" ],
+	"attributes": {
+		"textAlign": {
+			"type": "string"
+		},
+		"isLink": {
+			"type": "boolean",
+			"default": true
+		},
+		"linkTarget": {
+			"type": "string",
+			"default": "_self"
+		},
+		"rel": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"supports": {
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": true
+		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": true,
+			"link": true,
+			"__experimentalDefaultControls": {
+				"link": true
+			}
+		},
+		"html": false,
+		"align": true,
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true,
+			"textAlign": true,
+			"__experimentalFontFamily": true,
+			"__experimentalFontStyle": true,
+			"__experimentalFontWeight": true,
+			"__experimentalLetterSpacing": true,
+			"__experimentalTextDecoration": true,
+			"__experimentalTextTransform": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./editor.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php",
+	"selectors": {
+		"root": ".wp-block-clanspress-player-website",
+		"color": {
+			"text": ".wp-block-clanspress-player-website .clanspress-player-website__text, .wp-block-clanspress-player-website .clanspress-player-website__link",
+			"background": ".wp-block-clanspress-player-website",
+			"link": ".wp-block-clanspress-player-website .clanspress-player-website__link"
+		},
+		"typography": ".wp-block-clanspress-player-website .clanspress-player-website__text, .wp-block-clanspress-player-website .clanspress-player-website__link",
+		"border": ".wp-block-clanspress-player-website"
+	}
+}

@@ -1,0 +1,66 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "clanspress/player-description",
+	"version": "1.0.0",
+	"title": "Player description",
+	"category": "clanspress-players",
+	"icon": "text-page",
+	"description": "Displays the player profile description (bio) when set. Allows basic formatting from profile settings.",
+	"textdomain": "clanspress",
+	"usesContext": [ "postId", "postType", "clanspress/playerId" ],
+	"attributes": {
+		"textAlign": {
+			"type": "string"
+		}
+	},
+	"supports": {
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": true
+		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true,
+		"color": {
+			"text": true,
+			"background": true,
+			"link": true,
+			"__experimentalDefaultControls": {
+				"link": true
+			}
+		},
+		"html": false,
+		"align": true,
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true,
+			"textAlign": true,
+			"__experimentalFontFamily": true,
+			"__experimentalFontStyle": true,
+			"__experimentalFontWeight": true,
+			"__experimentalLetterSpacing": true,
+			"__experimentalTextDecoration": true,
+			"__experimentalTextTransform": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./editor.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php",
+	"selectors": {
+		"root": ".wp-block-clanspress-player-description",
+		"color": {
+			"text": ".wp-block-clanspress-player-description .clanspress-player-description__content",
+			"background": ".wp-block-clanspress-player-description",
+			"link": ".wp-block-clanspress-player-description .clanspress-player-description__content a"
+		},
+		"typography": ".wp-block-clanspress-player-description .clanspress-player-description__content",
+		"border": ".wp-block-clanspress-player-description"
+	}
+}
