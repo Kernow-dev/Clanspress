@@ -118,7 +118,7 @@ $wrapper = get_block_wrapper_attributes(
 			<div class="clanspress-event-rsvp__attendees-head">
 				<button type="button" class="clanspress-event-rsvp__toggle" data-wp-on--click="actions.toggleAttendees" data-wp-bind--aria-expanded="state.attendeesOpen()">
 					<span class="clanspress-event-rsvp__toggle-text" data-wp-bind--hidden="!state.attendeesOpen()"><?php esc_html_e( 'Hide responses', 'clanspress' ); ?></span>
-					<span class="clanspress-event-rsvp__toggle-text" data-wp-bind--hidden="state.attendeesOpen()"><?php esc_html_e( 'Show responses', 'clanspress' ); ?></span>
+					<span class="clanspress-event-rsvp__toggle-text" hidden data-wp-bind--hidden="state.attendeesOpen()"><?php esc_html_e( 'Show responses', 'clanspress' ); ?></span>
 				</button>
 				<h3 class="clanspress-event-rsvp__attendees-heading"><?php esc_html_e( 'Responses', 'clanspress' ); ?></h3>
 			</div>

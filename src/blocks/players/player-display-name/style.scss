@@ -4,7 +4,14 @@
 
 .clanspress-player-display-name__text {
 	margin: 0;
-	line-height: inherit;
+	/*
+	 * Typography supports target the block root so global styles / presets apply there.
+	 * Inherit here so the name follows the wrapper (or the surrounding theme) instead of
+	 * receiving preset typography on this inner element.
+	 */
+	font: inherit;
+	letter-spacing: inherit;
+	text-transform: inherit;
 }
 
 .clanspress-player-display-name__link {

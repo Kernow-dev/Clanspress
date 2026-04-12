@@ -315,20 +315,20 @@ $wrapper = get_block_wrapper_attributes( array( 'class' => implode( ' ', $wrappe
 		</div>
 
 		<div class="clanspress-event-create-form__actions clanspress-event-create-form__actions--split">
-			<button type="button" class="clanspress-event-create-form__button clanspress-event-create-form__button--secondary" data-wp-on--click="actions.previousStep" data-wp-bind--hidden="!state.canGoBack()">
+			<button type="button" class="clanspress-event-create-form__button clanspress-event-create-form__button--secondary" data-wp-on--click="actions.previousStep" data-wp-bind--hidden="!state.canGoBack()" hidden>
 				<?php esc_html_e( 'Back', 'clanspress' ); ?>
 			</button>
 			<div class="clanspress-event-create-form__actions-end">
 				<button type="button" class="clanspress-event-create-form__button clanspress-event-create-form__button--secondary" data-wp-on--click="actions.nextStep" data-wp-bind--hidden="!state.canGoNext()">
 					<?php echo esc_html( $config['i18n']['next'] ); ?>
 				</button>
-				<button type="submit" class="clanspress-event-create-form__button clanspress-event-create-form__button--primary" data-wp-bind--hidden="state.canGoNext()">
+				<button type="submit" class="clanspress-event-create-form__button clanspress-event-create-form__button--primary" data-wp-bind--hidden="state.canGoNext()" hidden>
 					<?php echo esc_html( $config['i18n']['submit'] ); ?>
 				</button>
 			</div>
 		</div>
 
-		<p class="clanspress-event-create-form__msg" aria-live="polite" data-wp-bind--hidden="!state.hasMessage()">
+		<p class="clanspress-event-create-form__msg" aria-live="polite" data-wp-bind--hidden="!state.hasMessage()" hidden>
 			<span data-wp-text="state.message"></span>
 		</p>
 	</form>
@@ -348,6 +348,7 @@ $wrapper = get_block_wrapper_attributes( array( 'class' => implode( ' ', $wrappe
 				class="clanspress-event-create-form__success-link"
 				data-wp-bind--href="state.successEventUrl"
 				data-wp-bind--hidden="!state.hasSuccessEventUrl()"
+				hidden
 			><?php echo esc_html( $config['i18n']['viewEvent'] ); ?></a>
 		</p>
 		<p>

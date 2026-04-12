@@ -23,6 +23,108 @@ const getPlayerSettingsConfig = () =>
 	typeof window !== 'undefined' ? window.CLANSPRESSPLAYERSETTINGS || {} : {};
 
 /**
+ * Re-apply values to the settings form after save. Interactivity/Preact can reconcile the
+ * hydrated tree when store state changes (isSaving, errors, toast) and reset controls to a
+ * stale snapshot, which makes fields look empty even though the server persisted the payload.
+ *
+ * @param {HTMLElement} root    Player settings block root.
+ * @param {Object}      payload Key/value map built for the save request (excludes action/nonce).
+ * @return {void}
+ */
+const applyPlayerSettingsPayloadToFields = ( root, payload ) => {
+	if ( ! root || ! payload || typeof payload !== 'object' ) {
+		return;
+	}
+
+	const skip = new Set( [ 'nonce', 'action' ] );
+	const radiosHandled = new Set();
+
+	root.querySelectorAll( 'input, select, textarea' ).forEach( ( field ) => {
+		if ( ! field.name || field.disabled || skip.has( field.name ) ) {
+			return;
+		}
+
+		if ( field.type === 'file' ) {
+			return;
+		}
+
+		if ( ! Object.prototype.hasOwnProperty.call( payload, field.name ) ) {
+			return;
+		}
+
+		const raw = payload[ field.name ];
+
+		if ( field.type === 'checkbox' ) {
+			field.checked =
+				raw === '1' || raw === 1 || raw === true || raw === 'true';
+			return;
+		}
+
+		if ( field.type === 'radio' ) {
+			if ( radiosHandled.has( field.name ) ) {
+				return;
+			}
+			radiosHandled.add( field.name );
+			const strVal = raw != null ? String( raw ) : '';
+			root.querySelectorAll( 'input[type="radio"]' ).forEach( ( r ) => {
+				if ( r.name === field.name ) {
+					r.checked = r.value === strVal;
+				}
+			} );
+			return;
+		}
+
+		field.value = raw != null ? String( raw ) : '';
+	} );
+
+	// Forums signature RTE: textarea is source of truth for save; mirror into contenteditable.
+	root.querySelectorAll( '[data-cp-forum-signature-rte]' ).forEach( ( rteRoot ) => {
+		const ta = rteRoot.querySelector( 'textarea[name="cp_forum_signature"]' );
+		const ed = rteRoot.querySelector( '.clanspress-forums-board__rte-editor' );
+		if ( ta instanceof HTMLTextAreaElement && ed instanceof HTMLElement ) {
+			ed.innerHTML = ta.value;
+		}
+	} );
+};
+
+/**
+ * @param {HTMLElement} root Block root.
+ * @param {{avatarUrl?: string, coverUrl?: string}} data Success payload from AJAX.
+ * @param {HTMLInputElement|null} avatarInput
+ * @param {HTMLInputElement|null} coverInput
+ */
+const updateAvatarCoverPreviewsAfterSave = (
+	root,
+	data,
+	avatarInput,
+	coverInput
+) => {
+	if ( ! root || ! data || typeof data !== 'object' ) {
+		return;
+	}
+
+	if ( data.avatarUrl ) {
+		const preview = root.querySelector( '.avatar-preview' );
+		if ( preview instanceof HTMLElement ) {
+			preview.style.backgroundImage = `url(${ data.avatarUrl })`;
+		}
+		if ( avatarInput ) {
+			avatarInput.value = '';
+		}
+	}
+
+	if ( data.coverUrl ) {
+		const preview = root.querySelector( '.cover-preview' );
+		if ( preview instanceof HTMLElement ) {
+			preview.style.backgroundImage = `url(${ data.coverUrl })`;
+		}
+		if ( coverInput ) {
+			coverInput.value = '';
+		}
+	}
+};
+
+/**
  * @param {HTMLElement|null} root Block root.
  * @param {string}           nav   Parent nav slug (e.g. profile).
  * @param {string}           panel Panel slug (e.g. profile-info).
@@ -418,6 +520,23 @@ const { state, actions } = store( 'clanspress-player-settings', {
 						type: 'success',
 						heading: 'Success',
 						message: 'Your changes were saved successfully.',
+					} );
+					/*
+					 * Re-apply after store/toast updates: those can trigger another Preact pass
+					 * that resets inputs; microtask runs after the current render flush.
+					 */
+					const rootEl = state.root;
+					const fieldSnapshot = data;
+					const mediaPayload =
+						json.data && typeof json.data === 'object' ? json.data : {};
+					queueMicrotask( () => {
+						applyPlayerSettingsPayloadToFields( rootEl, fieldSnapshot );
+						updateAvatarCoverPreviewsAfterSave(
+							rootEl,
+							mediaPayload,
+							avatarInput,
+							coverInput
+						);
 					} );
 				} else {
 					ref.classList.add( 'error' );

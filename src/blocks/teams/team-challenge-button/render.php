@@ -170,11 +170,11 @@ $wrapper = get_block_wrapper_attributes(
 					<p class="description"><?php esc_html_e( 'If they use Clanspress, we load their public team details for the match listing.', 'clanspress' ); ?></p>
 				</div>
 
-				<div class="clanspress-team-challenge__preview" data-wp-bind--hidden="!context.previewTitle">
+				<div class="clanspress-team-challenge__preview" hidden data-wp-bind--hidden="!context.previewTitle">
 					<img data-wp-bind--src="context.previewLogo" data-wp-bind--hidden="!context.previewLogo" alt="" width="48" height="48" hidden />
 					<div>
 						<strong data-wp-text="context.previewTitle"></strong>
-						<div class="clanspress-team-challenge__preview-link" data-wp-bind--hidden="!context.previewPermalink">
+						<div class="clanspress-team-challenge__preview-link" hidden data-wp-bind--hidden="!context.previewPermalink">
 							<a data-wp-bind--href="context.previewPermalink"><span data-wp-text="context.previewPermalink"></span></a>
 						</div>
 					</div>
