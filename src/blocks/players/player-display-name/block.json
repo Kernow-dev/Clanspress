@@ -52,6 +52,7 @@
 		"typography": {
 			"fontSize": true,
 			"lineHeight": true,
+			"textAlign": true,
 			"__experimentalFontFamily": true,
 			"__experimentalFontStyle": true,
 			"__experimentalFontWeight": true,
@@ -71,7 +72,7 @@
 			"background": ".wp-block-clanspress-player-display-name",
 			"link": ".wp-block-clanspress-player-display-name .clanspress-player-display-name__link"
 		},
-		"typography": ".wp-block-clanspress-player-display-name .clanspress-player-display-name__text",
+		"typography": ".wp-block-clanspress-player-display-name .clanspress-player-display-name__text, .wp-block-clanspress-player-display-name .clanspress-player-display-name__link",
 		"border": ".wp-block-clanspress-player-display-name"
 	}
 }

@@ -304,6 +304,15 @@ One-off override example (uses CSS variables instead of `var:preset|…`):
 					"fontSize": "var:preset|font-size|cp-scaffold-m"
 				}
 			},
+			"clanspress/player-handle": {
+				"color": {
+					"text": "var:preset|color|cp-scaffold-text",
+					"background": "var:preset|color|cp-scaffold-bg"
+				},
+				"typography": {
+					"fontSize": "var:preset|font-size|cp-scaffold-m"
+				}
+			},
 			"clanspress/player-tagline": {
 				"color": {
 					"text": "var:preset|color|cp-scaffold-text",

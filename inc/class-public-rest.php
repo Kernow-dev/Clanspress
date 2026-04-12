@@ -80,6 +80,15 @@ final class Public_Rest {
 	public static function handle_discovery( WP_REST_Request $request ) {
 		unset( $request );
 
+		return new WP_REST_Response( self::build_discovery_payload(), 200 );
+	}
+
+	/**
+	 * Build the Clanspress discovery payload (also used by the Abilities API).
+	 *
+	 * @return array<string, mixed>
+	 */
+	public static function build_discovery_payload(): array {
 		$discovery = array(
 			'clanspress' => true,
 			'name'       => 'Clanspress',
@@ -88,12 +97,12 @@ final class Public_Rest {
 
 		if ( function_exists( 'sodium_crypto_sign_keypair' ) ) {
 			$discovery['match_sync'] = array(
-				'ed25519' => true,
+				'ed25519'          => true,
 				'public_key_route' => 'clanspress/v1/site-sync-public-key',
 			);
 		}
 
-		return new WP_REST_Response( $discovery, 200 );
+		return $discovery;
 	}
 
 	/**
@@ -103,9 +112,26 @@ final class Public_Rest {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public static function handle_public_team( WP_REST_Request $request ) {
-		$slug = (string) $request->get_param( 'slug' );
-		$url  = (string) $request->get_param( 'url' );
+		$result = self::get_public_team_data_by_slug_or_url(
+			(string) $request->get_param( 'slug' ),
+			(string) $request->get_param( 'url' )
+		);
 
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return new WP_REST_Response( $result, 200 );
+	}
+
+	/**
+	 * Resolve public team metadata by slug or absolute team profile URL.
+	 *
+	 * @param string $slug Requested `cp_team` post_name (may be empty when `url` is set).
+	 * @param string $url  Full team profile URL (optional).
+	 * @return array<string, mixed>|\WP_Error
+	 */
+	public static function get_public_team_data_by_slug_or_url( string $slug, string $url ) {
 		if ( '' === $slug && '' !== $url ) {
 			$parsed = function_exists( 'clanspress_parse_team_profile_url' ) ? clanspress_parse_team_profile_url( $url ) : null;
 			if ( is_array( $parsed ) && ! empty( $parsed['slug'] ) ) {
@@ -181,9 +207,9 @@ final class Public_Rest {
 		/**
 		 * Filter the public team payload exposed to other Clanspress sites.
 		 *
-		 * @param array   $data    Response data.
-		 * @param WP_Post $post    Team post.
+		 * @param array   $data Response data.
+		 * @param WP_Post $post Team post.
 		 */
-		return new WP_REST_Response( (array) apply_filters( 'clanspress_public_team_response', $data, $post ), 200 );
+		return (array) apply_filters( 'clanspress_public_team_response', $data, $post );
 	}
 }

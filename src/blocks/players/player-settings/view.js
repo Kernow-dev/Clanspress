@@ -331,11 +331,23 @@ const { state, actions } = store( 'clanspress-player-settings', {
 				return;
 			}
 
-			state.isSaving = true;
-			ref.classList.remove( 'saved' );
-			ref.classList.remove( 'error' );
-			ref.classList.add( 'saving' );
+			// Grab the nonce from the hidden field
+			const nonceInput = state.root.querySelector(
+				'input[name="_clanspress_profile_settings_save_nonce"]'
+			);
 
+			if ( ! nonceInput || ! window.CLANSPRESSPLAYERSETTINGS?.ajax_url ) {
+				ref.classList.remove( 'saving' );
+				ref.classList.add( 'error' );
+				return;
+			}
+
+			/*
+			 * Read all field values before touching reactive store state (`state.isSaving`, etc.).
+			 * Updating the Interactivity store first can trigger a Preact pass that reconciles
+			 * the hydrated tree back toward the server snapshot and resets form controls, so
+			 * values edited on other tabs (e.g. Social Networks) would be lost on save.
+			 */
 			const fields = state.root.querySelectorAll(
 				'input, select, textarea'
 			);
@@ -358,17 +370,6 @@ const { state, actions } = store( 'clanspress-player-settings', {
 				}
 			} );
 
-			// Grab the nonce from the hidden field
-			const nonceInput = state.root.querySelector(
-				'input[name="_clanspress_profile_settings_save_nonce"]'
-			);
-
-			if ( ! nonceInput || ! window.CLANSPRESSPLAYERSETTINGS?.ajax_url ) {
-				state.isSaving = false;
-				ref.classList.remove( 'saving' );
-				ref.classList.add( 'error' );
-				return;
-			}
 			data.nonce = nonceInput.value;
 
 			data.action = 'clanspress_save_player_settings';
@@ -393,6 +394,11 @@ const { state, actions } = store( 'clanspress-player-settings', {
 			if ( coverInput && coverInput.files[ 0 ] ) {
 				formData.append( 'profile_cover', coverInput.files[ 0 ] );
 			}
+
+			state.isSaving = true;
+			ref.classList.remove( 'saved' );
+			ref.classList.remove( 'error' );
+			ref.classList.add( 'saving' );
 
 			try {
 				const res = await fetch( CLANSPRESSPLAYERSETTINGS.ajax_url, {

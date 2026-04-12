@@ -4,12 +4,14 @@
 
 .clanspress-player-display-name__text {
 	margin: 0;
-	line-height: 1.2;
+	line-height: inherit;
 }
 
 .clanspress-player-display-name__link {
 	color: inherit;
 	text-decoration: inherit;
+	font: inherit;
+	letter-spacing: inherit;
 }
 
 .clanspress-player-display-name--placeholder {

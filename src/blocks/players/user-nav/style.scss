@@ -10,6 +10,11 @@
 	position: relative;
 	display: inline-flex;
 	align-items: center;
+
+	/* Menus stay closed on first paint; some themes override raw [hidden]. */
+	[hidden] {
+		display: none !important;
+	}
 }
 
 .clanspress-user-nav__trigger {

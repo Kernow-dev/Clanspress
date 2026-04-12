@@ -18,6 +18,11 @@
 
 	position: relative;
 	display: inline-block;
+
+	/* Dropdown / chrome stays closed until Interactivity removes `hidden`. */
+	[hidden] {
+		display: none !important;
+	}
 }
 
 .clanspress-notification-bell__trigger {

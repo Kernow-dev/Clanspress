@@ -37,7 +37,12 @@ if ( '' === $title ) {
 	$title = ( $u instanceof WP_User ) ? $u->display_name : __( 'Player', 'clanspress' );
 }
 
-$align = isset( $attributes['textAlign'] ) ? sanitize_key( (string) $attributes['textAlign'] ) : '';
+$align = '';
+if ( isset( $attributes['style']['typography']['textAlign'] ) ) {
+	$align = sanitize_key( (string) $attributes['style']['typography']['textAlign'] );
+} elseif ( isset( $attributes['textAlign'] ) ) {
+	$align = sanitize_key( (string) $attributes['textAlign'] );
+}
 $class = array( 'clanspress-player-display-name__text' );
 if ( $align && in_array( $align, array( 'left', 'center', 'right', 'justify' ), true ) ) {
 	$class[] = 'has-text-align-' . $align;

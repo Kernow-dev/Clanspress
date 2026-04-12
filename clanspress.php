@@ -258,6 +258,10 @@ final class Main {
 	public function hooks(): void {
 		add_action( 'init', array( $this, 'init' ), 0 );
 
+		Abilities_Api::register_hooks();
+
+		add_action( 'init', array( Front_Seo::class, 'register' ), 20 );
+
 		add_action( 'init', array( $this, 'register_core_blocks' ), 20 );
 
 		add_action( 'enqueue_block_editor_assets', array( $this, 'localize_visibility_container_block_editor' ) );
