@@ -88,6 +88,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 			data-wp-text="context.unreadCount"
 			data-wp-bind--hidden="!context.unreadCount"
 			aria-live="polite"
+			<?php echo $unread_count < 1 ? ' hidden' : ''; ?>
 		><?php echo esc_html( $unread_count ); ?></span>
 	</button>
 

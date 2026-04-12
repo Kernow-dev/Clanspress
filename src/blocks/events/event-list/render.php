@@ -103,6 +103,9 @@ if ( function_exists( 'clanspress_events_block_query_collection' ) ) {
 $config['ssrHydrated'] = $list_ssr_hydrated;
 $config['ssrTotal']  = $list_ssr_total;
 
+$cp_event_list_hide_pagination = ! $list_ssr_hydrated
+	|| (int) ceil( max( 1, $list_ssr_total ) / max( 1, $limit ) ) <= 1;
+
 $wrapper = get_block_wrapper_attributes(
 	array(
 		'class' => 'clanspress-event-list-wrap clanspress-event-list-wrap--interactive',
@@ -124,10 +127,10 @@ $wrapper = get_block_wrapper_attributes(
 			<option value="past"><?php echo esc_html( $config['i18n']['timePast'] ); ?></option>
 		</select>
 	</div>
-	<p class="clanspress-event-list__loading" data-wp-bind--hidden="!state.isLoading()" aria-live="polite"><?php echo esc_html( $config['i18n']['loading'] ); ?></p>
-	<p class="clanspress-event-list__error" data-wp-bind--hidden="!state.errorMessage" data-wp-text="state.errorMessage" role="alert"></p>
+	<p class="clanspress-event-list__loading" hidden data-wp-bind--hidden="!state.isLoading()" aria-live="polite"><?php echo esc_html( $config['i18n']['loading'] ); ?></p>
+	<p class="clanspress-event-list__error" hidden data-wp-bind--hidden="!state.errorMessage" data-wp-text="state.errorMessage" role="alert"></p>
 	<ul class="clanspress-event-list"><?php echo $list_ssr_hydrated ? $list_ssr_rows : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- rows built with esc_html/esc_url in clanspress_events_render_event_list_rows_html(). ?></ul>
-	<nav class="clanspress-event-list__pagination" data-wp-bind--hidden="!state.showPagination()" aria-label="<?php esc_attr_e( 'Events pagination', 'clanspress' ); ?>">
+	<nav class="clanspress-event-list__pagination" data-wp-bind--hidden="!state.showPagination()" aria-label="<?php esc_attr_e( 'Events pagination', 'clanspress' ); ?>"<?php echo $cp_event_list_hide_pagination ? ' hidden' : ''; ?>>
 		<button type="button" class="clanspress-event-list__page-btn" data-wp-on--click="actions.prevPage" data-wp-bind--disabled="state.isFirstPage()">
 			<?php echo esc_html( $config['i18n']['prev'] ); ?>
 		</button>

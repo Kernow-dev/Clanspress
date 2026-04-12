@@ -275,10 +275,10 @@ $context             = array(
 		?>
 
 		<div class="clanspress-team-create-form__actions clanspress-team-create-form__actions--split" role="navigation" aria-label="<?php esc_attr_e( 'Step navigation', 'clanspress' ); ?>">
-			<button type="button" class="clanspress-team-create-form__nav-btn" data-wp-on--click="actions.previousStep" data-wp-bind--hidden="!state.canGoBack()"><?php esc_html_e( 'Back', 'clanspress' ); ?></button>
+			<button type="button" class="clanspress-team-create-form__nav-btn" data-wp-on--click="actions.previousStep" data-wp-bind--hidden="!state.canGoBack()" hidden><?php esc_html_e( 'Back', 'clanspress' ); ?></button>
 			<div class="clanspress-team-create-form__actions-end">
 				<button type="button" class="clanspress-team-create-form__nav-btn" data-wp-on--click="actions.nextStep" data-wp-bind--hidden="!state.canGoNext()"><?php esc_html_e( 'Next', 'clanspress' ); ?></button>
-				<button type="submit" class="clanspress-team-create-form__nav-btn clanspress-team-create-form__nav-btn--primary" data-wp-bind--hidden="state.canGoNext()"><?php esc_html_e( 'Create team', 'clanspress' ); ?></button>
+				<button type="submit" class="clanspress-team-create-form__nav-btn clanspress-team-create-form__nav-btn--primary" data-wp-bind--hidden="state.canGoNext()" hidden><?php esc_html_e( 'Create team', 'clanspress' ); ?></button>
 			</div>
 		</div>
 

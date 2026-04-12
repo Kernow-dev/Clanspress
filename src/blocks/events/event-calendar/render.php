@@ -228,7 +228,7 @@ $wrapper = get_block_wrapper_attributes(
 		<?php endif; ?>
 	</div>
 	<h2 class="clanspress-event-calendar__heading"><?php echo '' !== $calendar_heading ? esc_html( $calendar_heading ) : ''; ?></h2>
-	<p class="clanspress-event-calendar__sr-only" data-wp-bind--hidden="!context.calLoading" aria-live="polite"><?php echo esc_html( $config['i18n']['loading'] ); ?></p>
-	<p class="clanspress-event-calendar__error" data-wp-bind--hidden="!context.fetchError" data-wp-text="context.fetchError" role="alert"></p>
+	<p class="clanspress-event-calendar__sr-only" hidden data-wp-bind--hidden="!context.calLoading" aria-live="polite"><?php echo esc_html( $config['i18n']['loading'] ); ?></p>
+	<p class="clanspress-event-calendar__error" hidden data-wp-bind--hidden="!context.fetchError" data-wp-text="context.fetchError" role="alert"></p>
 	<div class="clanspress-event-calendar__surface"><?php echo $calendar_surface ? $calendar_surface : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- markup built with esc_html/esc_attr inside helper. ?></div>
 </div>

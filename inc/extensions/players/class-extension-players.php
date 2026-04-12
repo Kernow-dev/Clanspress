@@ -1909,14 +1909,14 @@ class Players extends Skeleton {
 					<div class="form-input">
 						<label for="display-name"><?php esc_html_e( 'Profile Name', 'clanspress' ); ?></label>
 						<input type="text" id="display-name" name="display_name" value="<?php echo esc_attr( $user->display_name ); ?>" data-wp-class--error="state.isError">
-						<div class="error-message" data-wp-bind--hidden="state.showError" data-wp-args="display_name" data-wp-text="state.errorMessage"></div>
+						<div class="error-message" hidden data-wp-bind--hidden="state.showError" data-wp-args="display_name" data-wp-text="state.errorMessage"></div>
 					</div>
 				</div>
 				<div class="form-item">
 					<div class="form-input">
 						<label for="profile-tagline"><?php esc_html_e( 'Tagline', 'clanspress' ); ?></label>
 						<input type="text" id="profile-tagline" name="profile_tagline" value="<?php echo esc_attr( $user_tagline ); ?>" data-wp-class--error="state.isError">
-						<div class="error-message" data-wp-bind--hidden="state.showError" data-wp-args="profile_tagline" data-wp-text="state.errorMessage"></div>
+						<div class="error-message" hidden data-wp-bind--hidden="state.showError" data-wp-args="profile_tagline" data-wp-text="state.errorMessage"></div>
 					</div>
 				</div>
 			</div>
@@ -1925,14 +1925,14 @@ class Players extends Skeleton {
 					<div class="form-input">
 						<label for="profile-description"><?php esc_html_e( 'Description', 'clanspress' ); ?></label>
 						<textarea id="profile-description" name="profile_description" data-wp-class--error="state.isError" placeholder="<?php esc_html_e( 'Write a little description about you...', 'clanspress' ); ?>"><?php echo wp_kses_post( $user_bio ); ?></textarea>
-						<div class="error-message" data-wp-bind--hidden="state.showError" data-wp-args="profile_description" data-wp-text="state.errorMessage"></div>
+						<div class="error-message" hidden data-wp-bind--hidden="state.showError" data-wp-args="profile_description" data-wp-text="state.errorMessage"></div>
 					</div>
 				</div>
 				<div class="form-item">
 					<div class="form-input">
 						<label for="profile-website"><?php esc_html_e( 'Public website', 'clanspress' ); ?></label>
 						<input type="text" id="profile-website" name="profile_website" value="<?php echo esc_attr( $user_website ); ?>" data-wp-class--error="state.isError">
-						<div class="error-message" data-wp-bind--hidden="state.showError" data-wp-args="profile_website" data-wp-text="state.errorMessage"></div>
+						<div class="error-message" hidden data-wp-bind--hidden="state.showError" data-wp-args="profile_website" data-wp-text="state.errorMessage"></div>
 					</div>
 				</div>
 			</div>
@@ -1952,14 +1952,14 @@ class Players extends Skeleton {
 								<?php endforeach; ?>
 							<?php endif; ?>
 						</select>
-						<div class="error-message" data-wp-bind--hidden="state.showError" data-wp-args="display_name" data-wp-text="state.errorMessage"></div>
+						<div class="error-message" hidden data-wp-bind--hidden="state.showError" data-wp-args="display_name" data-wp-text="state.errorMessage"></div>
 					</div>
 				</div>
 				<div class="form-item">
 					<div class="form-input">
 						<label for="profile-city"><?php esc_html_e( 'City', 'clanspress' ); ?></label>
 						<input type="text" id="profile-city" name="profile_city" value="<?php echo esc_attr( $user_city ); ?>" data-wp-class--error="state.isError">
-						<div class="error-message" data-wp-bind--hidden="state.showError" data-wp-args="profile_city" data-wp-text="state.errorMessage"></div>
+						<div class="error-message" hidden data-wp-bind--hidden="state.showError" data-wp-args="profile_city" data-wp-text="state.errorMessage"></div>
 					</div>
 				</div>
 			</div>
@@ -1968,7 +1968,7 @@ class Players extends Skeleton {
 					<div class="form-input">
 						<label for="profile-birthday"><?php esc_html_e( 'Birthday', 'clanspress' ); ?></label>
 						<input type="date" id="profile-birthday" name="profile_birthday" value="<?php echo esc_attr( $user_birthday ); ?>" data-wp-class--error="state.isError">
-						<div class="error-message" data-wp-bind--hidden="state.showError" data-wp-args="profile_birthday" data-wp-text="state.errorMessage"></div>
+						<div class="error-message" hidden data-wp-bind--hidden="state.showError" data-wp-args="profile_birthday" data-wp-text="state.errorMessage"></div>
 					</div>
 				</div>
 			</div>
@@ -1998,14 +1998,14 @@ class Players extends Skeleton {
 					<div class="form-input">
 						<label for="account-first-name"><?php esc_html_e( 'First Name', 'clanspress' ); ?></label>
 						<input type="text" id="account-first-name" name="account_first_name" value="<?php echo esc_attr( $user_first_name ); ?>" data-wp-class--error="state.isError">
-						<div class="error-message" data-wp-bind--hidden="state.showError" data-wp-args="account_first_name" data-wp-text="state.errorMessage"></div>
+						<div class="error-message" hidden data-wp-bind--hidden="state.showError" data-wp-args="account_first_name" data-wp-text="state.errorMessage"></div>
 					</div>
 				</div>
 				<div class="form-item">
 					<div class="form-input">
 						<label for="account-last-name"><?php esc_html_e( 'Surname', 'clanspress' ); ?></label>
 						<input type="text" id="account-last-name" name="account_last_name" value="<?php echo esc_attr( $user_last_name ); ?>" data-wp-class--error="state.isError">
-						<div class="error-message" data-wp-bind--hidden="state.showError" data-wp-args="account_last_name" data-wp-text="state.errorMessage"></div>
+						<div class="error-message" hidden data-wp-bind--hidden="state.showError" data-wp-args="account_last_name" data-wp-text="state.errorMessage"></div>
 					</div>
 				</div>
 			</div>
@@ -2014,7 +2014,7 @@ class Players extends Skeleton {
 					<div class="form-input">
 						<label for="account-email"><?php esc_html_e( 'Email Address', 'clanspress' ); ?></label>
 						<input type="text" id="account-email" name="account_email" value="<?php echo esc_attr( $user->user_email ); ?>" data-wp-class--error="state.isError" disabled>
-						<div class="error-message" data-wp-bind--hidden="state.showError" data-wp-args="account_email" data-wp-text="state.errorMessage"></div>
+						<div class="error-message" hidden data-wp-bind--hidden="state.showError" data-wp-args="account_email" data-wp-text="state.errorMessage"></div>
 					</div>
 				</div>
 				<div class="form-item">
@@ -2022,7 +2022,7 @@ class Players extends Skeleton {
 						<label for="account-url"><?php esc_html_e( 'Profile URL', 'clanspress' ); ?></label>
 						<p class="description"><?php echo esc_html( trailingslashit( home_url( '/players/' ) ) ); ?></p>
 						<input type="text" id="account-url" name="account_url" value="<?php echo esc_attr( $user->user_nicename ); ?>" data-wp-class--error="state.isError" disabled>
-						<div class="error-message" data-wp-bind--hidden="state.showError" data-wp-args="account_url" data-wp-text="state.errorMessage"></div>
+						<div class="error-message" hidden data-wp-bind--hidden="state.showError" data-wp-args="account_url" data-wp-text="state.errorMessage"></div>
 					</div>
 				</div>
 			</div>
@@ -2084,7 +2084,7 @@ class Players extends Skeleton {
 						autocomplete="off"
 						data-wp-class--error="state.isError"
 					>
-					<div class="error-message" data-wp-bind--hidden="state.showError" data-wp-args="<?php echo esc_attr( $post_name ); ?>" data-wp-text="state.errorMessage"></div>
+					<div class="error-message" hidden data-wp-bind--hidden="state.showError" data-wp-args="<?php echo esc_attr( $post_name ); ?>" data-wp-text="state.errorMessage"></div>
 				</div>
 			</div>
 				<?php
