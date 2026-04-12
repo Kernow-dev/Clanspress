@@ -143,11 +143,13 @@ function clanspress_register_profile_subpage( string $context, string $slug, arr
 	);
 
 	$gkey = $config['globals_key'];
+	// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- `$GLOBALS` index from registry `globals_key` (clanspress-prefixed; filter may extend).
 	if ( ! isset( $GLOBALS[ $gkey ] ) || ! is_array( $GLOBALS[ $gkey ] ) ) {
 		$GLOBALS[ $gkey ] = array();
 	}
 
 	$GLOBALS[ $gkey ][ $slug ] = array_merge( $defaults, $args );
+	// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 }
 
 /**
@@ -169,6 +171,7 @@ function clanspress_get_profile_subpages( string $context ): array {
 		? $GLOBALS[ $gkey ]
 		: array();
 
+	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Filter name is defined per context in `clanspress_profile_subpage_registry_map()` (core values are clanspress-prefixed).
 	$subpages = (array) apply_filters( $config['filter'], $registry );
 	$subpages = clanspress_profile_subpages_sort( $subpages );
 

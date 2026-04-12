@@ -786,6 +786,7 @@ final class Front_Seo {
 		if ( false === $json ) {
 			return;
 		}
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON-LD from wp_json_encode() with JSON_HEX_* flags; HTML escapers would corrupt the payload.
 		echo '<script type="application/ld+json">' . "\n" . $json . "\n" . '</script>' . "\n";
 	}
 

@@ -112,8 +112,12 @@ final class Wordban {
 	 * @return void
 	 */
 	public static function action_user_profile_update_errors( $errors, $update, $user ): void {
+		$user_id = ( is_object( $user ) && isset( $user->ID ) ) ? (int) $user->ID : 0;
 		unset( $user );
-		if ( ! self::is_enabled() || ! $update || ! ( $errors instanceof \WP_Error ) ) {
+		if ( ! self::is_enabled() || ! $update || ! ( $errors instanceof \WP_Error ) || $user_id <= 0 ) {
+			return;
+		}
+		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'update-user_' . $user_id ) ) {
 			return;
 		}
 		$fields = array( 'first_name', 'last_name', 'nickname', 'display_name' );
