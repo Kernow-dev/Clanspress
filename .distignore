@@ -17,3 +17,13 @@ phpstan.neon
 phpstan.neon.dist
 .editorconfig
 AGENTS.md
+
+# Composer dev-only tooling (safe to exclude from runtime package).
+vendor/bin/
+vendor/dealerdirect/
+vendor/phpcompatibility/
+vendor/phpcsstandards/
+vendor/phpstan/
+vendor/php-stubs/
+vendor/squizlabs/
+vendor/wp-coding-standards/

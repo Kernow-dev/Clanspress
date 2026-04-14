@@ -36,7 +36,8 @@
 		"templates",
 		"patterns",
 		"languages",
-		"vendor"
+		"vendor/autoload.php",
+		"vendor/composer"
 	],
 	"scripts": {
 		"build": "npm run build:blocks",
