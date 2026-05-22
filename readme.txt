@@ -2,9 +2,9 @@
 Contributors: kernowdev
 Tags: community, teams, esports, gaming
 Requires at least: 6.7
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 8.2
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -84,11 +84,21 @@ Use the **Clanbite** top-level admin menu for core options and extension toggles
 
 == Changelog ==
 
+= 1.1.0 =
+* WordPress 7.0 compatibility verified.
+* Added PHP 8.2+ and WordPress 6.7+ requirements validation.
+* Fixed block category duplication prevention.
+* Improved extension version comparison safety.
+* Enhanced code documentation and error handling.
+
 = 1.0.0 =
 * Initial WordPress.org release.
 * Unified maintenance step and database schema versioning for new installs.
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+WordPress 7.0 compatible. Includes improved requirements checking and minor bug fixes. Safe to upgrade.
 
 = 1.0.0 =
 First public release on WordPress.org. If you tested pre-release builds, visit Permalinks and save once after upgrading.
