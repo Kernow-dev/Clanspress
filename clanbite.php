@@ -3,9 +3,9 @@
  * Plugin Name: Clanbite: Team Management System
  * Plugin URI: https://clanbite.com
  * Description: Community management system for Gamers and Sports teams
- * Version: 1.0.0
+ * Version: 1.1.0
  * Requires at least: 6.7
- * Tested up to: 6.9
+ * Tested up to: 7.0
  * Requires PHP: 8.2
  * Author: kernow.dev
  * Author URI: https://kernow.dev
@@ -18,7 +18,7 @@
  * @link    https://clanbite.com/
  *
  * @package clanbite
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 namespace Kernowdev\Clanbite;
@@ -56,7 +56,7 @@ final class Main {
 	 *
 	 * @var string
 	 */
-	public const VERSION = '1.0.0';
+	public const VERSION = '1.1.0';
 
 	/**
 	 * Maintenance upgrade counter (single step for 1.0.0 public release).
@@ -190,6 +190,29 @@ final class Main {
 	 * @return boolean True if requirements are met.
 	 */
 	public function meets_requirements(): bool {
+		// Check PHP version (as declared in plugin header: Requires PHP: 8.2).
+		if ( version_compare( PHP_VERSION, '8.2', '<' ) ) {
+			$this->activation_errors[] = sprintf(
+				/* translators: %s: Current PHP version */
+				__( 'Clanbite requires PHP 8.2 or higher. You are running version %s.', 'clanbite' ),
+				PHP_VERSION
+			);
+
+			return false;
+		}
+
+		// Check WordPress version (as declared in plugin header: Requires at least: 6.7).
+		global $wp_version;
+		if ( version_compare( $wp_version, '6.7', '<' ) ) {
+			$this->activation_errors[] = sprintf(
+				/* translators: %s: Current WordPress version */
+				__( 'Clanbite requires WordPress 6.7 or higher. You are running version %s.', 'clanbite' ),
+				$wp_version
+			);
+
+			return false;
+		}
+
 		return true;
 	}
 
@@ -296,7 +319,15 @@ final class Main {
 			),
 		);
 
-		return array_merge( $ours, $categories );
+		// Check if categories already exist to prevent duplicates.
+		$existing_slugs = array_column( $categories, 'slug' );
+		foreach ( $ours as $cat ) {
+			if ( ! in_array( $cat['slug'], $existing_slugs, true ) ) {
+				array_unshift( $categories, $cat );
+			}
+		}
+
+		return $categories;
 	}
 
 	/**

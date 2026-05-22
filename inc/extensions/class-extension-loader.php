@@ -536,10 +536,11 @@ class Loader {
 				continue;
 			}
 
-			// Maybe update the extension first.
-			if ( isset( $installed_extensions[ $slug ]['version'] )
-				&& version_compare( (string) $installed_extensions[ $slug ]['version'], (string) $this->extensions[ $slug ]->version, '<' )
-			) {
+			// Maybe update the extension first (safe version comparison with fallbacks).
+			$installed_ver = isset( $installed_extensions[ $slug ]['version'] ) ? (string) $installed_extensions[ $slug ]['version'] : '0.0.0';
+			$current_ver   = isset( $this->extensions[ $slug ]->version ) ? (string) $this->extensions[ $slug ]->version : '0.0.0';
+
+			if ( '' !== $installed_ver && '' !== $current_ver && version_compare( $installed_ver, $current_ver, '<' ) ) {
 				$this->extensions[ $slug ]->run_updater();
 			}
 
