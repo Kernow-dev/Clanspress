@@ -19,31 +19,25 @@ defined( 'ABSPATH' ) || exit;
  * @return string Progress bar HTML or empty string if not applicable.
  */
 function clanbite_render_avatar_progress_bar( int $user_id, string $shape = 'circle', string $size_class = 'large' ): string {
-	// Only show on large avatars
-	if ( 'large' !== $size_class ) {
-		return '';
-	}
-
-	// Check if Points plugin is active
-	if ( ! function_exists( 'clanbite_points_extension_active' ) || ! clanbite_points_extension_active() ) {
-		return '';
-	}
-
-	// Check if Ranks plugin is active
-	if ( ! function_exists( 'clanbite_ranks_extension_active' ) || ! clanbite_ranks_extension_active() ) {
-		return '';
-	}
-
-	// Check if progress should be shown on avatar
-	if ( ! function_exists( 'clanbite_ranks_show_progress_on_avatar' ) || ! clanbite_ranks_show_progress_on_avatar() ) {
-		return '';
-	}
-
 	// Get user's rank progress percentage (0-100)
 	$progress = 0;
-	if ( function_exists( 'clanbite_ranks_get_user_rank_progress' ) ) {
-		$progress = (int) clanbite_ranks_get_user_rank_progress( $user_id );
-		$progress = max( 0, min( 100, $progress ) ); // Clamp between 0-100
+	
+	// Check if Points and Ranks plugins are active and configured
+	$show_progress = false;
+	if ( function_exists( 'clanbite_points_extension_active' ) 
+		&& clanbite_points_extension_active()
+		&& function_exists( 'clanbite_ranks_extension_active' ) 
+		&& clanbite_ranks_extension_active()
+		&& function_exists( 'clanbite_ranks_show_progress_on_avatar' )
+		&& clanbite_ranks_show_progress_on_avatar()
+	) {
+		$show_progress = true;
+		
+		// Get user's rank progress
+		if ( function_exists( 'clanbite_ranks_get_user_rank_progress' ) ) {
+			$progress = (int) clanbite_ranks_get_user_rank_progress( $user_id );
+			$progress = max( 0, min( 100, $progress ) ); // Clamp between 0-100
+		}
 	}
 
 	// Generate unique ID for this progress ring

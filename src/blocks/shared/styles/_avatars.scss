@@ -208,11 +208,20 @@
 	
 	.clanbite-avatar__img {
 		clip-path: polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%);
+		-webkit-clip-path: polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%);
+		image-rendering: -webkit-optimize-contrast;
+		image-rendering: crisp-edges;
+		backface-visibility: hidden;
+		-webkit-backface-visibility: hidden;
+		transform: translateZ(0);
+		-webkit-transform: translateZ(0);
+		will-change: transform;
 	}
 	
 	.clanbite-avatar__img--placeholder {
 		border-radius: 0;
 		clip-path: polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%);
+		-webkit-clip-path: polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%);
 	}
 }
 
