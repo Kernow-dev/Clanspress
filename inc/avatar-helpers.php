@@ -436,3 +436,150 @@ function clanbite_build_html_attributes( array $attrs ): string {
 	}
 	return implode( ' ', $parts );
 }
+
+/**
+ * Render avatar structure for Interactivity API contexts.
+ *
+ * This creates the avatar HTML structure but leaves the src attribute
+ * for dynamic binding via data-wp-bind--src. Used by Forums, Social Feed, etc.
+ *
+ * @param array $args {
+ *     Avatar rendering arguments.
+ *
+ *     @type string $type            Avatar type: 'player', 'team', 'group'. Required.
+ *     @type string $context         Context identifier (e.g., 'forum', 'social_feed'). Required.
+ *     @type string $size            Size preset or slug. Default 'medium'.
+ *     @type string $shape           Override shape. If empty, uses setting.
+ *     @type array  $extra_classes   Additional CSS classes for the avatar container.
+ *     @type array  $img_attributes  Additional attributes for the <img> tag (e.g., data-wp-bind--src).
+ *     @type string $wrapper_tag     Wrapper element tag. Default 'span'.
+ *     @type array  $wrapper_attrs   Additional attributes for wrapper element.
+ *     @type bool   $show_rank_icons Whether to include rank icon template. Default false.
+ *     @type string $rank_icons_path data-wp-each path for rank icons.
+ *     @type string $rank_icons_hide data-wp-bind--hidden for rank icons.
+ * }
+ * @return string HTML markup with Interactivity API directives.
+ */
+function clanbite_render_avatar_for_interactivity( array $args ): string {
+	$defaults = array(
+		'type'            => 'player',
+		'context'         => '',
+		'size'            => 'medium',
+		'shape'           => '',
+		'extra_classes'   => array(),
+		'img_attributes'  => array(),
+		'wrapper_tag'     => 'span',
+		'wrapper_attrs'   => array(),
+		'show_rank_icons' => false,
+		'rank_icons_path' => '',
+		'rank_icons_hide' => '',
+	);
+
+	$args = wp_parse_args( $args, $defaults );
+
+	// Get avatar shape
+	$shape = $args['shape'];
+	if ( empty( $shape ) ) {
+		switch ( $args['type'] ) {
+			case 'player':
+				$shape = function_exists( 'clanbite_players_get_avatar_shape' ) ? clanbite_players_get_avatar_shape() : 'circle';
+				break;
+			case 'team':
+				$shape = function_exists( 'clanbite_teams_get_avatar_shape' ) ? clanbite_teams_get_avatar_shape() : 'circle';
+				break;
+			case 'group':
+				$shape = function_exists( 'clanbite_groups_get_avatar_shape' ) ? clanbite_groups_get_avatar_shape() : 'circle';
+				break;
+			default:
+				$shape = 'circle';
+		}
+	}
+
+	// Build CSS classes
+	$classes = array(
+		'clanbite-avatar',
+		'clanbite-avatar--' . $args['type'],
+		'clanbite-avatar--shape-' . $shape,
+	);
+
+	if ( ! empty( $args['extra_classes'] ) ) {
+		$classes = array_merge( $classes, (array) $args['extra_classes'] );
+	}
+
+	/**
+	 * Filter avatar classes for Interactivity API contexts.
+	 *
+	 * @param array  $classes CSS classes.
+	 * @param array  $args    Avatar arguments.
+	 */
+	$classes = apply_filters( 'clanbite_avatar_interactivity_classes', $classes, $args );
+	if ( ! empty( $args['context'] ) ) {
+		$classes = apply_filters( "clanbite_avatar_interactivity_classes_{$args['context']}", $classes, $args );
+	}
+
+	// Build image attributes
+	$img_attrs = array_merge(
+		array(
+			'class'    => 'clanbite-avatar__img',
+			'alt'      => '',
+			'loading'  => 'lazy',
+			'decoding' => 'async',
+		),
+		$args['img_attributes']
+	);
+
+	/**
+	 * Filter image attributes for Interactivity API contexts.
+	 *
+	 * @param array  $img_attrs Image attributes.
+	 * @param array  $args      Avatar arguments.
+	 */
+	$img_attrs = apply_filters( 'clanbite_avatar_interactivity_img_attributes', $img_attrs, $args );
+	if ( ! empty( $args['context'] ) ) {
+		$img_attrs = apply_filters( "clanbite_avatar_interactivity_img_attributes_{$args['context']}", $img_attrs, $args );
+	}
+
+	ob_start();
+	?>
+	<<?php echo esc_attr( $args['wrapper_tag'] ); ?> <?php echo clanbite_build_html_attributes( $args['wrapper_attrs'] ); ?>>
+		<span class="<?php echo esc_attr( implode( ' ', array_map( 'sanitize_html_class', $classes ) ) ); ?>">
+			<span class="clanbite-avatar__clip">
+				<img <?php echo clanbite_build_html_attributes( $img_attrs ); ?> />
+			</span>
+			<?php if ( $args['show_rank_icons'] && ! empty( $args['rank_icons_path'] ) ) : ?>
+				<span class="clanbite-avatar__rank-icons" aria-hidden="true" data-wp-bind--hidden="<?php echo esc_attr( $args['rank_icons_hide'] ); ?>">
+					<template data-wp-each--icon="<?php echo esc_attr( $args['rank_icons_path'] ); ?>">
+						<img class="clanbite-avatar__rank-icon" data-wp-bind--src="context.icon.url" alt="" decoding="async" data-wp-bind--data-rank-type-key="context.icon.key" loading="lazy" />
+					</template>
+				</span>
+			<?php endif; ?>
+			
+			<?php
+			/**
+			 * Action: Add custom content to Interactivity API avatars.
+			 *
+			 * @param array $args Avatar arguments.
+			 */
+			do_action( 'clanbite_avatar_interactivity_content', $args );
+			if ( ! empty( $args['context'] ) ) {
+				do_action( "clanbite_avatar_interactivity_content_{$args['context']}", $args );
+			}
+			?>
+		</span>
+	</<?php echo esc_attr( $args['wrapper_tag'] ); ?>>
+	<?php
+	$output = ob_get_clean();
+
+	/**
+	 * Filter the complete Interactivity API avatar HTML.
+	 *
+	 * @param string $output Avatar HTML markup.
+	 * @param array  $args   Avatar arguments.
+	 */
+	$output = apply_filters( 'clanbite_avatar_interactivity_html', $output, $args );
+	if ( ! empty( $args['context'] ) ) {
+		$output = apply_filters( "clanbite_avatar_interactivity_html_{$args['context']}", $output, $args );
+	}
+
+	return $output;
+}

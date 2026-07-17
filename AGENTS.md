@@ -99,6 +99,7 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 | Teams model | `Kernowdev\Clanbite\Extensions\Teams\Team`                                                                                                                                                | In-memory team entity; persist via `Team_Data_Store` (implementations may map to `cp_team`). |
 | Teams helpers | `inc/extensions/teams/functions.php`                                                                                                                                                      | Theme-safe `clanbite_teams_*()` wrappers. Team avatars: `clanbite_teams_get_display_team_avatar( $team_id, $suppress, $size, $context, $avatar_preset )` with presets mapped to **Teams → Team avatar image sizes**. |
 | Players helpers | `inc/extensions/players/functions.php`                                                                                                                                                    | Theme-safe `clanbite_players_*()` wrappers; `clanbite_player_profile_context_user_id()` resolves the profile owner from the main query or canonical `/players/{nicename}/` path (`clanbite_player_user_id_from_canonical_request_path()`); `clanbite_player_blocks_resolve_subject_user_id()` aligns player block user resolution with that context. Player avatars: resolve URLs with `clanbite_players_get_display_avatar( $user_id, $suppress, $size, $context, $avatar_preset )` (`large` / `medium` / `small` presets map to **Players → Player avatar image sizes**); build `<img>` with `clanbite_players_get_player_avatar_img_html()`; wrap with `clanbite_players_apply_player_avatar_display_markup()` (see Hook Reference). |
+| Avatar helpers (unified) | `inc/avatar-helpers.php`                                                                                                                                                                 | **Centralized avatar rendering system**: `clanbite_render_avatar()` (main entry point), `clanbite_render_avatar_for_interactivity()` (for Interactivity API contexts like forums/social feed), `clanbite_get_avatar_url()`, `clanbite_get_avatar_profile_url()`. All avatar markup should go through these functions for consistent structure, shape support, and filter points. See inline PHPDoc for usage examples and all available filters/actions. |
 | Matches extension | `Kernowdev\Clanbite\Extensions\Matches`                                                                                                                                                   | `cp_match` CPT, REST list/detail, JS blocks + editor sidebar; **requires** `cp_teams`, **not** a Teams sub-extension. Optional team profile tab `/teams/{slug}/matches/` when `subpage_team` is on in `clanbite_matches_settings`. |
 | Matches helpers | `inc/extensions/matches/functions.php`                                                                                                                                                    | `clanbite_matches()` and related theme-safe helpers. |
 | Notifications extension | `inc/extensions/notifications/class-extension-notifications.php`, `Kernowdev\Clanbite\Extensions\Notifications`                                                                           | Official slug `cp_notifications` (optional; one-time default-on migration). **Requires** `cp_players`. `run()` registers `Extensions\Notifications\Admin` settings (`clanbite_notifications_settings`) then boots `Kernowdev\Clanbite\Extensions\Notification\Notifications_Runtime`. |
@@ -141,6 +142,37 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 - `clanbite_players_social_profile_svg_icon` — Inline SVG for a social slug in the **Player social links** block: `(string $svg_markup, string $slug)`.
 - `clanbite_player_social_links_block_items` — Ordered link rows before render: `(array $items, int $user_id, \WP_Block $block)` each item `slug`, `url`, `label`.
 - `clanbite_player_settings_update_social_profile_value` — Mutate or reject a value before save (return `WP_Error` to block): `(string|WP_Error $value, string $slug, int $user_id)`.
+
+**Unified Avatar System** (`inc/avatar-helpers.php`)
+All avatar rendering should go through `clanbite_render_avatar()` or `clanbite_render_avatar_for_interactivity()` for consistent structure and filter points. See inline PHPDoc for full usage examples.
+
+- `clanbite_avatar_html` — Modify complete avatar HTML: `(string $html, array $args)`. `$args` includes `type` (player/team/group), `id`, `size`, `context`, `shape`, etc. This is the main customization point.
+- `clanbite_avatar_html_{context}` — Context-specific variant (e.g., `clanbite_avatar_html_forum`, `clanbite_avatar_html_social_feed`): `(string $html, array $args)`.
+- `clanbite_{type}_avatar_html` — Type-specific variant (e.g., `clanbite_player_avatar_html`, `clanbite_team_avatar_html`): `(string $html, array $args)`.
+- `clanbite_avatar_classes` — Modify CSS classes array: `(array $classes, array $args)`.
+- `clanbite_avatar_classes_{context}` — Context-specific classes: `(array $classes, array $args)`.
+- `clanbite_{type}_avatar_classes` — Type-specific classes: `(array $classes, array $args)`.
+- `clanbite_avatar_img_attributes` — Modify `<img>` attributes: `(array $img_attrs, array $args)`.
+- `clanbite_avatar_img_attributes_{context}` — Context-specific image attributes: `(array $img_attrs, array $args)`.
+- `clanbite_avatar_interactivity_html` — Complete HTML for Interactivity API contexts (forums, social feed): `(string $html, array $args)`.
+- `clanbite_avatar_interactivity_html_{context}` — Context-specific Interactivity HTML: `(string $html, array $args)`.
+- `clanbite_avatar_interactivity_classes` — CSS classes for Interactivity avatars: `(array $classes, array $args)`.
+- `clanbite_avatar_interactivity_classes_{context}` — Context-specific Interactivity classes: `(array $classes, array $args)`.
+- `clanbite_avatar_interactivity_img_attributes` — Image attributes for Interactivity avatars: `(array $img_attrs, array $args)`.
+- `clanbite_avatar_interactivity_img_attributes_{context}` — Context-specific Interactivity image attributes: `(array $img_attrs, array $args)`.
+
+**Avatar Actions**
+- `clanbite_before_avatar_inner` — Before avatar inner content: `(array $args)`.
+- `clanbite_before_{type}_avatar_inner` — Type-specific before inner: `(array $args)`.
+- `clanbite_avatar_overlays` — Add custom overlays (badges, status, etc.): `(array $args)`.
+- `clanbite_avatar_overlays_{context}` — Context-specific overlays: `(array $args)`.
+- `clanbite_{type}_avatar_overlays` — Type-specific overlays: `(array $args)`.
+- `clanbite_after_avatar_inner` — After avatar inner content: `(array $args)`.
+- `clanbite_after_{type}_avatar_inner` — Type-specific after inner: `(array $args)`.
+- `clanbite_avatar_interactivity_content` — Add custom content to Interactivity avatars: `(array $args)`.
+- `clanbite_avatar_interactivity_content_{context}` — Context-specific Interactivity content: `(array $args)`.
+
+**Legacy Avatar Filters** (Deprecated; migrate to unified system)
 - `clanbite_players_get_display_avatar` — Player avatar image URL after attachment/default resolution: `(string $url, int $user_id, string|array $size, string $context, string $avatar_preset)`. `$avatar_preset` is `large`, `medium`, `small`, or empty when an explicit `$size` was used (presets map to **Players → Player avatar image sizes**). Use `$context` to vary behaviour by surface (`player_avatar_block`, `user_nav`, `notifications`, `profile_settings_rest`, etc.). Pair with `clanbite_players_get_display_avatar_id` for attachment-based logic.
 - `clanbite_players_resolve_player_avatar_image_size` — Maps preset to registered size slug before URL resolution: `(string $size, string $preset, string $raw, string $fallback)`.
 - `clanbite_players_image_size_choices_for_settings` — Slug → label map for Players/Teams avatar size dropdowns: `(array $choices)`.
@@ -151,6 +183,8 @@ These items recur in **Plugin Check** / **PHPCS** runs. Prefer fixing **errors**
 - `clanbite_players_player_avatar_display_markup` — Inner avatar fragment after core builds image or empty-state markup (before profile link wrapping in blocks): `(string $inner, int $user_id, array $args)`.
 - `clanbite_players_player_avatar_empty_img_markup` — Empty-state upload placeholder `<img>` in the player avatar block: `(string $html, int $user_id, array $args)`.
 - `clanbite_players_player_avatar_placeholder_markup` — Text placeholder when the user has no avatar and inline upload is off: `(string $html, int $user_id, array $args)`.
+
+**Other Filters**
 - `clanbite_team_challenge_button_visible` — Show the **Team challenge** block UI: `(bool $visible, int $team_id, \WP_Block $block)`.
 - `clanbite_team_challenge_notify_user_ids` — Recipients for new challenge notifications: `(array $user_ids, int $team_id)`.
 - `clanbite_team_challenge_rest_response` — Mutate JSON bodies from challenge REST routes before encoding: `(array $payload, string $route_key, \WP_REST_Request $request)` (`route_key`: `remote_team`, `upload_media`, `create_challenge`).
