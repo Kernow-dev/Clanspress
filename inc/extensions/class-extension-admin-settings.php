@@ -453,6 +453,11 @@ abstract class Abstract_Settings {
 			$row['options'] = $opts;
 		}
 
+		if ( 'avatar_shape_radio' === $row['type'] && ! empty( $field['options'] ) && is_array( $field['options'] ) ) {
+			// Options are already in the correct format: array of {label, value}
+			$row['options'] = $field['options'];
+		}
+
 		if ( 'user_id_list' === $row['type'] ) {
 			$row['user_search_path'] = isset( $field['user_search_path'] ) && is_string( $field['user_search_path'] )
 				? $field['user_search_path']
