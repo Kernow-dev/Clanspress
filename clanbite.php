@@ -4,7 +4,7 @@
  * Plugin URI: https://clanbite.com
  * Description: Community management system for Gamers and Sports teams
  * Version: 1.2.0
- * Requires at least: 6.7
+ * Requires at least: 6.9
  * Tested up to: 7.0
  * Requires PHP: 8.2
  * Author: kernow.dev
