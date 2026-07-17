@@ -5,6 +5,50 @@
  * All avatar markup should go through these functions so third-party developers
  * can customize avatar rendering in one place with consistent filters.
  *
+ * ## Context Support
+ *
+ * All filters and actions support context-specific targeting. When you call
+ * clanbite_render_avatar() with a 'context' argument (e.g., 'forum', 'social_feed'),
+ * additional context-specific filters/actions are fired:
+ *
+ * ### Context Examples:
+ * - 'profile'      - Player/team profile pages
+ * - 'forum'        - Forums plugin (topics, replies)
+ * - 'social_feed'  - Social Kit posts and comments
+ * - 'user_nav'     - User navigation menu
+ * - 'notification' - Notification bell/list
+ * - 'event'        - Event cards and lists
+ * - 'match'        - Match cards
+ *
+ * ### Available Context Filters:
+ * - clanbite_avatar_html_{context}           - Modify complete HTML for specific context
+ * - clanbite_avatar_classes_{context}        - Modify CSS classes for specific context
+ * - clanbite_avatar_img_attributes_{context} - Modify <img> attributes for specific context
+ *
+ * ### Available Context Actions:
+ * - clanbite_avatar_overlays_{context}       - Add custom overlays for specific context
+ *
+ * ### Example Usage:
+ *
+ * ```php
+ * // Only customize forum avatars
+ * add_filter( 'clanbite_avatar_html_forum', 'my_forum_avatars', 10, 2 );
+ * function my_forum_avatars( $html, $args ) {
+ *     // $args['type'] = 'player'
+ *     // $args['id'] = user ID
+ *     // $args['context'] = 'forum'
+ *     return $html; // Return modified markup
+ * }
+ *
+ * // Only add badges to social feed avatars
+ * add_action( 'clanbite_avatar_overlays_social_feed', 'my_social_badges' );
+ * function my_social_badges( $args ) {
+ *     if ( $args['type'] === 'player' ) {
+ *         echo '<span class="my-verified-badge">✓</span>';
+ *     }
+ * }
+ * ```
+ *
  * @package clanbite
  */
 
@@ -99,10 +143,15 @@ function clanbite_render_avatar( array $args ): string {
 	 * Filter avatar container classes.
 	 *
 	 * @param array  $classes CSS classes.
-	 * @param array  $args    Avatar arguments.
+	 * @param array  $args    Avatar arguments (includes 'context' key).
 	 */
 	$classes = apply_filters( 'clanbite_avatar_classes', $classes, $args );
 	$classes = apply_filters( "clanbite_{$args['type']}_avatar_classes", $classes, $args );
+	
+	// Context-specific filter (e.g., 'clanbite_avatar_classes_forum', 'clanbite_avatar_classes_social_feed')
+	if ( ! empty( $args['context'] ) ) {
+		$classes = apply_filters( "clanbite_avatar_classes_{$args['context']}", $classes, $args );
+	}
 
 	// Build the avatar markup
 	ob_start();
@@ -133,7 +182,7 @@ function clanbite_render_avatar( array $args ): string {
 				 * Filter avatar image attributes.
 				 *
 				 * @param array  $img_attrs Image attributes.
-				 * @param array  $args      Avatar arguments.
+				 * @param array  $args      Avatar arguments (includes 'context' key).
 				 */
 				$img_attrs = apply_filters( 'clanbite_avatar_img_attributes', array(
 					'src'      => $avatar_url,
@@ -142,6 +191,11 @@ function clanbite_render_avatar( array $args ): string {
 					'loading'  => 'lazy',
 					'decoding' => 'async',
 				), $args );
+				
+				// Context-specific filter (e.g., 'clanbite_avatar_img_attributes_forum')
+				if ( ! empty( $args['context'] ) ) {
+					$img_attrs = apply_filters( "clanbite_avatar_img_attributes_{$args['context']}", $img_attrs, $args );
+				}
 				?>
 				<img <?php echo clanbite_build_html_attributes( $img_attrs ); ?> />
 			</div>
@@ -165,10 +219,15 @@ function clanbite_render_avatar( array $args ): string {
 			 *
 			 * Use this to add custom overlays (badges, status indicators, etc.).
 			 *
-			 * @param array $args Avatar arguments.
+			 * @param array $args Avatar arguments (includes 'context' key).
 			 */
 			do_action( 'clanbite_avatar_overlays', $args );
 			do_action( "clanbite_{$args['type']}_avatar_overlays", $args );
+			
+			// Context-specific action (e.g., 'clanbite_avatar_overlays_forum')
+			if ( ! empty( $args['context'] ) ) {
+				do_action( "clanbite_avatar_overlays_{$args['context']}", $args );
+			}
 			?>
 		</div>
 		
@@ -193,10 +252,15 @@ function clanbite_render_avatar( array $args ): string {
 	 * across the site in one place.
 	 *
 	 * @param string $output Avatar HTML markup.
-	 * @param array  $args   Avatar arguments.
+	 * @param array  $args   Avatar arguments (includes 'context' key for targeting specific locations).
 	 */
 	$output = apply_filters( 'clanbite_avatar_html', $output, $args );
 	$output = apply_filters( "clanbite_{$args['type']}_avatar_html", $output, $args );
+	
+	// Context-specific filter (e.g., 'clanbite_avatar_html_forum', 'clanbite_avatar_html_social_feed')
+	if ( ! empty( $args['context'] ) ) {
+		$output = apply_filters( "clanbite_avatar_html_{$args['context']}", $output, $args );
+	}
 
 	return $output;
 }
