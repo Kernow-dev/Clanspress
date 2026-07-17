@@ -33,7 +33,28 @@ use Kernowdev\Clanbite\Public_Rest;
 use Kernowdev\Clanbite\Wordban;
 
 // Composer autoload handles all procedural functions and classes.
-require_once __DIR__ . '/vendor/autoload.php';
+if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
+	require_once __DIR__ . '/vendor/autoload.php';
+} else {
+	// Fallback for production if vendor folder is missing (manual upload without composer).
+	require_once __DIR__ . '/inc/clanbite-wp-admin-includes.php';
+	require_once __DIR__ . '/inc/class-block-patterns.php';
+	require_once __DIR__ . '/inc/functions-block-templates.php';
+	require_once __DIR__ . '/inc/functions-request-input.php';
+	require_once __DIR__ . '/inc/clanbite-private-media.php';
+	require_once __DIR__ . '/inc/clanbite-team-challenge-uploads.php';
+	require_once __DIR__ . '/inc/clanbite-block-render-escape.php';
+	require_once __DIR__ . '/inc/functions-country-flags.php';
+	require_once __DIR__ . '/inc/functions-block-entity-link.php';
+	require_once __DIR__ . '/inc/profile-subpages.php';
+	require_once __DIR__ . '/inc/visibility-container.php';
+	require_once __DIR__ . '/inc/extensions/players/functions.php';
+	require_once __DIR__ . '/inc/extensions/teams/functions.php';
+	require_once __DIR__ . '/inc/groups/functions.php';
+	require_once __DIR__ . '/src/blocks/shared/components/avatar-progress-bar.php';
+	require_once __DIR__ . '/src/blocks/shared/components/avatar-rank-icon.php';
+	require_once __DIR__ . '/shortcut-function.php';
+}
 
 /**
  * Main initiation class.
