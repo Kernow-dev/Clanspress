@@ -50,8 +50,8 @@ if ( function_exists( 'clanbite_render_avatar' ) ) {
 			'context'       => 'profile',
 			'link'          => $should_link,
 			'link_target'   => $link_target,
-			'show_rank'     => ( 'large' === $avatar_preset ),
-			'show_progress' => ( 'large' === $avatar_preset ),
+			'show_rank'     => true,
+			'show_progress' => true,
 		)
 	);
 	
