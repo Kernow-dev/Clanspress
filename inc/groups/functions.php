@@ -182,3 +182,30 @@ function clanbite_group_profile_route_current_slug(): string {
 
 	return '';
 }
+
+/**
+ * Get the configured group avatar shape from settings.
+ *
+ * @return string Avatar shape: 'circle', 'square', or 'hexagon'. Default 'circle'.
+ */
+function clanbite_groups_get_avatar_shape(): string {
+	$settings = get_option( 'clanbite_groups_settings', array() );
+	$shape    = 'circle';
+	
+	if ( is_array( $settings ) && isset( $settings['group_avatar_shape'] ) ) {
+		$shape = sanitize_key( (string) $settings['group_avatar_shape'] );
+	}
+	
+	// Sanitize and validate
+	if ( ! in_array( $shape, array( 'circle', 'square', 'hexagon' ), true ) ) {
+		$shape = 'circle';
+	}
+	
+	/**
+	 * Filter the group avatar shape.
+	 *
+	 * @param string $shape Avatar shape.
+	 */
+	return (string) apply_filters( 'clanbite_groups_avatar_shape', $shape );
+}
+

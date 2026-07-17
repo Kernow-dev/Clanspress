@@ -14,8 +14,24 @@
 		"files": [
 			"inc/extensions/notifications/functions.php",
 			"inc/extensions/events/functions.php",
+			"inc/extensions/players/functions.php",
+			"inc/extensions/teams/functions.php",
+			"inc/groups/functions.php",
 			"inc/class-block-patterns.php",
-			"inc/functions-wordban.php"
+			"inc/functions-wordban.php",
+			"inc/functions-block-templates.php",
+			"inc/functions-request-input.php",
+			"inc/functions-country-flags.php",
+			"inc/functions-block-entity-link.php",
+			"inc/profile-subpages.php",
+			"inc/visibility-container.php",
+			"inc/clanbite-wp-admin-includes.php",
+			"inc/clanbite-private-media.php",
+			"inc/clanbite-team-challenge-uploads.php",
+			"inc/clanbite-block-render-escape.php",
+			"src/blocks/shared/components/avatar-progress-bar.php",
+			"src/blocks/shared/components/avatar-rank-icon.php",
+			"shortcut-function.php"
 		]
 	},
 	"authors": [
