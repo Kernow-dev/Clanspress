@@ -29,8 +29,8 @@
 			"inc/clanbite-private-media.php",
 			"inc/clanbite-team-challenge-uploads.php",
 			"inc/clanbite-block-render-escape.php",
-			"src/blocks/shared/components/avatar-progress-bar.php",
-			"src/blocks/shared/components/avatar-rank-icon.php",
+			"build/shared/components/avatar-progress-bar.php",
+			"build/shared/components/avatar-rank-icon.php",
 			"shortcut-function.php"
 		]
 	},
