@@ -112,6 +112,67 @@ function clanbite_block_fragment_allowed_html(): array {
 			);
 		}
 
+		// Circle elements for progress rings
+		if ( empty( $allowed['circle'] ) ) {
+			$allowed['circle'] = array_merge(
+				array(
+					'cx'                => true,
+					'cy'                => true,
+					'r'                 => true,
+					'fill'              => true,
+					'stroke'            => true,
+					'stroke-width'      => true,
+					'stroke-dasharray'  => true,
+					'stroke-dashoffset' => true,
+					'opacity'           => true,
+					'transform'         => true,
+				),
+				$svg_shared
+			);
+		}
+
+		// Polygon elements for hexagon progress rings
+		if ( empty( $allowed['polygon'] ) ) {
+			$allowed['polygon'] = array_merge(
+				array(
+					'points'            => true,
+					'fill'              => true,
+					'stroke'            => true,
+					'stroke-width'      => true,
+					'stroke-dasharray'  => true,
+					'stroke-dashoffset' => true,
+					'stroke-linejoin'   => true,
+					'opacity'           => true,
+					'transform'         => true,
+					'pathLength'        => true,
+				),
+				$svg_shared
+			);
+		}
+
+		// Rect elements for square progress rings
+		if ( empty( $allowed['rect'] ) ) {
+			$allowed['rect'] = array_merge(
+				array(
+					'x'                 => true,
+					'y'                 => true,
+					'width'             => true,
+					'height'            => true,
+					'rx'                => true,
+					'ry'                => true,
+					'fill'              => true,
+					'stroke'            => true,
+					'stroke-width'      => true,
+					'stroke-dasharray'  => true,
+					'stroke-dashoffset' => true,
+					'opacity'           => true,
+					'transform'         => true,
+					'pathLength'        => true,
+				),
+				$svg_shared
+			);
+		}
+
 		$base_allowed = $allowed;
 
 		/*
