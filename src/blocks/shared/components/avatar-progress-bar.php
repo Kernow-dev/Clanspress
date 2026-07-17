@@ -38,29 +38,37 @@ function clanbite_render_avatar_progress_bar( int $user_id, string $shape = 'cir
 			$progress = (int) clanbite_ranks_get_user_rank_progress( $user_id );
 			$progress = max( 0, min( 100, $progress ) ); // Clamp between 0-100
 		}
+	} else {
+		// DEMO: Show 65% progress when plugins not active (for visual testing)
+		$progress = 65;
+		$show_progress = true;
 	}
 
 	// Generate unique ID for this progress ring
 	$unique_id = 'progress-' . $user_id . '-' . wp_rand( 1000, 9999 );
 
-	// Avatar dimensions (approximate for viewBox calculations)
-	$size = 120; // Large avatar default size
+	// Avatar dimensions (adjust to wrap around the avatar properly)
+	$size = 120; // Base avatar size
 	$stroke_width = 4;
-	$radius = ( $size / 2 ) - ( $stroke_width / 2 ) - 4; // Padding for border
-
+	
+	// Make the progress ring larger to wrap around the avatar with border
+	$progress_size = $size + 16; // Add padding for border and spacing
+	
 	ob_start();
 	?>
 	<div class="clanbite-avatar__progress-ring" data-progress="<?php echo esc_attr( $progress ); ?>">
 		<?php
 		switch ( $shape ) {
 			case 'square':
-				clanbite_render_square_progress_svg( $unique_id, $size, $stroke_width, $progress );
+				clanbite_render_square_progress_svg( $unique_id, $progress_size, $stroke_width, $progress );
 				break;
 			case 'hexagon':
-				clanbite_render_hexagon_progress_svg( $unique_id, $size, $stroke_width, $progress );
+				clanbite_render_hexagon_progress_svg( $unique_id, $progress_size, $stroke_width, $progress );
 				break;
 			case 'circle':
 			default:
+				// For circle, calculate radius based on size
+				$radius = ( $progress_size / 2 ) - ( $stroke_width / 2 );
 				clanbite_render_circle_progress_svg( $unique_id, $radius, $stroke_width, $progress );
 				break;
 		}
