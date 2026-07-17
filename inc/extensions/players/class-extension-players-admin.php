@@ -85,13 +85,22 @@ class Admin extends Abstract_Settings {
 				'fields' => array(
 					'player_avatar_shape' => array(
 						'label'       => __( 'Avatar shape', 'clanbite' ),
-						'type'        => 'select',
+						'type'        => 'avatar_shape_radio',
 						'description' => __( 'Controls the shape of player avatars site-wide. The progress bar and rank icon will adapt to the selected shape.', 'clanbite' ),
 						'default'     => 'circle',
 						'options'     => array(
-							'circle'  => __( 'Circle', 'clanbite' ),
-							'square'  => __( 'Square', 'clanbite' ),
-							'hexagon' => __( 'Hexagon', 'clanbite' ),
+							array(
+								'label' => __( 'Circle', 'clanbite' ),
+								'value' => 'circle',
+							),
+							array(
+								'label' => __( 'Square', 'clanbite' ),
+								'value' => 'square',
+							),
+							array(
+								'label' => __( 'Hexagon', 'clanbite' ),
+								'value' => 'hexagon',
+							),
 						),
 						'sanitize'    => array( $this, 'sanitize_player_avatar_shape' ),
 					),

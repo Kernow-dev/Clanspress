@@ -2,10 +2,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-// Load progress bar and rank icon components
-require_once CLANBITE_PATH . 'src/blocks/shared/components/avatar-progress-bar.php';
-require_once CLANBITE_PATH . 'src/blocks/shared/components/avatar-rank-icon.php';
-
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Block render: core-injected $attributes, $content, and $block in this scope.
 /**
  * Render callback: team avatar image.

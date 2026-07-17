@@ -799,3 +799,82 @@ body.toplevel_page_clanbite .components-modal__frame .components-button.is-terti
 	line-height: 1.3;
 }
 
+/* Avatar Shape Radio Buttons */
+.clanbite-admin-avatar-shape-radio__options {
+	display: flex;
+	gap: 16px;
+	margin-top: 8px;
+}
+
+.clanbite-admin-avatar-shape-radio__option {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 16px;
+	border: 2px solid #ddd;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	background: #fff;
+	min-width: 100px;
+}
+
+.clanbite-admin-avatar-shape-radio__option:hover {
+	border-color: #2271b1;
+	background: #f6f7f7;
+}
+
+.clanbite-admin-avatar-shape-radio__option.is-checked {
+	border-color: #2271b1;
+	background: #f0f6fc;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+.clanbite-admin-avatar-shape-radio__input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.clanbite-admin-avatar-shape-radio__preview {
+	width: 60px;
+	height: 60px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.clanbite-admin-avatar-shape-radio__shape {
+	width: 50px;
+	height: 50px;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	border: 3px solid #fff;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.clanbite-admin-avatar-shape-radio__shape--circle {
+	border-radius: 50%;
+}
+
+.clanbite-admin-avatar-shape-radio__shape--square {
+	border-radius: 8px;
+}
+
+.clanbite-admin-avatar-shape-radio__shape--hexagon {
+	clip-path: polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%);
+	border-radius: 0;
+}
+
+.clanbite-admin-avatar-shape-radio__label {
+	font-size: 13px;
+	font-weight: 500;
+	color: #1e1e1e;
+	text-align: center;
+}
+
+.clanbite-admin-avatar-shape-radio__option.is-checked .clanbite-admin-avatar-shape-radio__label {
+	color: #2271b1;
+	font-weight: 600;
+}
+

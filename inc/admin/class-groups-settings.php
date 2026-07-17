@@ -56,8 +56,9 @@ class Groups_Settings extends Abstract_Settings {
 	 */
 	protected function get_defaults(): array {
 		return array(
-			'events_profile_subpage'       => true,
+			'events_profile_subpage'         => true,
 			'group_name_wordban_custom_list' => '',
+			'group_avatar_shape'             => 'circle',
 		);
 	}
 
@@ -68,6 +69,32 @@ class Groups_Settings extends Abstract_Settings {
 	 */
 	protected function get_sections(): array {
 		return array(
+			'avatar_appearance' => array(
+				'title'  => __( 'Group avatar appearance', 'clanbite' ),
+				'fields' => array(
+					'group_avatar_shape' => array(
+						'label'       => __( 'Avatar shape', 'clanbite' ),
+						'type'        => 'avatar_shape_radio',
+						'description' => __( 'Controls the shape of group avatars site-wide. The progress bar and rank icon will adapt to the selected shape.', 'clanbite' ),
+						'default'     => 'circle',
+						'options'     => array(
+							array(
+								'label' => __( 'Circle', 'clanbite' ),
+								'value' => 'circle',
+							),
+							array(
+								'label' => __( 'Square', 'clanbite' ),
+								'value' => 'square',
+							),
+							array(
+								'label' => __( 'Hexagon', 'clanbite' ),
+								'value' => 'hexagon',
+							),
+						),
+						'sanitize'    => array( $this, 'sanitize_group_avatar_shape' ),
+					),
+				),
+			),
 			'integrations' => array(
 				'title'  => __( 'Extension integrations', 'clanbite' ),
 				'fields' => array(
@@ -97,5 +124,19 @@ class Groups_Settings extends Abstract_Settings {
 	 */
 	public function render_page(): void {
 		$this->render_settings_page( __( 'Groups', 'clanbite' ) );
+	}
+
+	/**
+	 * Sanitize group avatar shape setting.
+	 *
+	 * @param mixed $value User input.
+	 * @return string Valid shape or default.
+	 */
+	public function sanitize_group_avatar_shape( $value ): string {
+		$value = sanitize_key( (string) $value );
+		if ( ! in_array( $value, array( 'circle', 'square', 'hexagon' ), true ) ) {
+			return 'circle';
+		}
+		return $value;
 	}
 }

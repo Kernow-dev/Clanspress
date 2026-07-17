@@ -1305,6 +1305,46 @@ function FieldControl( { field, value, onChange } ) {
 					onChange={ ( v ) => onChange( id, v ) }
 				/>
 			);
+		case 'avatar_shape_radio':
+			return (
+				<BaseControl
+					{ ...common }
+					className="clanbite-admin-avatar-shape-radio"
+				>
+					<div className="clanbite-admin-avatar-shape-radio__options">
+						{ ( field.options || [] ).map( ( option ) => {
+							const shapeValue = option.value;
+							const isChecked = String( value ?? 'circle' ) === shapeValue;
+							return (
+								<label
+									key={ shapeValue }
+									className={ `clanbite-admin-avatar-shape-radio__option ${
+										isChecked ? 'is-checked' : ''
+									}` }
+								>
+									<input
+										type="radio"
+										name={ `avatar-shape-${ id }` }
+										value={ shapeValue }
+										checked={ isChecked }
+										onChange={ () => onChange( id, shapeValue ) }
+										className="clanbite-admin-avatar-shape-radio__input"
+									/>
+									<div className="clanbite-admin-avatar-shape-radio__preview">
+										<div
+											className={ `clanbite-admin-avatar-shape-radio__shape clanbite-admin-avatar-shape-radio__shape--${ shapeValue }` }
+											aria-hidden="true"
+										/>
+									</div>
+									<span className="clanbite-admin-avatar-shape-radio__label">
+										{ option.label }
+									</span>
+								</label>
+							);
+						} ) }
+					</div>
+				</BaseControl>
+			);
 		case 'textarea':
 			return (
 				<TextareaControl

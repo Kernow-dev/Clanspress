@@ -32,19 +32,8 @@ use Kernowdev\Clanbite\Cross_Site_Match_Sync;
 use Kernowdev\Clanbite\Public_Rest;
 use Kernowdev\Clanbite\Wordban;
 
-// Use composer autoload.
+// Composer autoload handles all procedural functions and classes.
 require_once __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/inc/clanbite-wp-admin-includes.php';
-require_once __DIR__ . '/inc/class-block-patterns.php';
-require_once __DIR__ . '/inc/functions-block-templates.php';
-require_once __DIR__ . '/inc/functions-request-input.php';
-require_once __DIR__ . '/inc/clanbite-private-media.php';
-require_once __DIR__ . '/inc/clanbite-team-challenge-uploads.php';
-require_once __DIR__ . '/inc/clanbite-block-render-escape.php';
-require_once __DIR__ . '/inc/functions-country-flags.php';
-require_once __DIR__ . '/inc/functions-block-entity-link.php';
-require_once __DIR__ . '/inc/profile-subpages.php';
-require_once __DIR__ . '/shortcut-function.php';
 
 /**
  * Main initiation class.
