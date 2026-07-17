@@ -31,6 +31,8 @@ if ( $is_logged_in ) {
 				'context'       => 'user_nav',
 				'extra_classes' => array( 'clanbite-user-nav__avatar' ),
 				'link'          => false,
+				'show_rank'     => true,
+				'show_progress' => true,
 			)
 		);
 	}
