@@ -35,6 +35,24 @@
 	}
 }
 
+// Progress ring container - positioned absolutely to wrap the avatar
+.clanbite-avatar__progress-ring {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 110%;
+	height: 110%;
+	pointer-events: none;
+	z-index: 1;
+	
+	svg {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+}
+
 // Avatar clip container (circular by default)
 .clanbite-avatar__clip {
 	position: relative;
@@ -45,6 +63,7 @@
 	border: var(--clanbite-avatar-border-width, 3px) solid var(--clanbite-avatar-border-color, #fff);
 	box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
 	vertical-align: top;
+	z-index: 2;
 }
 
 // Avatar link wrapper
