@@ -2,6 +2,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// Load progress bar and rank icon components
+require_once CLANBITE_PATH . 'src/blocks/shared/components/avatar-progress-bar.php';
+require_once CLANBITE_PATH . 'src/blocks/shared/components/avatar-rank-icon.php';
 
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Block render: core-injected $attributes, $content, and $block in this scope.
 /**
@@ -13,6 +16,12 @@ defined( 'ABSPATH' ) || exit;
  */
 
 $team_id = clanbite_team_single_block_team_id( $block );
+
+// Get avatar shape from settings
+$avatar_shape = 'circle';
+if ( function_exists( 'clanbite_teams_get_avatar_shape' ) ) {
+	$avatar_shape = clanbite_teams_get_avatar_shape();
+}
 
 $avatar_preset = isset( $attributes['avatarPreset'] ) ? sanitize_key( (string) $attributes['avatarPreset'] ) : 'large';
 if ( ! in_array( $avatar_preset, array( 'large', 'medium', 'small' ), true ) ) {
@@ -88,7 +97,37 @@ if ( ! empty( $attributes['isLink'] ) && function_exists( 'clanbite_block_entity
 
 $avatar_clip_open  = '<div class="clanbite-avatar__clip">';
 $avatar_clip_close = '</div>';
-$avatar_media      = $avatar_clip_open . $img_inner . $avatar_clip_close;
 
-echo wp_kses( '<div ' . $wrapper_attributes . '><div class="clanbite-avatar clanbite-avatar--team">' . $avatar_media . '</div></div>', clanbite_block_fragment_allowed_html());
+// Generate progress bar HTML (for teams, use team leader's progress if applicable)
+$progress_bar_html = '';
+$rank_icon_html = '';
+if ( 'large' === $avatar_preset ) {
+	// For teams, we could show the team leader's rank progress
+	// Get team leader/creator user ID
+	$team_post = get_post( $team_id );
+	if ( $team_post ) {
+		$team_leader_id = (int) $team_post->post_author;
+		if ( $team_leader_id > 0 ) {
+			$progress_bar_html = clanbite_render_avatar_progress_bar( $team_leader_id, $avatar_shape, $avatar_preset );
+			$rank_icon_html = clanbite_render_avatar_rank_icon( $team_leader_id, $avatar_shape );
+		}
+	}
+}
+
+// Build avatar media with progress and rank icon
+if ( '' !== $progress_bar_html || '' !== $rank_icon_html ) {
+	// Use media wrapper for overlays
+	$avatar_media = '<div class="clanbite-avatar__media">';
+	$avatar_media .= $avatar_clip_open . $img_inner . $avatar_clip_close;
+	$avatar_media .= $progress_bar_html;
+	$avatar_media .= $rank_icon_html;
+	$avatar_media .= '</div>';
+} else {
+	$avatar_media = $avatar_clip_open . $img_inner . $avatar_clip_close;
+}
+
+// Add shape class to avatar container
+$avatar_classes = 'clanbite-avatar clanbite-avatar--team clanbite-avatar--shape-' . $avatar_shape;
+
+echo wp_kses( '<div ' . $wrapper_attributes . '><div class="' . esc_attr( $avatar_classes ) . '">' . $avatar_media . '</div></div>', clanbite_block_fragment_allowed_html());
 // phpcs:enable WordPress.NamingConventions.PrefixAllGlobals

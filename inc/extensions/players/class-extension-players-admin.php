@@ -35,6 +35,7 @@ class Admin extends Abstract_Settings {
 				'player_avatar_image_size_large'  => 'clanbite-avatar-large',
 				'player_avatar_image_size_medium' => 'clanbite-avatar-medium',
 				'player_avatar_image_size_small'  => 'clanbite-avatar-small',
+				'player_avatar_shape'             => 'circle',
 			)
 		);
 	}
@@ -77,9 +78,26 @@ class Admin extends Abstract_Settings {
 							'default'     => true,
 							'sanitize'    => 'rest_sanitize_boolean',
 						),
+				),
+			),
+			'avatar_appearance' => array(
+				'title'  => __( 'Player avatar appearance', 'clanbite' ),
+				'fields' => array(
+					'player_avatar_shape' => array(
+						'label'       => __( 'Avatar shape', 'clanbite' ),
+						'type'        => 'select',
+						'description' => __( 'Controls the shape of player avatars site-wide. The progress bar and rank icon will adapt to the selected shape.', 'clanbite' ),
+						'default'     => 'circle',
+						'options'     => array(
+							'circle'  => __( 'Circle', 'clanbite' ),
+							'square'  => __( 'Square', 'clanbite' ),
+							'hexagon' => __( 'Hexagon', 'clanbite' ),
+						),
+						'sanitize'    => array( $this, 'sanitize_player_avatar_shape' ),
 					),
 				),
-				'avatar_sizes' => array(
+			),
+			'avatar_sizes' => array(
 					'title'  => __( 'Player avatar image sizes', 'clanbite' ),
 					'fields' => array(
 						'player_avatar_image_size_large'  => array(
@@ -207,6 +225,20 @@ class Admin extends Abstract_Settings {
 		return function_exists( 'clanbite_players_sanitize_image_size_setting_value' )
 			? clanbite_players_sanitize_image_size_setting_value( (string) $value, 'clanbite-avatar-small' )
 			: 'clanbite-avatar-small';
+	}
+
+	/**
+	 * Sanitize player avatar shape setting.
+	 *
+	 * @param mixed $value Raw setting value.
+	 * @return string
+	 */
+	public function sanitize_player_avatar_shape( $value ): string {
+		$value = sanitize_key( (string) $value );
+		if ( ! in_array( $value, array( 'circle', 'square', 'hexagon' ), true ) ) {
+			return 'circle';
+		}
+		return $value;
 	}
 
 	/**

@@ -35,14 +35,14 @@
 	}
 }
 
-// Avatar clip container (circular)
+// Avatar clip container (circular by default)
 .clanbite-avatar__clip {
 	position: relative;
 	display: inline-block;
 	line-height: 0;
 	border-radius: 50%;
 	overflow: hidden;
-	border: 3px solid #fff;
+	border: var(--clanbite-avatar-border-width, 3px) solid var(--clanbite-avatar-border-color, #fff);
 	box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
 	vertical-align: top;
 }
@@ -161,6 +161,96 @@
 	font-size: 0.75rem;
 	text-align: center;
 	padding: 0.25rem;
+}
+
+/* ==========================================================================
+   AVATAR SHAPE VARIANTS
+   ========================================================================== */
+
+// Circle shape (default)
+.clanbite-avatar--shape-circle {
+	.clanbite-avatar__clip {
+		border-radius: 50%;
+	}
+	
+	.clanbite-avatar__img--placeholder {
+		border-radius: 50%;
+	}
+}
+
+// Square shape
+.clanbite-avatar--shape-square {
+	.clanbite-avatar__clip {
+		border-radius: var(--clanbite-avatar-border-radius, 8px);
+	}
+	
+	.clanbite-avatar__img--placeholder {
+		border-radius: var(--clanbite-avatar-border-radius, 8px);
+	}
+}
+
+// Hexagon shape
+.clanbite-avatar--shape-hexagon {
+	.clanbite-avatar__clip {
+		border-radius: 0;
+		overflow: visible;
+		border: none;
+	}
+	
+	.clanbite-avatar__hex-shape {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+	}
+	
+	.clanbite-avatar__img {
+		clip-path: polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%);
+	}
+	
+	.clanbite-avatar__img--placeholder {
+		border-radius: 0;
+		clip-path: polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%);
+	}
+}
+
+/* ==========================================================================
+   RANK ICON OVERLAY
+   ========================================================================== */
+
+.clanbite-avatar__rank-icon {
+	position: absolute;
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+	
+	img, svg {
+		display: block;
+		max-width: 100%;
+		height: auto;
+	}
+}
+
+// Circle and square - bottom right position
+.clanbite-avatar--shape-circle .clanbite-avatar__rank-icon,
+.clanbite-avatar--shape-square .clanbite-avatar__rank-icon {
+	right: -4px;
+	bottom: -4px;
+	width: 32px;
+	height: 32px;
+}
+
+// Hexagon - bottom point position
+.clanbite-avatar--shape-hexagon .clanbite-avatar__rank-icon {
+	left: 50%;
+	bottom: -8px;
+	transform: translateX(-50%);
+	width: 28px;
+	height: 28px;
 }
 
 // Backward compatibility: old class names still work

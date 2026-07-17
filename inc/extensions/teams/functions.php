@@ -782,3 +782,33 @@ function clanbite_team_get_member_count( int $team_id ): int {
 
 	return $t ? $t->get_team_member_count( $team_id ) : 0;
 }
+
+/**
+ * Get the configured team avatar shape from settings.
+ *
+ * @return string Avatar shape: 'circle', 'square', or 'hexagon'. Default 'circle'.
+ */
+function clanbite_teams_get_avatar_shape(): string {
+	$shape = 'circle';
+	
+	if ( function_exists( 'clanbite' ) && clanbite()->teams ) {
+		$settings = clanbite()->teams->get_settings_admin();
+		if ( $settings ) {
+			$shape = $settings->get( 'team_avatar_shape', 'circle' );
+		}
+	}
+	
+	// Sanitize and validate
+	$shape = sanitize_key( $shape );
+	if ( ! in_array( $shape, array( 'circle', 'square', 'hexagon' ), true ) ) {
+		$shape = 'circle';
+	}
+	
+	/**
+	 * Filter the team avatar shape.
+	 *
+	 * @param string $shape Avatar shape.
+	 */
+	return (string) apply_filters( 'clanbite_teams_avatar_shape', $shape );
+}
+

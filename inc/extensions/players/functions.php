@@ -1925,3 +1925,33 @@ function clanbite_remove_user_nav_menu_item( string $item_id ): void {
 		}
 	);
 }
+
+/**
+ * Get the configured player avatar shape from settings.
+ *
+ * @return string Avatar shape: 'circle', 'square', or 'hexagon'. Default 'circle'.
+ */
+function clanbite_players_get_avatar_shape(): string {
+	$shape = 'circle';
+	
+	if ( function_exists( 'clanbite' ) && clanbite()->players ) {
+		$settings = clanbite()->players->get_settings_admin();
+		if ( $settings ) {
+			$shape = $settings->get( 'player_avatar_shape', 'circle' );
+		}
+	}
+	
+	// Sanitize and validate
+	$shape = sanitize_key( $shape );
+	if ( ! in_array( $shape, array( 'circle', 'square', 'hexagon' ), true ) ) {
+		$shape = 'circle';
+	}
+	
+	/**
+	 * Filter the player avatar shape.
+	 *
+	 * @param string $shape Avatar shape.
+	 */
+	return (string) apply_filters( 'clanbite_players_avatar_shape', $shape );
+}
+
