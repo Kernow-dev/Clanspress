@@ -25,6 +25,7 @@
 			"inc/functions-block-entity-link.php",
 			"inc/profile-subpages.php",
 			"inc/visibility-container.php",
+			"inc/avatar-helpers.php",
 			"inc/clanbite-wp-admin-includes.php",
 			"inc/clanbite-private-media.php",
 			"inc/clanbite-team-challenge-uploads.php",
