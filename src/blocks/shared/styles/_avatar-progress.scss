@@ -1,0 +1,115 @@
+/**
+ * Avatar Progress Bar Styles
+ * 
+ * Progress rings that adapt to avatar shapes (circle, square, hexagon)
+ * with smooth real-time fill animations.
+ */
+
+/* ==========================================================================
+   BASE PROGRESS RING CONTAINER
+   ========================================================================== */
+
+.clanbite-avatar__progress-ring {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	pointer-events: none;
+	z-index: 1;
+	
+	svg {
+		display: block;
+		overflow: visible;
+	}
+}
+
+/* ==========================================================================
+   PROGRESS PATH STYLES
+   ========================================================================== */
+
+.clanbite-avatar__progress-path {
+	fill: none;
+	stroke: var(--clanbite-avatar-progress-bg, rgba(0, 0, 0, 0.1));
+	stroke-width: var(--clanbite-avatar-progress-width, 4);
+}
+
+.clanbite-avatar__progress-fill {
+	fill: none;
+	stroke: var(--clanbite-avatar-progress-color, var(--wp--preset--color--primary, #0073aa));
+	stroke-width: var(--clanbite-avatar-progress-width, 4);
+	stroke-linecap: round;
+	transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   CIRCLE SHAPE PROGRESS
+   ========================================================================== */
+
+.clanbite-avatar--shape-circle .clanbite-avatar__progress-ring {
+	// Circle-specific adjustments handled via SVG viewBox
+}
+
+/* ==========================================================================
+   SQUARE SHAPE PROGRESS
+   ========================================================================== */
+
+.clanbite-avatar--shape-square .clanbite-avatar__progress-ring {
+	// Square uses rounded rect path
+}
+
+.clanbite-avatar--shape-square .clanbite-avatar__progress-fill {
+	stroke-linejoin: round;
+}
+
+/* ==========================================================================
+   HEXAGON SHAPE PROGRESS
+   ========================================================================== */
+
+.clanbite-avatar--shape-hexagon .clanbite-avatar__progress-ring {
+	// Hexagon uses polygon path
+}
+
+.clanbite-avatar--shape-hexagon .clanbite-avatar__progress-fill {
+	stroke-linejoin: miter;
+}
+
+/* ==========================================================================
+   REAL-TIME FILL ANIMATION
+   ========================================================================== */
+
+// Progress ring animates on load
+.clanbite-avatar__progress-ring {
+	animation: clanbite-progress-fade-in 0.3s ease-out;
+}
+
+@keyframes clanbite-progress-fade-in {
+	from {
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(0.95);
+	}
+	to {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1);
+	}
+}
+
+// Smooth stroke animation (triggered by stroke-dashoffset change)
+.clanbite-avatar__progress-fill {
+	// The transition on stroke-dashoffset creates the smooth fill effect
+	// When PHP updates data-progress attribute, CSS updates stroke-dashoffset
+	transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   SIZE VARIANTS
+   ========================================================================== */
+
+// Only show progress on large avatars
+.clanbite-avatar--large .clanbite-avatar__progress-ring {
+	display: block;
+}
+
+.clanbite-avatar--medium .clanbite-avatar__progress-ring,
+.clanbite-avatar--small .clanbite-avatar__progress-ring {
+	display: none;
+}

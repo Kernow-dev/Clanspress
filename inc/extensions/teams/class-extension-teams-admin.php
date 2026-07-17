@@ -37,6 +37,7 @@ class Admin extends Abstract_Settings {
 				'team_avatar_image_size_large'   => 'clanbite-team-avatar-large',
 				'team_avatar_image_size_medium'  => 'clanbite-team-avatar-medium',
 				'team_avatar_image_size_small'   => 'clanbite-team-avatar-small',
+				'team_avatar_shape'              => 'circle',
 			)
 		);
 	}
@@ -96,9 +97,26 @@ class Admin extends Abstract_Settings {
 							'default'     => true,
 							'sanitize'    => 'rest_sanitize_boolean',
 						),
+				),
+			),
+			'team_avatar_appearance' => array(
+				'title'  => __( 'Team avatar appearance', 'clanbite' ),
+				'fields' => array(
+					'team_avatar_shape' => array(
+						'label'       => __( 'Avatar shape', 'clanbite' ),
+						'type'        => 'select',
+						'description' => __( 'Controls the shape of team avatars site-wide. The progress bar and rank icon will adapt to the selected shape.', 'clanbite' ),
+						'default'     => 'circle',
+						'options'     => array(
+							'circle'  => __( 'Circle', 'clanbite' ),
+							'square'  => __( 'Square', 'clanbite' ),
+							'hexagon' => __( 'Hexagon', 'clanbite' ),
+						),
+						'sanitize'    => array( $this, 'sanitize_team_avatar_shape' ),
 					),
 				),
-				'team_avatar_sizes' => array(
+			),
+			'team_avatar_sizes' => array(
 					'title'  => __( 'Team avatar image sizes', 'clanbite' ),
 					'fields' => array(
 						'team_avatar_image_size_large' => array(
@@ -275,5 +293,19 @@ class Admin extends Abstract_Settings {
 		return function_exists( 'clanbite_players_sanitize_image_size_setting_value' )
 			? clanbite_players_sanitize_image_size_setting_value( (string) $value, 'clanbite-team-avatar-small' )
 			: 'clanbite-team-avatar-small';
+	}
+
+	/**
+	 * Sanitize team avatar shape setting.
+	 *
+	 * @param mixed $value Raw setting value.
+	 * @return string
+	 */
+	public function sanitize_team_avatar_shape( $value ): string {
+		$value = sanitize_key( (string) $value );
+		if ( ! in_array( $value, array( 'circle', 'square', 'hexagon' ), true ) ) {
+			return 'circle';
+		}
+		return $value;
 	}
 }

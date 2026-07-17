@@ -2,6 +2,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// Load progress bar and rank icon components
+require_once CLANBITE_PATH . 'src/blocks/shared/components/avatar-progress-bar.php';
+require_once CLANBITE_PATH . 'src/blocks/shared/components/avatar-rank-icon.php';
 
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- Block render: core-injected $attributes, $content, and $block in this scope.
 /**
@@ -24,6 +27,12 @@ if ( ! $user_id ) {
 }
 
 $display_name = clanbite_players_get_display_name( $user_id );
+
+// Get avatar shape from settings
+$avatar_shape = 'circle';
+if ( function_exists( 'clanbite_players_get_avatar_shape' ) ) {
+	$avatar_shape = clanbite_players_get_avatar_shape();
+}
 
 $inner_classes = 'clanbite-avatar__img';
 
@@ -113,6 +122,25 @@ $avatar_classes = 'clanbite-avatar clanbite-avatar--player';
 if ( '' !== $avatar_extra_classes ) {
 	$avatar_classes .= ' ' . trim( $avatar_extra_classes );
 }
+// Add shape class
+$avatar_classes .= ' clanbite-avatar--shape-' . $avatar_shape;
+
+// Generate progress bar HTML (only for large avatars with Points + Ranks)
+$progress_bar_html = '';
+if ( 'large' === $avatar_preset ) {
+	$progress_bar_html = clanbite_render_avatar_progress_bar( $user_id, $avatar_shape, $avatar_preset );
+}
+
+// Generate rank icon HTML
+$rank_icon_html = '';
+if ( 'large' === $avatar_preset ) {
+	$rank_icon_html = clanbite_render_avatar_rank_icon( $user_id, $avatar_shape );
+}
+
+// Update use_avatar_media condition to include progress bar and rank icon
+if ( '' !== $progress_bar_html || '' !== $rank_icon_html ) {
+	$use_avatar_media = true;
+}
 
 ob_start();
 ?>
@@ -123,7 +151,18 @@ ob_start();
 				<?php clanbite_echo_block_fragment_html( (string) $link_open ); ?>
 				<div class="clanbite-avatar__clip"><?php clanbite_echo_block_fragment_html( (string) $clip_inner ); ?></div>
 				<?php clanbite_echo_block_fragment_html( (string) $link_close ); ?>
-				<?php clanbite_echo_block_fragment_html( (string) $rank_overlay_html ); ?>
+				<?php
+				// Progress bar (inside media wrapper, overlays the clip)
+				if ( '' !== $progress_bar_html ) {
+					clanbite_echo_block_fragment_html( (string) $progress_bar_html );
+				}
+				// Rank icon (inside media wrapper, positioned by CSS)
+				if ( '' !== $rank_icon_html ) {
+					clanbite_echo_block_fragment_html( (string) $rank_icon_html );
+				}
+				// Original rank overlay (backward compatibility)
+				clanbite_echo_block_fragment_html( (string) $rank_overlay_html );
+				?>
 			</div>
 			<?php if ( '' !== $after_clip ) : ?>
 				<?php clanbite_echo_block_fragment_html( (string) $after_clip ); ?>
