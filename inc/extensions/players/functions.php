@@ -1932,14 +1932,9 @@ function clanbite_remove_user_nav_menu_item( string $item_id ): void {
  * @return string Avatar shape: 'circle', 'square', or 'hexagon'. Default 'circle'.
  */
 function clanbite_players_get_avatar_shape(): string {
-	$shape = 'circle';
-	
-	if ( function_exists( 'clanbite' ) && clanbite()->players ) {
-		$settings = clanbite()->players->get_settings_admin();
-		if ( $settings ) {
-			$shape = $settings->get( 'player_avatar_shape', 'circle' );
-		}
-	}
+	// Get directly from the database to avoid caching issues
+	$all_settings = get_option( 'clanbite_players_settings', array() );
+	$shape        = isset( $all_settings['player_avatar_shape'] ) ? $all_settings['player_avatar_shape'] : 'circle';
 	
 	// Sanitize and validate
 	$shape = sanitize_key( $shape );
