@@ -1,0 +1,87 @@
+/**
+ * Unified Card Styles
+ * 
+ * All Clanbite cards use consistent structure across plugins.
+ */
+
+// Base card container
+.clanbite-card {
+	background: var(--wp--preset--color--base, #fff);
+	border: 1px solid var(--wp--preset--color--contrast-3, #e0e0e0);
+	border-radius: 8px;
+	overflow: hidden;
+	
+	// Type variants (core Clanbite only)
+	&.clanbite-card--match { }
+	&.clanbite-card--team { }
+	&.clanbite-card--player { }
+	&.clanbite-card--event { }
+	
+	// Layout variants
+	&.clanbite-card--horizontal {
+		display: flex;
+	}
+	
+	&.clanbite-card--vertical {
+		display: flex;
+		flex-direction: column;
+	}
+	
+	// Note: Plugin-specific variants (--forums, --social-kit, --points, --ranks)
+	// and plugin-specific card types (--post for social-kit)
+	// should be defined in each plugin's own SCSS files, not here in core.
+}
+
+// Card media/avatar container
+.clanbite-card__media {
+	flex-shrink: 0;
+	
+	.clanbite-card--horizontal & {
+		width: 150px;
+	}
+	
+	.clanbite-card--vertical & {
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		object-fit: cover;
+	}
+}
+
+// Card content wrapper
+.clanbite-card__content {
+	flex-grow: 1;
+	padding: 1.5rem;
+}
+
+// Card header
+.clanbite-card__header {
+	margin-bottom: 1rem;
+}
+
+// Card title
+.clanbite-card__title {
+	margin: 0 0 0.5rem;
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: var(--wp--preset--color--contrast, #000);
+}
+
+// Card meta
+.clanbite-card__meta {
+	font-size: 0.875rem;
+	color: var(--wp--preset--color--contrast-2, #666);
+}
+
+// Card body
+.clanbite-card__body {
+	margin-bottom: 1rem;
+	color: var(--wp--preset--color--contrast, #000);
+}
+
+// Card footer
+.clanbite-card__footer {
+	display: flex;
+	gap: 0.75rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--wp--preset--color--contrast-3, #e0e0e0);
+}

@@ -1,0 +1,119 @@
+/**
+ * Unified Form Styles
+ * 
+ * All Clanbite forms use consistent structure across plugins.
+ */
+
+// Base form container
+.clanbite-form {
+	// Type variants (core Clanbite only)
+	&.clanbite-form--create { }
+	&.clanbite-form--edit { }
+	&.clanbite-form--inline { }
+	
+	// Note: Plugin-specific variants (--forums, --social-kit, --points, --ranks)
+	// should be defined in each plugin's own SCSS files, not here in core.
+}
+
+// Form section
+.clanbite-form__section {
+	margin-bottom: 1.5rem;
+}
+
+// Form actions
+.clanbite-form__actions {
+	display: flex;
+	gap: 0.75rem;
+	margin-top: 1.5rem;
+}
+
+// Form messages
+.clanbite-form__message {
+	padding: 1rem;
+	border-radius: 4px;
+	margin-bottom: 1rem;
+	
+	&.clanbite-form__message--error {
+		background: #fee;
+		border: 1px solid #fcc;
+		color: #c00;
+	}
+	
+	&.clanbite-form__message--success {
+		background: #efe;
+		border: 1px solid #cfc;
+		color: #0a0;
+	}
+	
+	&.clanbite-form__message--info {
+		background: #eef;
+		border: 1px solid #ccf;
+		color: #00a;
+	}
+}
+
+// Form field wrapper
+.clanbite-form-field {
+	margin-bottom: 1.25rem;
+	
+	// Type variants
+	&.clanbite-form-field--text { }
+	&.clanbite-form-field--email { }
+	&.clanbite-form-field--select { }
+	&.clanbite-form-field--textarea { }
+	&.clanbite-form-field--radio { }
+	&.clanbite-form-field--checkbox { }
+	&.clanbite-form-field--hidden {
+		display: none;
+	}
+}
+
+// Form field label
+.clanbite-form-field__label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: 600;
+	color: var(--wp--preset--color--contrast, #000);
+}
+
+// Form field input
+.clanbite-form-field__input {
+	width: 100%;
+	padding: 0.75rem;
+	border: 1px solid var(--wp--preset--color--contrast-3, #e0e0e0);
+	border-radius: 4px;
+	font-family: inherit;
+	font-size: 1rem;
+	
+	&:focus {
+		outline: none;
+		border-color: var(--wp--preset--color--primary, #0073aa);
+		box-shadow: 0 0 0 1px var(--wp--preset--color--primary, #0073aa);
+	}
+	
+	&[disabled] {
+		background: var(--wp--preset--color--contrast-1, #f5f5f5);
+		cursor: not-allowed;
+	}
+}
+
+// Form field description
+.clanbite-form-field__description {
+	margin-top: 0.5rem;
+	font-size: 0.875rem;
+	color: var(--wp--preset--color--contrast-2, #666);
+}
+
+// Form field error
+.clanbite-form-field__error {
+	margin-top: 0.5rem;
+	font-size: 0.875rem;
+	color: #c00;
+}
+
+// Form field success
+.clanbite-form-field__success {
+	margin-top: 0.5rem;
+	font-size: 0.875rem;
+	color: #0a0;
+}

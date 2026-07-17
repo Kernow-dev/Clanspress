@@ -1,0 +1,63 @@
+/**
+ * Unified Button Styles
+ * 
+ * All Clanbite buttons use WordPress core classes (wp-block-button, wp-element-button)
+ * for theme.json compatibility, plus Clanbite-specific variants.
+ */
+
+// Base button wrapper
+.clanbite-button {
+	box-sizing: border-box;
+	
+	&.wp-block-button {
+		margin: 0;
+	}
+}
+
+// Button element
+.clanbite-button__element {
+	&.wp-element-button {
+		// Inherits from theme.json
+	}
+}
+
+// Primary button variant
+.clanbite-button--primary {
+	.clanbite-button__element {
+		// Primary styling (can be overridden by theme.json)
+	}
+}
+
+// Secondary button variant
+.clanbite-button--secondary {
+	.clanbite-button__element {
+		// Secondary styling (can be overridden by theme.json)
+	}
+}
+
+// Danger/destructive button variant
+.clanbite-button--danger {
+	.clanbite-button__element {
+		// Danger styling
+	}
+}
+
+// Ghost/minimal button variant
+.clanbite-button--ghost {
+	.clanbite-button__element {
+		background: transparent;
+		border: 1px solid currentColor;
+	}
+}
+
+// Context-specific variants (core Clanbite only)
+.clanbite-button--challenge,
+.clanbite-button--manage,
+.clanbite-button--settings,
+.clanbite-button--submit,
+.clanbite-button--cancel {
+	// Context-specific overrides can be added here
+}
+
+// Note: Plugin-specific variants (--forums, --social-kit, --points, --ranks)
+// should be defined in each plugin's own SCSS files, not here in core.

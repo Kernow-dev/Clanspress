@@ -1,9 +1,11 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps } from '@wordpress/block-editor';
 import metadata from './block.json';
+import { clanbiteBlockIcon } from '../../shared/block-icons/icons/profile-nav';
 import './style.scss';
 
-registerBlockType( metadata.name, {
+registerBlockType( metadata, {
+	icon: clanbiteBlockIcon(),
 	edit() {
 		const blockProps = useBlockProps( {
 			className:

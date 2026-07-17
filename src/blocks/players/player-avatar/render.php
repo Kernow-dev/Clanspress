@@ -25,7 +25,7 @@ if ( ! $user_id ) {
 
 $display_name = clanbite_players_get_display_name( $user_id );
 
-$inner_classes = 'clanbite-player-avatar__img';
+$inner_classes = 'clanbite-avatar__img';
 
 $avatar_preset = isset( $attributes['avatarPreset'] ) ? sanitize_key( (string) $attributes['avatarPreset'] ) : 'large';
 if ( ! in_array( $avatar_preset, array( 'large', 'medium', 'small' ), true ) ) {
@@ -39,7 +39,7 @@ $avatar_display_args = array(
 
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
-		'class' => 'clanbite-player-avatar-block',
+		'class' => 'clanbite-player-avatar-block clanbite-avatar-block',
 	),
 	$block
 );
@@ -59,7 +59,7 @@ if ( '' !== $img_html ) {
 } else {
 	ob_start();
 	printf(
-		'<span class="%1$s clanbite-player-avatar__img--placeholder" role="img" aria-label="%2$s">%3$s</span>',
+		'<span class="%1$s clanbite-avatar__img--placeholder" role="img" aria-label="%2$s">%3$s</span>',
 		esc_attr( $inner_classes ),
 		esc_attr( sprintf( /* translators: %s: Player display name. */ __( '%s — no avatar yet', 'clanbite' ), $display_name ) ),
 		esc_html__( 'No avatar', 'clanbite' )
@@ -97,7 +97,7 @@ if ( ! empty( $attributes['isLink'] ) && function_exists( 'clanbite_block_player
 		$target = ( isset( $attributes['linkTarget'] ) && '_blank' === $attributes['linkTarget'] ) ? ' target="_blank"' : '';
 		$rel    = function_exists( 'clanbite_block_entity_link_rel' ) ? clanbite_block_entity_link_rel( $attributes ) : '';
 		$rel_at = '' !== $rel ? ' rel="' . esc_attr( $rel ) . '"' : '';
-		$link_open  = '<a class="clanbite-player-avatar__link" href="' . esc_url( $href ) . '"' . $target . $rel_at . '>';
+		$link_open  = '<a class="clanbite-avatar__link" href="' . esc_url( $href ) . '"' . $target . $rel_at . '>';
 		$link_close = '</a>';
 	}
 }
@@ -109,7 +109,7 @@ if ( ! $use_avatar_media && '' !== $link_open ) {
 	$link_close = '';
 }
 
-$avatar_classes = 'clanbite-player-avatar';
+$avatar_classes = 'clanbite-avatar clanbite-avatar--player';
 if ( '' !== $avatar_extra_classes ) {
 	$avatar_classes .= ' ' . trim( $avatar_extra_classes );
 }
@@ -119,9 +119,9 @@ ob_start();
 <?php clanbite_echo_block_fragment_html( '<div ' . trim( (string) $wrapper_attributes ) . '>' ); ?>
 	<div class="<?php echo esc_attr( $avatar_classes ); ?>">
 		<?php if ( $use_avatar_media ) : ?>
-			<div class="clanbite-player-avatar__media">
+			<div class="clanbite-avatar__media">
 				<?php clanbite_echo_block_fragment_html( (string) $link_open ); ?>
-				<div class="clanbite-player-avatar__clip"><?php clanbite_echo_block_fragment_html( (string) $clip_inner ); ?></div>
+				<div class="clanbite-avatar__clip"><?php clanbite_echo_block_fragment_html( (string) $clip_inner ); ?></div>
 				<?php clanbite_echo_block_fragment_html( (string) $link_close ); ?>
 				<?php clanbite_echo_block_fragment_html( (string) $rank_overlay_html ); ?>
 			</div>
@@ -129,7 +129,7 @@ ob_start();
 				<?php clanbite_echo_block_fragment_html( (string) $after_clip ); ?>
 			<?php endif; ?>
 		<?php else : ?>
-			<div class="clanbite-player-avatar__clip"><?php clanbite_echo_block_fragment_html( (string) $clip_inner ); ?></div>
+			<div class="clanbite-avatar__clip"><?php clanbite_echo_block_fragment_html( (string) $clip_inner ); ?></div>
 			<?php if ( '' !== $after_clip ) : ?>
 				<?php clanbite_echo_block_fragment_html( (string) $after_clip ); ?>
 			<?php endif; ?>

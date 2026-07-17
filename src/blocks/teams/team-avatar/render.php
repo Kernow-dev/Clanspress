@@ -27,7 +27,7 @@ $style = sprintf( 'width:%dpx;height:%dpx;', $width, $width );
 if ( $team_id < 1 ) {
 	$wrapper = get_block_wrapper_attributes(
 		array(
-			'class' => 'clanbite-team-avatar clanbite-team-avatar--placeholder',
+			'class' => 'clanbite-avatar clanbite-avatar--team clanbite-avatar--placeholder',
 			'style' => $style,
 		),
 		$block
@@ -46,7 +46,7 @@ $url = trim( (string) $url );
 
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
-		'class' => 'clanbite-team-avatar-block',
+		'class' => 'clanbite-team-avatar-block clanbite-avatar-block',
 		'style' => $style,
 	),
 	$block
@@ -61,13 +61,13 @@ $alt = sprintf(
 ob_start();
 if ( $url ) {
 	printf(
-		'<img class="clanbite-team-avatar__img" src="%1$s" alt="%2$s" width="%3$d" height="%3$d" loading="lazy" decoding="async" />',
+		'<img class="clanbite-avatar__img" src="%1$s" alt="%2$s" width="%3$d" height="%3$d" loading="lazy" decoding="async" />',
 		esc_url( $url ),
 		esc_attr( $alt ),
 		(int) $width
 	);
 } else {
-	echo '<span class="clanbite-team-avatar__img clanbite-team-avatar__img--placeholder" role="img" aria-label="' . esc_attr( $alt ) . '">' . esc_html__( 'No avatar', 'clanbite' ) . '</span>';
+	echo '<span class="clanbite-avatar__img clanbite-avatar__img--placeholder" role="img" aria-label="' . esc_attr( $alt ) . '">' . esc_html__( 'No avatar', 'clanbite' ) . '</span>';
 }
 $img_inner = ob_get_clean();
 
@@ -82,13 +82,13 @@ if ( ! empty( $attributes['isLink'] ) && function_exists( 'clanbite_block_entity
 		$target = ( isset( $attributes['linkTarget'] ) && '_blank' === $attributes['linkTarget'] ) ? ' target="_blank"' : '';
 		$rel    = function_exists( 'clanbite_block_entity_link_rel' ) ? clanbite_block_entity_link_rel( $attributes ) : '';
 		$rel_at = '' !== $rel ? ' rel="' . esc_attr( $rel ) . '"' : '';
-		$img_inner = '<a class="clanbite-team-avatar__link" href="' . esc_url( $href ) . '"' . $target . $rel_at . '>' . $img_inner . '</a>';
+		$img_inner = '<a class="clanbite-avatar__link" href="' . esc_url( $href ) . '"' . $target . $rel_at . '>' . $img_inner . '</a>';
 	}
 }
 
-$avatar_clip_open  = '<div class="clanbite-team-avatar__clip">';
+$avatar_clip_open  = '<div class="clanbite-avatar__clip">';
 $avatar_clip_close = '</div>';
 $avatar_media      = $avatar_clip_open . $img_inner . $avatar_clip_close;
 
-echo wp_kses( '<div ' . $wrapper_attributes . '><div class="clanbite-team-avatar">' . $avatar_media . '</div></div>', clanbite_block_fragment_allowed_html());
+echo wp_kses( '<div ' . $wrapper_attributes . '><div class="clanbite-avatar clanbite-avatar--team">' . $avatar_media . '</div></div>', clanbite_block_fragment_allowed_html());
 // phpcs:enable WordPress.NamingConventions.PrefixAllGlobals

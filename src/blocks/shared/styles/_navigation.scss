@@ -1,0 +1,69 @@
+/**
+ * Unified Navigation Styles
+ * 
+ * All Clanbite navigation components use consistent structure across plugins.
+ */
+
+// Base navigation container
+.clanbite-nav {
+	// Type variants (core Clanbite only)
+	&.clanbite-nav--profile { }
+	&.clanbite-nav--user { }
+	&.clanbite-nav--tabs { }
+	&.clanbite-nav--toolbar { }
+	&.clanbite-nav--pagination { }
+	
+	// Note: Plugin-specific variants (--forums, --social-kit, --points, --ranks)
+	// should be defined in each plugin's own SCSS files, not here in core.
+}
+
+// Navigation list
+.clanbite-nav__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	gap: 0.5rem;
+}
+
+// Navigation item
+.clanbite-nav__item {
+	margin: 0;
+	
+	&.clanbite-nav__item--active {
+		.clanbite-nav__link {
+			font-weight: 700;
+			color: var(--wp--preset--color--primary, #0073aa);
+		}
+	}
+}
+
+// Navigation link
+.clanbite-nav__link {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.75rem 1rem;
+	text-decoration: none;
+	color: var(--wp--preset--color--contrast, #000);
+	border-radius: 4px;
+	transition: background 0.2s, color 0.2s;
+	
+	&:hover {
+		background: var(--wp--preset--color--contrast-1, #f5f5f5);
+	}
+}
+
+// Navigation icon
+.clanbite-nav__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.25rem;
+	height: 1.25rem;
+}
+
+// Navigation label
+.clanbite-nav__label {
+	// Inherits from parent link styles
+}

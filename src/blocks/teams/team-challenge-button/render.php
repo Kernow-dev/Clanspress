@@ -112,10 +112,10 @@ $team_challenge_button_root_open = '<div '
 ?>
 <?php ob_start(); ?>
 <?php clanbite_echo_block_fragment_html( $team_challenge_button_root_open ); ?>
-	<div class="wp-block-button">
+	<div class="wp-block-button clanbite-button clanbite-button--challenge">
 		<button
 			type="button"
-			class="wp-block-button__link wp-element-button clanbite-team-challenge__toggle"
+			class="wp-block-button__link wp-element-button clanbite-button__element"
 			data-wp-on--click="actions.open"
 		>
 			<?php esc_html_e( 'Challenge team', 'clanbite' ); ?>
@@ -210,14 +210,18 @@ $team_challenge_button_root_open = '<div '
 				<p class="clanbite-team-challenge__notice is-error" data-wp-bind--hidden="!context.formError" data-wp-text="context.formError" hidden></p>
 				<p class="clanbite-team-challenge__notice is-success" data-wp-bind--hidden="!context.formSuccess" data-wp-text="context.formSuccess" hidden></p>
 
-				<div class="clanbite-team-challenge__actions">
-					<button type="submit" class="wp-element-button" data-wp-bind--disabled="context.loading">
+			<div class="clanbite-team-challenge__actions">
+				<div class="wp-block-button clanbite-button clanbite-button--primary clanbite-button--submit">
+					<button type="submit" class="wp-block-button__link wp-element-button clanbite-button__element" data-wp-bind--disabled="context.loading">
 						<?php esc_html_e( 'Send challenge', 'clanbite' ); ?>
 					</button>
-					<button type="button" class="wp-element-button" data-wp-on--click="actions.close">
+				</div>
+				<div class="wp-block-button clanbite-button clanbite-button--secondary clanbite-button--cancel">
+					<button type="button" class="wp-block-button__link wp-element-button clanbite-button__element" data-wp-on--click="actions.close">
 						<?php esc_html_e( 'Cancel', 'clanbite' ); ?>
 					</button>
 				</div>
+			</div>
 			</form>
 		</div>
 	</div>

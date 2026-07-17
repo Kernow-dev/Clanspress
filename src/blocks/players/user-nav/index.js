@@ -9,8 +9,10 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 
 import metadata from './block.json';
+import { clanbiteBlockIcon } from '../../shared/block-icons/icons/user-nav';
 
-registerBlockType( metadata.name, {
+registerBlockType( metadata, {
+	icon: clanbiteBlockIcon(),
 	edit: function Edit( { attributes, setAttributes } ) {
 		const { avatarSize, showUsername } = attributes;
 		const blockProps = useBlockProps( {
