@@ -13,23 +13,11 @@ defined( 'ABSPATH' ) || exit;
 
 $team_id = clanbite_team_single_block_team_id( $block );
 
-// Get avatar shape from settings
-$avatar_shape = 'circle';
-if ( function_exists( 'clanbite_teams_get_avatar_shape' ) ) {
-	$avatar_shape = clanbite_teams_get_avatar_shape();
-}
-
-$avatar_preset = isset( $attributes['avatarPreset'] ) ? sanitize_key( (string) $attributes['avatarPreset'] ) : 'large';
-if ( ! in_array( $avatar_preset, array( 'large', 'medium', 'small' ), true ) ) {
-	$avatar_preset = 'large';
-}
-
-$width = isset( $attributes['width'] ) ? (int) $attributes['width'] : 120;
-$width = min( 512, max( 32, $width ) );
-
-$style = sprintf( 'width:%dpx;height:%dpx;', $width, $width );
-
 if ( $team_id < 1 ) {
+	$width = isset( $attributes['width'] ) ? (int) $attributes['width'] : 120;
+	$width = min( 512, max( 32, $width ) );
+	$style = sprintf( 'width:%dpx;height:%dpx;', $width, $width );
+	
 	$wrapper = get_block_wrapper_attributes(
 		array(
 			'class' => 'clanbite-avatar clanbite-avatar--team clanbite-avatar--placeholder',
@@ -41,14 +29,21 @@ if ( $team_id < 1 ) {
 	return;
 }
 
-$url = function_exists( 'clanbite_teams_get_display_team_avatar' )
-	? clanbite_teams_get_display_team_avatar( $team_id, false, '', 'team_avatar_block', $avatar_preset )
-	: '';
-if ( '' === $url ) {
-	$url = clanbite_teams_get_bundled_default_avatar_url();
+// Get avatar preset/size from block attributes
+$avatar_preset = isset( $attributes['avatarPreset'] ) ? sanitize_key( (string) $attributes['avatarPreset'] ) : 'large';
+if ( ! in_array( $avatar_preset, array( 'large', 'medium', 'small' ), true ) ) {
+	$avatar_preset = 'large';
 }
-$url = trim( (string) $url );
 
+// Check if block should link to profile
+$should_link = ! empty( $attributes['isLink'] );
+$link_target = isset( $attributes['linkTarget'] ) && '_blank' === $attributes['linkTarget'] ? '_blank' : '';
+
+$width = isset( $attributes['width'] ) ? (int) $attributes['width'] : 120;
+$width = min( 512, max( 32, $width ) );
+$style = sprintf( 'width:%dpx;height:%dpx;', $width, $width );
+
+// Build wrapper attributes
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
 		'class' => 'clanbite-team-avatar-block clanbite-avatar-block',
@@ -57,47 +52,32 @@ $wrapper_attributes = get_block_wrapper_attributes(
 	$block
 );
 
-$alt = sprintf(
-	/* translators: %s: team name */
-	__( 'Avatar for %s', 'clanbite' ),
-	get_the_title( $team_id )
-);
-
-ob_start();
-if ( $url ) {
-	printf(
-		'<img class="clanbite-avatar__img" src="%1$s" alt="%2$s" width="%3$d" height="%3$d" loading="lazy" decoding="async" />',
-		esc_url( $url ),
-		esc_attr( $alt ),
-		(int) $width
+// Use the unified avatar rendering system
+if ( function_exists( 'clanbite_render_avatar' ) ) {
+	$avatar_html = clanbite_render_avatar(
+		array(
+			'type'          => 'team',
+			'id'            => $team_id,
+			'size'          => $avatar_preset,
+			'context'       => 'profile',
+			'link'          => $should_link,
+			'link_target'   => $link_target,
+			'show_rank'     => ( 'large' === $avatar_preset ),
+			'show_progress' => ( 'large' === $avatar_preset ),
+		)
 	);
+	
+	?>
+	<div <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+		<?php echo wp_kses( $avatar_html, clanbite_block_fragment_allowed_html() ); ?>
+	</div>
+	<?php
 } else {
-	echo '<span class="clanbite-avatar__img clanbite-avatar__img--placeholder" role="img" aria-label="' . esc_attr( $alt ) . '">' . esc_html__( 'No avatar', 'clanbite' ) . '</span>';
-}
-$img_inner = ob_get_clean();
-
-if ( ! empty( $attributes['isLink'] ) && function_exists( 'clanbite_block_entity_link_url' ) ) {
-	$href = clanbite_block_entity_link_url(
-		(string) get_permalink( $team_id ),
-		'clanbite/team-avatar',
-		$team_id,
-		$block
-	);
-	if ( '' !== $href ) {
-		$target = ( isset( $attributes['linkTarget'] ) && '_blank' === $attributes['linkTarget'] ) ? ' target="_blank"' : '';
-		$rel    = function_exists( 'clanbite_block_entity_link_rel' ) ? clanbite_block_entity_link_rel( $attributes ) : '';
-		$rel_at = '' !== $rel ? ' rel="' . esc_attr( $rel ) . '"' : '';
-		$img_inner = '<a class="clanbite-avatar__link" href="' . esc_url( $href ) . '"' . $target . $rel_at . '>' . $img_inner . '</a>';
-	}
+	// Fallback if unified system isn't loaded
+	echo '<!-- Team avatar block: unified avatar system not available -->';
 }
 
-$avatar_clip_open  = '<div class="clanbite-avatar__clip">';
-$avatar_clip_close = '</div>';
-
-// Generate progress bar HTML (for teams, use team leader's progress if applicable)
-$progress_bar_html = '';
-$rank_icon_html = '';
-if ( 'large' === $avatar_preset ) {
+// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals
 	// For teams, we could show the team leader's rank progress
 	// Get team leader/creator user ID
 	$team_post = get_post( $team_id );

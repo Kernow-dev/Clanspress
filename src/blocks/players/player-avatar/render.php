@@ -22,26 +22,17 @@ if ( ! $user_id ) {
 	return '';
 }
 
-$display_name = clanbite_players_get_display_name( $user_id );
-
-// Get avatar shape from settings
-$avatar_shape = 'circle';
-if ( function_exists( 'clanbite_players_get_avatar_shape' ) ) {
-	$avatar_shape = clanbite_players_get_avatar_shape();
-}
-
-$inner_classes = 'clanbite-avatar__img';
-
+// Get avatar preset/size from block attributes
 $avatar_preset = isset( $attributes['avatarPreset'] ) ? sanitize_key( (string) $attributes['avatarPreset'] ) : 'large';
 if ( ! in_array( $avatar_preset, array( 'large', 'medium', 'small' ), true ) ) {
 	$avatar_preset = 'large';
 }
 
-$avatar_display_args = array(
-	'context' => 'player_avatar_block',
-	'preset'  => $avatar_preset,
-);
+// Check if block should link to profile
+$should_link   = ! empty( $attributes['isLink'] );
+$link_target   = isset( $attributes['linkTarget'] ) && '_blank' === $attributes['linkTarget'] ? '_blank' : '';
 
+// Build wrapper attributes
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
 		'class' => 'clanbite-player-avatar-block clanbite-avatar-block',
@@ -49,128 +40,29 @@ $wrapper_attributes = get_block_wrapper_attributes(
 	$block
 );
 
-$img_html = function_exists( 'clanbite_players_get_player_avatar_img_html' )
-	? clanbite_players_get_player_avatar_img_html(
-		$user_id,
-		array_merge(
-			$avatar_display_args,
-			array( 'class' => $inner_classes )
+// Use the unified avatar rendering system
+if ( function_exists( 'clanbite_render_avatar' ) ) {
+	$avatar_html = clanbite_render_avatar(
+		array(
+			'type'          => 'player',
+			'id'            => $user_id,
+			'size'          => $avatar_preset,
+			'context'       => 'profile',
+			'link'          => $should_link,
+			'link_target'   => $link_target,
+			'show_rank'     => ( 'large' === $avatar_preset ),
+			'show_progress' => ( 'large' === $avatar_preset ),
 		)
-	)
-	: '';
-
-if ( '' !== $img_html ) {
-	$img_inner = $img_html;
-} else {
-	ob_start();
-	printf(
-		'<span class="%1$s clanbite-avatar__img--placeholder" role="img" aria-label="%2$s">%3$s</span>',
-		esc_attr( $inner_classes ),
-		esc_attr( sprintf( /* translators: %s: Player display name. */ __( '%s — no avatar yet', 'clanbite' ), $display_name ) ),
-		esc_html__( 'No avatar', 'clanbite' )
 	);
-	$img_inner = ob_get_clean();
-	$img_inner = (string) apply_filters( 'clanbite_players_player_avatar_placeholder_markup', $img_inner, $user_id, $avatar_display_args );
-}
-
-if ( function_exists( 'clanbite_players_apply_player_avatar_display_markup' ) ) {
-	$img_inner = clanbite_players_apply_player_avatar_display_markup( $img_inner, $user_id, $avatar_display_args );
-}
-
-$clip_inner           = $img_inner;
-$after_clip           = '';
-$avatar_extra_classes = '';
-$rank_overlay_html    = '';
-if ( 'large' === $avatar_preset && function_exists( 'clanbite_players_apply_player_avatar_block_parts' ) ) {
-	$avatar_parts         = clanbite_players_apply_player_avatar_block_parts( $img_inner, $user_id, $avatar_display_args );
-	$clip_inner           = $avatar_parts['clip_inner'];
-	$after_clip           = $avatar_parts['after_clip'];
-	$avatar_extra_classes = $avatar_parts['avatar_extra_class'];
-	$rank_overlay_html    = isset( $avatar_parts['rank_overlay_html'] ) ? (string) $avatar_parts['rank_overlay_html'] : '';
-}
-
-$link_open  = '';
-$link_close = '';
-if ( ! empty( $attributes['isLink'] ) && function_exists( 'clanbite_block_player_profile_url' ) && function_exists( 'clanbite_block_entity_link_url' ) ) {
-	$href = clanbite_block_entity_link_url(
-		clanbite_block_player_profile_url( $user_id ),
-		'clanbite/player-avatar',
-		$user_id,
-		$block
-	);
-	if ( '' !== $href ) {
-		$target = ( isset( $attributes['linkTarget'] ) && '_blank' === $attributes['linkTarget'] ) ? ' target="_blank"' : '';
-		$rel    = function_exists( 'clanbite_block_entity_link_rel' ) ? clanbite_block_entity_link_rel( $attributes ) : '';
-		$rel_at = '' !== $rel ? ' rel="' . esc_attr( $rel ) . '"' : '';
-		$link_open  = '<a class="clanbite-avatar__link" href="' . esc_url( $href ) . '"' . $target . $rel_at . '>';
-		$link_close = '</a>';
-	}
-}
-
-$use_avatar_media = ( 'large' === $avatar_preset && ( '' !== $after_clip || '' !== $rank_overlay_html ) );
-if ( ! $use_avatar_media && '' !== $link_open ) {
-	$clip_inner = $link_open . $clip_inner . $link_close;
-	$link_open  = '';
-	$link_close = '';
-}
-
-$avatar_classes = 'clanbite-avatar clanbite-avatar--player';
-if ( '' !== $avatar_extra_classes ) {
-	$avatar_classes .= ' ' . trim( $avatar_extra_classes );
-}
-// Add shape class
-$avatar_classes .= ' clanbite-avatar--shape-' . $avatar_shape;
-
-// Generate progress bar HTML (only for large avatars with Points + Ranks)
-$progress_bar_html = '';
-if ( 'large' === $avatar_preset ) {
-	$progress_bar_html = clanbite_render_avatar_progress_bar( $user_id, $avatar_shape, $avatar_preset );
-}
-
-// Generate rank icon HTML
-$rank_icon_html = '';
-if ( 'large' === $avatar_preset ) {
-	$rank_icon_html = clanbite_render_avatar_rank_icon( $user_id, $avatar_shape );
-}
-
-// Update use_avatar_media condition to include progress bar and rank icon
-if ( '' !== $progress_bar_html || '' !== $rank_icon_html ) {
-	$use_avatar_media = true;
-}
-
-ob_start();
-?>
-<?php clanbite_echo_block_fragment_html( '<div ' . trim( (string) $wrapper_attributes ) . '>' ); ?>
-	<div class="<?php echo esc_attr( $avatar_classes ); ?>">
-		<?php if ( $use_avatar_media ) : ?>
-			<div class="clanbite-avatar__media">
-				<?php clanbite_echo_block_fragment_html( (string) $link_open ); ?>
-				<div class="clanbite-avatar__clip"><?php clanbite_echo_block_fragment_html( (string) $clip_inner ); ?></div>
-				<?php clanbite_echo_block_fragment_html( (string) $link_close ); ?>
-				<?php
-				// Progress bar (inside media wrapper, overlays the clip)
-				if ( '' !== $progress_bar_html ) {
-					clanbite_echo_block_fragment_html( (string) $progress_bar_html );
-				}
-				// Rank icon (inside media wrapper, positioned by CSS)
-				if ( '' !== $rank_icon_html ) {
-					clanbite_echo_block_fragment_html( (string) $rank_icon_html );
-				}
-				// Original rank overlay (backward compatibility)
-				clanbite_echo_block_fragment_html( (string) $rank_overlay_html );
-				?>
-			</div>
-			<?php if ( '' !== $after_clip ) : ?>
-				<?php clanbite_echo_block_fragment_html( (string) $after_clip ); ?>
-			<?php endif; ?>
-		<?php else : ?>
-			<div class="clanbite-avatar__clip"><?php clanbite_echo_block_fragment_html( (string) $clip_inner ); ?></div>
-			<?php if ( '' !== $after_clip ) : ?>
-				<?php clanbite_echo_block_fragment_html( (string) $after_clip ); ?>
-			<?php endif; ?>
-		<?php endif; ?>
+	
+	?>
+	<div <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+		<?php echo wp_kses( $avatar_html, clanbite_block_fragment_allowed_html() ); ?>
 	</div>
-</div>
-<?php
-echo wp_kses( (string) ob_get_clean(), clanbite_block_fragment_allowed_html());
+	<?php
+} else {
+	// Fallback if unified system isn't loaded
+	echo '<!-- Player avatar block: unified avatar system not available -->';
+}
+
 // phpcs:enable WordPress.NamingConventions.PrefixAllGlobals

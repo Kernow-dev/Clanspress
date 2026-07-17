@@ -48,6 +48,7 @@ if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
 	require_once __DIR__ . '/inc/functions-block-entity-link.php';
 	require_once __DIR__ . '/inc/profile-subpages.php';
 	require_once __DIR__ . '/inc/visibility-container.php';
+	require_once __DIR__ . '/inc/avatar-helpers.php';
 	require_once __DIR__ . '/inc/extensions/players/functions.php';
 	require_once __DIR__ . '/inc/extensions/teams/functions.php';
 	require_once __DIR__ . '/inc/groups/functions.php';

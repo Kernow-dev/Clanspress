@@ -20,47 +20,29 @@ if ( $is_logged_in ) {
 	$user_id      = $user->ID;
 	$display_name = $user->display_name;
 
-	$avatar_url_fallback = function_exists( 'clanbite_players_get_display_avatar' )
-		? clanbite_players_get_display_avatar( $user_id, false, '', 'user_nav', 'small' )
-		: get_avatar_url( $user_id, array( 'size' => max( 96, (int) $avatar_size * 2 ) ) );
-
+	// Use the unified avatar rendering system
 	$avatar_trigger = '';
-
-	if ( function_exists( 'clanbite_players_get_player_avatar_img_html' ) && function_exists( 'clanbite_players_apply_player_avatar_display_markup' ) ) {
-		$nav_avatar_base = array(
-			'context'        => 'user_nav',
-			'preset'         => 'small',
-			'presentational' => true,
-		);
-
-		$trigger_inner = clanbite_players_get_player_avatar_img_html(
-			$user_id,
-			array_merge(
-				$nav_avatar_base,
-				array(
-					'class'  => 'clanbite-user-nav__avatar',
-					'width'  => (int) $avatar_size,
-					'height' => (int) $avatar_size,
-				)
+	if ( function_exists( 'clanbite_render_avatar' ) ) {
+		$avatar_trigger = clanbite_render_avatar(
+			array(
+				'type'          => 'player',
+				'id'            => $user_id,
+				'size'          => 'small',
+				'context'       => 'user_nav',
+				'extra_classes' => array( 'clanbite-user-nav__avatar' ),
+				'link'          => false,
 			)
-		);
-
-	if ( '' === $trigger_inner ) {
-		$trigger_inner = sprintf(
-			'<img src="%1$s" alt="" class="clanbite-avatar__img clanbite-avatar__img--small" width="%2$d" height="%2$d" loading="lazy" decoding="async" aria-hidden="true" />',
-			esc_url( $avatar_url_fallback ),
-			(int) $avatar_size
 		);
 	}
 
-		$avatar_trigger = clanbite_players_apply_player_avatar_display_markup(
-			$trigger_inner,
-			$user_id,
-			array_merge( $nav_avatar_base, array( 'variant' => 'trigger' ) )
-		);
-	} else {
+	// Fallback if unified system isn't available
+	if ( '' === $avatar_trigger ) {
+		$avatar_url_fallback = function_exists( 'clanbite_players_get_display_avatar' )
+			? clanbite_players_get_display_avatar( $user_id, false, '', 'user_nav', 'small' )
+			: get_avatar_url( $user_id, array( 'size' => max( 96, (int) $avatar_size * 2 ) ) );
+
 		$avatar_trigger = sprintf(
-			'<img src="%1$s" alt="" class="clanbite-avatar__img clanbite-avatar__img--small" width="%2$d" height="%2$d" loading="lazy" decoding="async" aria-hidden="true" />',
+			'<span class="clanbite-avatar clanbite-avatar--player clanbite-avatar--shape-circle clanbite-user-nav__avatar"><span class="clanbite-avatar__clip"><img src="%1$s" alt="" class="clanbite-avatar__img" width="%2$d" height="%2$d" loading="lazy" decoding="async" /></span></span>',
 			esc_url( $avatar_url_fallback ),
 			(int) $avatar_size
 		);
