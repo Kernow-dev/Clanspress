@@ -18,7 +18,7 @@
  * @link    https://clanbite.com/
  *
  * @package clanbite
- * @version 1.1.0
+ * @version 1.2.0
  */
 
 namespace Kernowdev\Clanbite;
@@ -201,12 +201,12 @@ final class Main {
 			return false;
 		}
 
-		// Check WordPress version (as declared in plugin header: Requires at least: 6.7).
+		// Check WordPress version (as declared in plugin header: Requires at least: 6.9).
 		global $wp_version;
-		if ( version_compare( $wp_version, '6.7', '<' ) ) {
+		if ( version_compare( $wp_version, '6.9', '<' ) ) {
 			$this->activation_errors[] = sprintf(
 				/* translators: %s: Current WordPress version */
-				__( 'Clanbite requires WordPress 6.7 or higher. You are running version %s.', 'clanbite' ),
+				__( 'Clanbite requires WordPress 6.9 or higher. You are running version %s.', 'clanbite' ),
 				$wp_version
 			);
 

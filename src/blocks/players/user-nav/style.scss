@@ -7,6 +7,11 @@
 	position: relative;
 	display: inline-block;
 
+	/* Menus stay closed on first paint; some themes override raw [hidden]. */
+	[hidden] {
+		display: none !important;
+	}
+
 	&.is-logged-in {
 		// Logged-in specific styles
 	}
@@ -34,11 +39,20 @@
 	&:hover {
 		background-color: rgba(0, 0, 0, 0.05);
 	}
+
+	&:focus {
+		outline: 2px solid var(--wp--preset--color--primary, #0073aa);
+		outline-offset: 2px;
+	}
 }
 
 .clanbite-user-nav__username {
 	font-size: 0.9rem;
 	font-weight: 500;
+	max-width: 150px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .clanbite-user-nav__caret {
@@ -95,6 +109,10 @@
 .clanbite-user-nav__profile-name {
 	font-weight: 600;
 	font-size: 0.95rem;
+	max-width: 200px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .clanbite-user-nav__profile-label {

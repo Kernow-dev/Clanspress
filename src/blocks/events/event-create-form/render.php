@@ -360,13 +360,13 @@ $event_create_form_root_open = '<div '
 				hidden
 			><?php echo esc_html( $config['i18n']['viewEvent'] ); ?></a>
 		</p>
-		<p>
+		<div>
 			<div class="wp-block-button clanbite-button clanbite-button--secondary">
 				<button type="button" class="wp-block-button__link wp-element-button clanbite-button__element" data-wp-on--click="actions.resetAfterSuccess">
 					<?php echo esc_html( $config['i18n']['createAnother'] ); ?>
 				</button>
 			</div>
-		</p>
+		</div>
 	</div>
 </div>
 <?php echo wp_kses( (string) ob_get_clean(), clanbite_block_fragment_allowed_html()); ?>
