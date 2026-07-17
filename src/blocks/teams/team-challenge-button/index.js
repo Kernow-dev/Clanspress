@@ -6,13 +6,14 @@ import { useBlockProps } from '@wordpress/block-editor';
 import { Placeholder } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import metadata from './block.json';
+import { clanbiteBlockIcon } from '../../shared/block-icons/icons/team-challenge-button';
 import './editor.scss';
 
 function Edit() {
 	return (
 		<div { ...useBlockProps() }>
 			<Placeholder
-				icon="flag"
+				icon={ clanbiteBlockIcon() }
 				label={ __( 'Team challenge button', 'clanbite' ) }
 				instructions={ __(
 					'On the team profile, this shows a Challenge button when the team accepts challenges and the Matches extension is enabled.',
@@ -23,6 +24,7 @@ function Edit() {
 	);
 }
 
-registerBlockType( metadata.name, {
+registerBlockType( metadata, {
+	icon: clanbiteBlockIcon(),
 	edit: Edit,
 } );

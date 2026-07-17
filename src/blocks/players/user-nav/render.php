@@ -45,13 +45,13 @@ if ( $is_logged_in ) {
 			)
 		);
 
-		if ( '' === $trigger_inner ) {
-			$trigger_inner = sprintf(
-				'<img src="%1$s" alt="" class="clanbite-user-nav__avatar" width="%2$d" height="%2$d" loading="lazy" decoding="async" aria-hidden="true" />',
-				esc_url( $avatar_url_fallback ),
-				(int) $avatar_size
-			);
-		}
+	if ( '' === $trigger_inner ) {
+		$trigger_inner = sprintf(
+			'<img src="%1$s" alt="" class="clanbite-avatar__img clanbite-avatar__img--small" width="%2$d" height="%2$d" loading="lazy" decoding="async" aria-hidden="true" />',
+			esc_url( $avatar_url_fallback ),
+			(int) $avatar_size
+		);
+	}
 
 		$avatar_trigger = clanbite_players_apply_player_avatar_display_markup(
 			$trigger_inner,
@@ -60,7 +60,7 @@ if ( $is_logged_in ) {
 		);
 	} else {
 		$avatar_trigger = sprintf(
-			'<img src="%1$s" alt="" class="clanbite-user-nav__avatar" width="%2$d" height="%2$d" loading="lazy" decoding="async" aria-hidden="true" />',
+			'<img src="%1$s" alt="" class="clanbite-avatar__img clanbite-avatar__img--small" width="%2$d" height="%2$d" loading="lazy" decoding="async" aria-hidden="true" />',
 			esc_url( $avatar_url_fallback ),
 			(int) $avatar_size
 		);

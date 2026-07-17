@@ -1,0 +1,65 @@
+/**
+ * Unified List Styles
+ * 
+ * All Clanbite lists use consistent structure across plugins.
+ */
+
+// Base list container
+.clanbite-list {
+	// Type variants (core Clanbite only)
+	&.clanbite-list--matches { }
+	&.clanbite-list--events { }
+	&.clanbite-list--players { }
+	&.clanbite-list--teams { }
+	
+	// Note: Plugin-specific variants (--forums, --social-kit, --points, --ranks)
+	// and plugin-specific list types (--topics, --replies for forums)
+	// should be defined in each plugin's own SCSS files, not here in core.
+}
+
+// List item
+.clanbite-list__item {
+	display: flex;
+	gap: 1rem;
+	padding: 1rem;
+	border-bottom: 1px solid var(--wp--preset--color--contrast-3, #e0e0e0);
+	
+	&:last-child {
+		border-bottom: none;
+	}
+	
+	&.clanbite-list__item--active {
+		background: var(--wp--preset--color--contrast-1, #f5f5f5);
+	}
+}
+
+// List item media (avatar/icon)
+.clanbite-list__item-media {
+	flex-shrink: 0;
+}
+
+// List item content
+.clanbite-list__item-content {
+	flex-grow: 1;
+	min-width: 0;
+}
+
+// List item title
+.clanbite-list__item-title {
+	font-weight: 600;
+	margin-bottom: 0.25rem;
+}
+
+// List item meta
+.clanbite-list__item-meta {
+	font-size: 0.875rem;
+	color: var(--wp--preset--color--contrast-2, #666);
+}
+
+// List item actions
+.clanbite-list__item-actions {
+	flex-shrink: 0;
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}

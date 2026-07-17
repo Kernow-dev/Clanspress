@@ -17,7 +17,7 @@ $position_class = 'is-position-' . str_replace( ' ', '-', strtolower( $position 
 $min_height_raw = isset( $attributes['minHeight'] ) ? trim( (string) $attributes['minHeight'] ) : '220px';
 $min_height     = preg_match( '/^\d+(\.\d+)?(px|em|rem|vh|vw|%)$/', $min_height_raw ) ? $min_height_raw : '220px';
 
-$wrapper_classes = 'clanbite-team-cover clanbite-team-cover-block ' . $position_class;
+$wrapper_classes = 'clanbite-team-cover clanbite-team-cover-block clanbite-cover-block clanbite-cover clanbite-cover--team ' . $position_class;
 
 $cover_placeholder = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
@@ -30,15 +30,15 @@ $cover_alt = sprintf(
 if ( $team_id < 1 ) {
 	$wrapper = get_block_wrapper_attributes(
 		array(
-			'class' => $wrapper_classes . ' clanbite-team-cover--placeholder',
+			'class' => $wrapper_classes . ' clanbite-cover--placeholder',
 			'style' => sprintf( 'min-height:%s;', $min_height ),
 		),
 		$block
 	);
 	echo wp_kses(
 		'<div ' . $wrapper . '>'
-		. '<div class="clanbite-team-cover__media clanbite-team-cover__media--placeholder" aria-hidden="true"></div>'
-		. '<div class="team-cover__content-container">'
+		. '<div class="clanbite-cover__media clanbite-cover__media--placeholder" aria-hidden="true"></div>'
+		. '<div class="clanbite-cover__content">'
 		. wp_kses_post( $content )
 		. '</div></div>',
 		clanbite_block_fragment_allowed_html()
@@ -56,15 +56,15 @@ $url = trim( (string) $url );
 if ( ! $url ) {
 	$wrapper = get_block_wrapper_attributes(
 		array(
-			'class' => $wrapper_classes . ' clanbite-team-cover--placeholder',
+			'class' => $wrapper_classes . ' clanbite-cover--placeholder',
 			'style' => sprintf( 'min-height:%s;', $min_height ),
 		),
 		$block
 	);
 	echo wp_kses(
 		'<div ' . $wrapper . '>'
-		. '<img class="clanbite-team-cover__media clanbite-team-cover__media--empty" src="' . esc_url( $cover_placeholder ) . '" alt="' . esc_attr( $cover_alt ) . '" loading="lazy" decoding="async" />'
-		. '<div class="team-cover__content-container">'
+		. '<img class="clanbite-cover__media clanbite-cover__media--empty" src="' . esc_url( $cover_placeholder ) . '" alt="' . esc_attr( $cover_alt ) . '" loading="lazy" decoding="async" />'
+		. '<div class="clanbite-cover__content">'
 		. wp_kses_post( $content )
 		. '</div></div>',
 		clanbite_block_fragment_allowed_html()
@@ -82,8 +82,8 @@ $wrapper_attributes = get_block_wrapper_attributes(
 
 echo wp_kses(
 	'<div ' . $wrapper_attributes . '>'
-	. '<img class="clanbite-team-cover__media" src="' . esc_url( $url ) . '" alt="' . esc_attr( $cover_alt ) . '" loading="lazy" decoding="async" />'
-	. '<div class="team-cover__content-container">'
+	. '<img class="clanbite-cover__media" src="' . esc_url( $url ) . '" alt="' . esc_attr( $cover_alt ) . '" loading="lazy" decoding="async" />'
+	. '<div class="clanbite-cover__content">'
 	. wp_kses_post( $content )
 	. '</div></div>',
 	clanbite_block_fragment_allowed_html()

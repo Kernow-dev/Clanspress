@@ -52,7 +52,7 @@ $cover_alt = sprintf(
 if ( ! $has_cover ) {
 	$wrapper_attributes = get_block_wrapper_attributes(
 		array(
-			'class' => $position_class . ' clanbite-player-cover-block clanbite-player-cover--placeholder',
+			'class' => $position_class . ' clanbite-player-cover-block clanbite-cover-block clanbite-cover clanbite-cover--player clanbite-cover--placeholder',
 			'style' => sprintf( 'min-height:%s;', $min_h ),
 		),
 		$block
@@ -61,16 +61,16 @@ if ( ! $has_cover ) {
 	ob_start();
 	?>
 <?php clanbite_echo_block_fragment_html( '<div ' . trim( (string) $wrapper_attributes ) . '>' ); ?>
-	<div class="clanbite-player-cover__media-clip">
+	<div class="clanbite-cover__media-clip">
 		<img
-			class="clanbite-player-cover__media clanbite-player-cover__media--empty"
+			class="clanbite-cover__media clanbite-cover__media--empty"
 			src="<?php echo esc_url( $cover_placeholder ); ?>"
 			alt="<?php echo esc_attr( $cover_alt ); ?>"
 			loading="lazy"
 			decoding="async"
 		/>
 	</div>
-	<div class="player-cover__content-container">
+	<div class="clanbite-cover__content">
 		<?php echo wp_kses_post( $content ); ?>
 	</div>
 </div>
@@ -81,7 +81,7 @@ if ( ! $has_cover ) {
 
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
-		'class' => $position_class . ' clanbite-player-cover-block',
+		'class' => $position_class . ' clanbite-player-cover-block clanbite-cover-block clanbite-cover clanbite-cover--player',
 	),
 	$block
 );
@@ -89,9 +89,9 @@ $wrapper_attributes = get_block_wrapper_attributes(
 ob_start();
 ?>
 <?php clanbite_echo_block_fragment_html( '<div ' . trim( (string) $wrapper_attributes ) . '>' ); ?>
-	<div class="clanbite-player-cover__media-clip">
+	<div class="clanbite-cover__media-clip">
 		<img
-			class="clanbite-player-cover__media"
+			class="clanbite-cover__media"
 			style="object-position: <?php echo esc_attr( $object_position ); ?>;"
 			src="<?php echo esc_url( $cover_image ); ?>"
 			alt="<?php echo esc_attr( $cover_alt ); ?>"
@@ -99,7 +99,7 @@ ob_start();
 			decoding="async"
 		/>
 	</div>
-	<div class="player-cover__content-container">
+	<div class="clanbite-cover__content">
 		<?php echo wp_kses_post( $content ); ?>
 	</div>
 </div>

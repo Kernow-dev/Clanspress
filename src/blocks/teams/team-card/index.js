@@ -2,10 +2,12 @@ import { registerBlockType } from '@wordpress/blocks';
 import Edit from './edit';
 import Save from './save';
 import metadata from './block.json';
+import { clanbiteBlockIcon } from '../../shared/block-icons/icons/team-card';
 import './style.scss';
 import './editor.scss';
 
-registerBlockType( metadata.name, {
+registerBlockType( metadata, {
+	icon: clanbiteBlockIcon(),
 	edit: Edit,
 	save: Save,
 } );

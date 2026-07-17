@@ -9,8 +9,10 @@ import { PanelBody, ToggleControl, RangeControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 import metadata from './block.json';
+import { clanbiteBlockIcon } from '../../shared/block-icons/icons/notification-bell';
 
-registerBlockType( metadata.name, {
+registerBlockType( metadata, {
+	icon: clanbiteBlockIcon(),
 	edit: function Edit( { attributes, setAttributes } ) {
 		const { showDropdown, dropdownCount } = attributes;
 		const blockProps = useBlockProps( {

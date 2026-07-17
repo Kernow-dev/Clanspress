@@ -1,72 +1,12 @@
+@import '../../shared/styles/avatars';
+
 // Team avatar display (no inline editing).
 
 .wp-block-clanbite-team-avatar {
 	margin: 0;
 }
 
+// Additional team-specific avatar styles beyond the unified system
 .clanbite-team-avatar-block {
-	position: relative;
-	line-height: 0;
-}
-
-.clanbite-team-avatar {
-	position: relative;
-	display: inline-flex;
-	flex-direction: column;
-	align-items: flex-end;
-	gap: 0.35rem;
-	line-height: 0;
-}
-
-.clanbite-team-avatar__clip {
-	position: relative;
-	display: inline-block;
-	line-height: 0;
-	border-radius: 50%;
-	overflow: hidden;
-	border: 3px solid #fff;
-	box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
-	vertical-align: top;
-}
-
-.clanbite-team-avatar__link {
-	display: block;
-	line-height: 0;
-	border-radius: inherit;
-}
-
-.clanbite-team-avatar__img {
-	display: block;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-}
-
-.clanbite-team-avatar__img--placeholder {
-	box-sizing: border-box;
-	min-width: 80px;
-	min-height: 80px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: 50%;
-	color: #646970;
-	font-size: 0.75rem;
-	text-align: center;
-	padding: 0.25rem;
-	background: #f0f0f1;
-}
-
-.clanbite-team-avatar--placeholder {
-	border: 1px dashed #c3c4c7;
-	min-width: 80px;
-	min-height: 80px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: 50%;
-	color: #646970;
-	font-size: 0.75rem;
-	text-align: center;
-	padding: 0.25rem;
+	// Block-specific overrides if needed
 }

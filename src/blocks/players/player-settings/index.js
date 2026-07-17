@@ -19,6 +19,7 @@ import './style.scss';
  */
 import Edit from './edit';
 import metadata from './block.json';
+import { clanbiteBlockIcon } from '../../shared/block-icons/icons/player-settings';
 
 /**
  * Every block starts by registering a new block type definition.

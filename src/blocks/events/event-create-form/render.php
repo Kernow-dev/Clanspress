@@ -318,16 +318,22 @@ $event_create_form_root_open = '<div '
 		</div>
 
 		<div class="clanbite-event-create-form__actions clanbite-event-create-form__actions--split">
-			<button type="button" class="clanbite-event-create-form__button clanbite-event-create-form__button--secondary" data-wp-on--click="actions.previousStep" data-wp-bind--hidden="!state.canGoBack()" hidden>
-				<?php esc_html_e( 'Back', 'clanbite' ); ?>
-			</button>
+			<div class="wp-block-button clanbite-button clanbite-button--secondary">
+				<button type="button" class="wp-block-button__link wp-element-button clanbite-button__element" data-wp-on--click="actions.previousStep" data-wp-bind--hidden="!state.canGoBack()" hidden>
+					<?php esc_html_e( 'Back', 'clanbite' ); ?>
+				</button>
+			</div>
 			<div class="clanbite-event-create-form__actions-end">
-				<button type="button" class="clanbite-event-create-form__button clanbite-event-create-form__button--secondary" data-wp-on--click="actions.nextStep" data-wp-bind--hidden="!state.canGoNext()">
-					<?php echo esc_html( $config['i18n']['next'] ); ?>
-				</button>
-				<button type="submit" class="clanbite-event-create-form__button clanbite-event-create-form__button--primary" data-wp-bind--hidden="state.canGoNext()" hidden>
-					<?php echo esc_html( $config['i18n']['submit'] ); ?>
-				</button>
+				<div class="wp-block-button clanbite-button clanbite-button--secondary">
+					<button type="button" class="wp-block-button__link wp-element-button clanbite-button__element" data-wp-on--click="actions.nextStep" data-wp-bind--hidden="!state.canGoNext()">
+						<?php echo esc_html( $config['i18n']['next'] ); ?>
+					</button>
+				</div>
+				<div class="wp-block-button clanbite-button clanbite-button--primary clanbite-button--submit">
+					<button type="submit" class="wp-block-button__link wp-element-button clanbite-button__element" data-wp-bind--hidden="state.canGoNext()" hidden>
+						<?php echo esc_html( $config['i18n']['submit'] ); ?>
+					</button>
+				</div>
 			</div>
 		</div>
 
@@ -354,11 +360,13 @@ $event_create_form_root_open = '<div '
 				hidden
 			><?php echo esc_html( $config['i18n']['viewEvent'] ); ?></a>
 		</p>
-		<p>
-			<button type="button" class="clanbite-event-create-form__button clanbite-event-create-form__button--secondary" data-wp-on--click="actions.resetAfterSuccess">
-				<?php echo esc_html( $config['i18n']['createAnother'] ); ?>
-			</button>
-		</p>
+		<div>
+			<div class="wp-block-button clanbite-button clanbite-button--secondary">
+				<button type="button" class="wp-block-button__link wp-element-button clanbite-button__element" data-wp-on--click="actions.resetAfterSuccess">
+					<?php echo esc_html( $config['i18n']['createAnother'] ); ?>
+				</button>
+			</div>
+		</div>
 	</div>
 </div>
 <?php echo wp_kses( (string) ob_get_clean(), clanbite_block_fragment_allowed_html()); ?>

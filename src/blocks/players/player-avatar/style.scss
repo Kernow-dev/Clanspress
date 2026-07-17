@@ -1,3 +1,5 @@
+@import '../../shared/styles/avatars';
+
 // Front-end: circular avatar display (no inline editing).
 
 .wp-block-clanbite-player-avatar.clanbite-player-avatar-block {
@@ -7,93 +9,13 @@
 	line-height: 0;
 }
 
-.clanbite-player-avatar {
-	position: relative;
-	display: inline-flex;
-	flex-direction: column;
-	align-items: flex-end;
-	gap: 0.35rem;
-	line-height: 0;
-	max-width: 100%;
-}
-
-.clanbite-player-avatar--block-aside {
+// Avatar layout variants
+.clanbite-avatar--block-aside {
 	position: relative;
 	flex-direction: row;
 	align-items: flex-start;
-}
-
-.clanbite-player-avatar--block-aside .clanbite-player-avatar__media {
-	flex-shrink: 0;
-}
-
-.clanbite-player-avatar__media {
-	position: relative;
-	display: inline-block;
-	line-height: 0;
-	vertical-align: top;
-}
-
-.clanbite-player-avatar__media .clanbite-player-avatar__link {
-	display: block;
-	line-height: 0;
-}
-
-.clanbite-player-avatar__rank-overlay {
-	position: absolute;
-	right: -4px;
-	bottom: -6px;
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	justify-content: flex-end;
-	align-items: flex-end;
-	gap: 4px;
-	max-width: 58%;
-	z-index: 2;
-	pointer-events: none;
-	box-sizing: border-box;
-}
-
-.clanbite-player-avatar__clip {
-	position: relative;
-	display: inline-block;
-	line-height: 0;
-	border-radius: 50%;
-	overflow: hidden;
-	border: 3px solid #fff;
-	box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
-	vertical-align: top;
-}
-
-.clanbite-player-avatar__link {
-	display: block;
-	line-height: 0;
-	border-radius: inherit;
-}
-
-.clanbite-player-avatar__img {
-	display: block;
-	width: 96px;
-	height: 96px;
-	max-width: 100%;
-	object-fit: cover;
-	aspect-ratio: 1;
-	border-radius: inherit;
-}
-
-.clanbite-player-avatar__img--placeholder {
-	box-sizing: border-box;
-	min-width: 80px;
-	min-height: 80px;
-	width: 96px;
-	height: 96px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 0.75rem;
-	text-align: center;
-	padding: 0.25rem;
-	color: #646970;
-	background: #f0f0f1;
+	
+	.clanbite-avatar__media {
+		flex-shrink: 0;
+	}
 }

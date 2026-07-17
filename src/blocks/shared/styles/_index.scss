@@ -1,0 +1,60 @@
+/**
+ * Clanbite Shared Styles Index
+ * 
+ * Import this file to get all unified Clanbite component styles.
+ * All plugins should use these consistent patterns.
+ */
+
+// Core UI Components
+@import 'buttons';
+@import 'modals';
+@import 'forms';
+@import 'lists';
+@import 'navigation';
+@import 'cards';
+@import 'avatars';
+@import 'covers';
+
+// Utility classes
+.clanbite-hidden {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	margin: -1px !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0, 0, 0, 0) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
+}
+
+.clanbite-loading {
+	opacity: 0.6;
+	pointer-events: none;
+	cursor: wait;
+}
+
+.clanbite-disabled {
+	opacity: 0.5;
+	pointer-events: none;
+	cursor: not-allowed;
+}
+
+.clanbite-active {
+	// Active state styling (component-specific)
+}
+
+.clanbite-error {
+	color: #c00;
+	border-color: #fcc;
+}
+
+.clanbite-success {
+	color: #0a0;
+	border-color: #cfc;
+}
+
+.clanbite-placeholder {
+	color: var(--wp--preset--color--contrast-2, #999);
+	font-style: italic;
+}

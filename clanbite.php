@@ -3,8 +3,8 @@
  * Plugin Name: Clanbite: Team Management System
  * Plugin URI: https://clanbite.com
  * Description: Community management system for Gamers and Sports teams
- * Version: 1.1.0
- * Requires at least: 6.7
+ * Version: 1.2.0
+ * Requires at least: 6.9
  * Tested up to: 7.0
  * Requires PHP: 8.2
  * Author: kernow.dev
@@ -18,7 +18,7 @@
  * @link    https://clanbite.com/
  *
  * @package clanbite
- * @version 1.1.0
+ * @version 1.2.0
  */
 
 namespace Kernowdev\Clanbite;
@@ -56,7 +56,7 @@ final class Main {
 	 *
 	 * @var string
 	 */
-	public const VERSION = '1.1.0';
+	public const VERSION = '1.2.0';
 
 	/**
 	 * Maintenance upgrade counter (single step for 1.0.0 public release).
@@ -201,12 +201,12 @@ final class Main {
 			return false;
 		}
 
-		// Check WordPress version (as declared in plugin header: Requires at least: 6.7).
+		// Check WordPress version (as declared in plugin header: Requires at least: 6.9).
 		global $wp_version;
-		if ( version_compare( $wp_version, '6.7', '<' ) ) {
+		if ( version_compare( $wp_version, '6.9', '<' ) ) {
 			$this->activation_errors[] = sprintf(
 				/* translators: %s: Current WordPress version */
-				__( 'Clanbite requires WordPress 6.7 or higher. You are running version %s.', 'clanbite' ),
+				__( 'Clanbite requires WordPress 6.9 or higher. You are running version %s.', 'clanbite' ),
 				$wp_version
 			);
 
@@ -280,6 +280,8 @@ final class Main {
 		add_action( 'init', array( $this, 'register_core_blocks' ), 20 );
 
 		add_action( 'enqueue_block_editor_assets', array( $this, 'localize_visibility_container_block_editor' ) );
+
+		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_block_editor_icon_styles' ) );
 
 		add_filter( 'plugin_action_links_' . $this->basename, array( $this, 'filter_plugin_action_links' ) );
 
@@ -457,6 +459,24 @@ final class Main {
 			$handle,
 			'clanbiteVisibilityContainer',
 			array( 'roles' => $roles_out )
+		);
+	}
+
+	/**
+	 * Block inserter icon sharpening (see assets/block-icons-editor.css).
+	 *
+	 * @return void
+	 */
+	public function enqueue_block_editor_icon_styles(): void {
+		if ( ! $this->check_requirements() ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'clanbite-block-icons-editor',
+			$this->url . 'assets/block-icons-editor.css',
+			array(),
+			self::VERSION
 		);
 	}
 

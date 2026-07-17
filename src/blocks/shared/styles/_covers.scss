@@ -1,0 +1,152 @@
+/**
+ * Unified Cover/Banner Image Styles
+ * 
+ * Consistent cover image styling for player, team, and group profiles.
+ */
+
+// Base cover block wrapper
+.clanbite-cover-block {
+	position: relative;
+	overflow: hidden;
+	margin: 0;
+}
+
+// Cover container
+.clanbite-cover {
+	position: relative;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 220px;
+	overflow: hidden;
+	
+	// WordPress position classes
+	&.is-position-top-left {
+		align-items: flex-start;
+		justify-content: flex-start;
+	}
+	
+	&.is-position-top-center {
+		align-items: flex-start;
+		justify-content: center;
+	}
+	
+	&.is-position-top-right {
+		align-items: flex-start;
+		justify-content: flex-end;
+	}
+	
+	&.is-position-center-left {
+		align-items: center;
+		justify-content: flex-start;
+	}
+	
+	&.is-position-center-center {
+		align-items: center;
+		justify-content: center;
+	}
+	
+	&.is-position-center-right {
+		align-items: center;
+		justify-content: flex-end;
+	}
+	
+	&.is-position-bottom-left {
+		align-items: flex-end;
+		justify-content: flex-start;
+	}
+	
+	&.is-position-bottom-center {
+		align-items: flex-end;
+		justify-content: center;
+	}
+	
+	&.is-position-bottom-right {
+		align-items: flex-end;
+		justify-content: flex-end;
+	}
+}
+
+// Media clip container
+.clanbite-cover__media-clip {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	z-index: 0;
+}
+
+// Cover media/image
+.clanbite-cover__media {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	
+	&--empty {
+		background: #f0f0f1;
+	}
+	
+	&--placeholder {
+		background: #f9f9f9;
+		border: 1px dashed #c3c4c7;
+	}
+}
+
+// Content overlay
+.clanbite-cover__content {
+	position: relative;
+	z-index: 1;
+	padding: 1.5rem;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+// Type-specific variants
+.clanbite-cover--player {
+	// Player-specific overrides
+}
+
+.clanbite-cover--team {
+	// Team-specific overrides
+}
+
+.clanbite-cover--group {
+	// Group-specific overrides
+}
+
+// Placeholder state
+.clanbite-cover--placeholder {
+	background: #f9f9f9;
+	border: 1px dashed #c3c4c7;
+	
+	.clanbite-cover__media {
+		opacity: 0.5;
+	}
+}
+
+// Backward compatibility
+.clanbite-player-cover,
+.clanbite-team-cover {
+	@extend .clanbite-cover;
+}
+
+.clanbite-player-cover-block,
+.clanbite-team-cover-block {
+	@extend .clanbite-cover-block;
+}
+
+.clanbite-player-cover__media-clip,
+.clanbite-team-cover__media-clip {
+	@extend .clanbite-cover__media-clip;
+}
+
+.clanbite-player-cover__media,
+.clanbite-team-cover__media {
+	@extend .clanbite-cover__media;
+}
+
+.player-cover__content-container,
+.team-cover__content-container {
+	@extend .clanbite-cover__content;
+}

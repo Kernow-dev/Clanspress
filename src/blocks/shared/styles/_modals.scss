@@ -1,0 +1,101 @@
+/**
+ * Unified Modal Styles
+ * 
+ * All Clanbite modals use consistent structure across plugins.
+ */
+
+// Base modal container
+.clanbite-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 999999;
+	
+	// Type variants (core Clanbite only)
+	&.clanbite-modal--confirm { }
+	&.clanbite-modal--challenge { }
+	
+	// Note: Plugin-specific variants (--forums, --social-kit, --points, --ranks)
+	// should be defined in each plugin's own SCSS files, not here in core.
+}
+
+// Modal backdrop/overlay
+.clanbite-modal__backdrop {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+}
+
+// Dialog box
+.clanbite-modal__dialog {
+	background: var(--wp--preset--color--base, #fff);
+	border-radius: 8px;
+	max-width: 600px;
+	width: 100%;
+	max-height: 90vh;
+	overflow-y: auto;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+	
+	&.clanbite-modal__dialog--wide {
+		max-width: 900px;
+	}
+	
+	&.clanbite-modal__dialog--narrow {
+		max-width: 400px;
+	}
+}
+
+// Modal header
+.clanbite-modal__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1.5rem;
+	border-bottom: 1px solid var(--wp--preset--color--contrast-3, #e0e0e0);
+}
+
+// Modal title
+.clanbite-modal__title {
+	margin: 0;
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: var(--wp--preset--color--contrast, #000);
+}
+
+// Close button
+.clanbite-modal__close {
+	background: transparent;
+	border: none;
+	font-size: 1.5rem;
+	line-height: 1;
+	cursor: pointer;
+	padding: 0.25rem;
+	color: var(--wp--preset--color--contrast-2, #666);
+	
+	&:hover {
+		color: var(--wp--preset--color--contrast, #000);
+	}
+}
+
+// Modal body
+.clanbite-modal__body {
+	padding: 1.5rem;
+}
+
+// Modal footer
+.clanbite-modal__footer {
+	padding: 1.5rem;
+	border-top: 1px solid var(--wp--preset--color--contrast-3, #e0e0e0);
+	display: flex;
+	gap: 0.75rem;
+	justify-content: flex-end;
+}

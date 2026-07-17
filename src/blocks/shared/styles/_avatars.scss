@@ -1,0 +1,199 @@
+/**
+ * Unified Avatar Styles
+ * 
+ * Consistent avatar styling for players, teams, and user navigation.
+ */
+
+// Base avatar block wrapper
+.clanbite-avatar-block {
+	position: relative;
+	line-height: 0;
+	margin: 0;
+}
+
+// Avatar container
+.clanbite-avatar {
+	position: relative;
+	display: inline-flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 0.35rem;
+	line-height: 0;
+	max-width: 100%;
+}
+
+// Avatar media wrapper (for overlays)
+.clanbite-avatar__media {
+	position: relative;
+	display: inline-block;
+	line-height: 0;
+	vertical-align: top;
+	
+	.clanbite-avatar__link {
+		display: block;
+		line-height: 0;
+	}
+}
+
+// Avatar clip container (circular)
+.clanbite-avatar__clip {
+	position: relative;
+	display: inline-block;
+	line-height: 0;
+	border-radius: 50%;
+	overflow: hidden;
+	border: 3px solid #fff;
+	box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
+	vertical-align: top;
+}
+
+// Avatar link wrapper
+.clanbite-avatar__link {
+	display: block;
+	line-height: 0;
+	border-radius: inherit;
+}
+
+// Avatar image
+.clanbite-avatar__img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	aspect-ratio: 1;
+	border-radius: inherit;
+	
+	&--placeholder {
+		box-sizing: border-box;
+		min-width: 80px;
+		min-height: 80px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.75rem;
+		text-align: center;
+		padding: 0.25rem;
+		color: #646970;
+		background: #f0f0f1;
+		border-radius: 50%;
+	}
+	
+	&--small {
+		width: 32px;
+		height: 32px;
+	}
+	
+	&--medium {
+		width: 64px;
+		height: 64px;
+	}
+	
+	&--large {
+		width: 96px;
+		height: 96px;
+	}
+}
+
+// Avatar overlays (e.g., rank badges)
+.clanbite-avatar__overlay {
+	position: absolute;
+	right: -4px;
+	bottom: -6px;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	align-items: flex-end;
+	gap: 4px;
+	max-width: 58%;
+	z-index: 2;
+	pointer-events: none;
+	box-sizing: border-box;
+}
+
+// Player-specific avatar styles
+.clanbite-avatar--player {
+	// Player-specific overrides
+}
+
+// Team-specific avatar styles
+.clanbite-avatar--team {
+	// Team-specific overrides
+}
+
+// User nav avatar styles
+.clanbite-avatar--user-nav {
+	// User nav-specific overrides
+}
+
+// Size variants
+.clanbite-avatar--large {
+	.clanbite-avatar__img {
+		width: 120px;
+		height: 120px;
+	}
+}
+
+.clanbite-avatar--medium {
+	.clanbite-avatar__img {
+		width: 64px;
+		height: 64px;
+	}
+}
+
+.clanbite-avatar--small {
+	.clanbite-avatar__img {
+		width: 32px;
+		height: 32px;
+	}
+}
+
+// Placeholder state
+.clanbite-avatar--placeholder {
+	border: 1px dashed #c3c4c7;
+	min-width: 80px;
+	min-height: 80px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	color: #646970;
+	font-size: 0.75rem;
+	text-align: center;
+	padding: 0.25rem;
+}
+
+// Backward compatibility: old class names still work
+.clanbite-player-avatar,
+.clanbite-team-avatar {
+	@extend .clanbite-avatar;
+}
+
+.clanbite-player-avatar-block,
+.clanbite-team-avatar-block {
+	@extend .clanbite-avatar-block;
+}
+
+.clanbite-player-avatar__clip,
+.clanbite-team-avatar__clip {
+	@extend .clanbite-avatar__clip;
+}
+
+.clanbite-player-avatar__link,
+.clanbite-team-avatar__link {
+	@extend .clanbite-avatar__link;
+}
+
+.clanbite-player-avatar__img,
+.clanbite-team-avatar__img {
+	@extend .clanbite-avatar__img;
+}
+
+.clanbite-player-avatar__media,
+.clanbite-team-avatar__media {
+	@extend .clanbite-avatar__media;
+}
+
+.clanbite-player-avatar__rank-overlay {
+	@extend .clanbite-avatar__overlay;
+}
